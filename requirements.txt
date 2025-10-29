@@ -1,0 +1,21 @@
+# Core scientific stack
+numpy>=1.23.0
+pandas>=2.0.0
+tqdm>=4.65.0
+rdflib>=6.3.2
+safetensors>=0.4.0
+
+# Machine learning
+torch>=2.2.0
+transformers==4.51.0           # ✅ compatible with GLiNER 0.2.22
+accelerate>=0.29.0,<1.0
+tokenizers>=0.21.0,<0.23.0
+
+# NER models
+gliner==0.2.22                 # ✅ requires transformers <=4.51.0
+spacy>=3.7.2
+scispacy>=0.5.3
+
+# Utils and logging
+protobuf<5.0.0
+loguru>=0.7.0
