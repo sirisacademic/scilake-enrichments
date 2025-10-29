@@ -91,7 +91,7 @@ DOMAIN_MODELS = {
 ## ⚙️ Installation
 
 ```bash
-git clone https://github.com/SIRIS-Lab/scilake-enrichments.git
+git clone https://github.com/sirisacademic/scilake-enrichments.git
 cd scilake-enrichments
 
 # Create environment
