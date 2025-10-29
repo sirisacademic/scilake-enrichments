@@ -1,0 +1,29 @@
+name: scilake-enrichments
+channels:
+  - conda-forge
+  - pytorch
+dependencies:
+  - python=3.10
+  - pip
+  - pytorch>=2.2
+  - torchvision
+  - torchaudio
+  - transformers>=4.45
+  - spacy>=3.7
+  - tqdm
+  - pandas
+  - numpy
+  - rdflib>=7.0
+  - regex
+  - requests
+  - typing-extensions
+  - pyyaml
+  - rich
+  - jsonlines
+  - sentencepiece
+  - ipykernel
+  - ipython
+  - pip:
+      - scispacy
+      - gliner
+      - absl-py

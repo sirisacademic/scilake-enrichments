@@ -1,0 +1,146 @@
+@prefix lkg-res: <http://lkg.lynx-project.eu/res/> .
+@prefix eli:   <http://data.europa.eu/eli/ontology#> .
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix itsrdf: <http://www.w3.org/2005/11/its/rdf#> .
+@prefix lkg:   <http://lkg.lynx-project.eu/def/> .
+@prefix skos:  <http://www.w3.org/2004/02/skos/core#> .
+@prefix nif:   <http://persistence.uni-leipzig.org/nlp2rdf/ontologies/nif-core#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dbo:   <http://dbpedia.org/ontology/> .
+@prefix qont:  <http://qurator-projekt.de/ontology/> .
+@prefix nif-ann: <http://persistence.uni-leipzig.org/nlp2rdf/ontologies/nif-annotation#> .
+@prefix dct:   <http://purl.org/dc/terms/> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix dbr:   <http://dbpedia.org/resource/> .
+@prefix sci-res: <http://scilake-projekt.eu/res/> .
+@prefix foaf:  <http://xmlns.com/foaf/0.1/> .
+@prefix scilake: <http://scilake-projekt.eu/ontology/> .
+
+<http://scilake-project.eu/res/9eb6b37f#offset_2404_7450>
+        a                         <dfki:ScientificDocumentPart> , nif:OffsetBasedString ;
+        nif:anchorOf              "Based on the research carried out in Poland and abroad and on the author's own expertise in the field of vibroisolation of machines, devices and railroad subgrade for tram and railway lines (PKP railroad station in Kraków, Zwierzyniecka St., Lubicz St.) the concept of vibroisolated railroad crossing was conceived, of which scheme is demonstrated in fig. 2. Resilient elements are introduced in railway crossing construction whose purpose is to isolate the railroad from the automobile road in order to minimize the dynamic effects of vehicles passing through the crossing and to center slabs relatively to the rails. The main element transmitting vibrations coming from railway transportation and automotive vehicles, presented in this solution, is a rail with a rail-tie, which owing to the application of resilient vibroisolating and sound-absorbing materials significantly lowers the dynamic and acoustical effects carried across o the natural environment. It is reflected by the coefficients α <1 and β <1. Comparing of the traditional and vibroisolated railway crossing can be carried out based on dynamic analysis of simplified physical models presented in fig. 3. One of the measures of this effectiveness is the ratio of forces R w / R d , originated during the vehicles' passage, carried to the ground through railway crossing; without the elements of vibro-and sound isolation, and with the application of these elements. where: m p -concrete slab mass + vehicle mass, ρ -rubber plate density, E * -dynamic Young module F -area of rubber plate, -rubber plate thickness, u(x,t) -distortion of rubber plate; x=( 0 or l). It is herby tempting to make an attempt towards approximated evaluation of energy dispersion in railway crossings, i.e. to draw up an energetic balance of energy distribution based on empirical research. The attempt of such an approximated evaluation is the topic of this section. The characteristic property of the constructional solution of the railway crossing is that it contains elastic elements whose purpose is to isolate the railroad from the motor-car road and thereby to reduce dynamic influence of vehicles coming over the railroad crossing and to center the slabs in relation to the rails. The conception of vibroisolated railroad crossing is demonstrated in fig. 4. Main idea of this concept involves minimizing the mutual dynamic influence of railroad line and motor vehicle road, in order to avoid the accelerated destruction of the crossing. In this solution, main element transmitting vibrations coming from railway transportation and automotive vehicles is a rail with a rail-tie, which as a result of the application of resilient vibroisolating and sound-absorbing materials significantly lowers the dynamic and acoustical effects carried across to the natural environment.  where: F z dyn max -maximum dynamic force carried across to the ground, F z stat -static ground loading. Applying the second Newton's law we can put this formula in the form: Using ( 1) and (2) we yield: which after integrating within the limits takes the form: after substituting (4) into the formula we yield: The amount of energy transferred to vibroisolated railway crossing is divided into the energy carried across into the environment E p , energy dispersed by vibroisolated material E r , thermal energy E c , acoustic energy E A and residual energy E reszt which includes, among other ones, the energy associated with magnetic field. The acoustic energy is given by the relation: Given that the energy of the acceleration noise equals: The energy of material vibrations yields: , Vibration energy of post-impact noise is: ) , ( , Therefore the total vibroacoustical energy yields: Thermal energy produced during the work of vibroisolating element is determined by relation: And the energy given off to the surrounding through vibroisolating element yields: Of course, determining values of individual energies based on the relations presented above is very rough and their conformity can be stated no sooner than after performing long and expensive experimental research. Yet, assuming that the total energy transferred to vibroisolated railway crossing is kinetic energy coming from motor vehicle, we can execute a decent energetic balance adapting, these quotients as measure of energy distribution: where: E i -individual determined energies, E k -kinetic energy. Based on the relations allowing determining partial energies approximately, diagram of energetic balance can be drawn up as demonstrated for vibroisolated system in fig. 5. In case of traditional railway crossing (without vibroisolation) the probable energetic balance is demonstrated in fig. 6. i.e. damping energy would be included in the energy carried across to the ground. Probably also vibroacoustical energy would increase, especially post-impact noise and acceleration noise energy levels would go up, which would bring in effect the increase of noise level in the environment surrounding intersecting railway tracks and automobile road." ;
+        nif:beginIndex            "2404"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "7450"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/9eb6b37f> ;
+        dct:section_number        "2." ;
+        dct:source                "" ;
+        dct:title                 "IDEA OF VIBROISOLATION" ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "section" .
+
+<http://scilake-project.eu/res/9eb6b37f#offset_108_365>
+        a                         nif:OffsetBasedString , <dfki:ScientificDocumentPart> ;
+        nif:anchorOf              "This research presents the concept of vibroisolation of railroad lines by example of one of the solutions designed by the author, and contains comparison of distribution of energy carried out to the subgrade of traditional and vibroisolated railroad tracks." ;
+        nif:beginIndex            "108"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "365"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/9eb6b37f> ;
+        dct:section_number        "" ;
+        dct:source                "" ;
+        dct:title                 "This research presents the concept of vibroisolation of railroad lines by example of one of the solutions designed by the author, and contains comparison of distribution of energy carried out to the subgrade of traditional and vibroisolated railroad tracks." ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "abstract" .
+
+<http://scilake-project.eu/res/9eb6b37f#offset_2403_2403>
+        a                         <dfki:ScientificDocumentPart> , nif:OffsetBasedString ;
+        nif:anchorOf              "" ;
+        nif:beginIndex            "2403"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "2403"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/9eb6b37f> ;
+        dct:section_number        "" ;
+        dct:source                "" ;
+        dct:title                 "J. Targosz" ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "section" .
+
+<http://scilake-project.eu/res/9eb6b37f>
+        a                 scilake:ScientificDocument , nif:OffsetBasedString , nif:Context ;
+        nif:beginIndex    "0"^^xsd:nonNegativeInteger ;
+        nif:endIndex      "9634"^^xsd:nonNegativeInteger ;
+        nif:isString      "VIBROISOLATION OF RAILWAY TRANSPORTATION AND ENERGETIC DISTRIBUTION OF DYNAMIC INFLUENCE ON THE SURROUNDING This research presents the concept of vibroisolation of railroad lines by example of one of the solutions designed by the author, and contains comparison of distribution of energy carried out to the subgrade of traditional and vibroisolated railroad tracks. This research presents the concept of vibroisolation of railroad lines by example of one of the solutions designed by the author, and contains comparison of distribution of energy carried out to the subgrade of traditional and vibroisolated railroad tracks. WIBROIZOLACJA DRÓG KOLEJOWYCH ORAZ ROZKŁAD ENERGETYCZNY ODDZIAŁYWAŃ DYNAMICZNYCH NA ŚRODOWISKOStreszczenie. W pracy przedstawiono koncepcję wibroizolacji torowisk kolejowych na pojedynczym przykładzie zastosowanym przez autora oraz rozkład energii przenoszonej do otoczenia torowisk z zastosowaniem wibroizolacji i bez jej stosowania. Streszczenie. W pracy przedstawiono koncepcję wibroizolacji torowisk kolejowych na pojedynczym przykładzie zastosowanym przez autora oraz rozkład energii przenoszonej do otoczenia torowisk z zastosowaniem wibroizolacji i bez jej stosowania. Present-day constructions of railway crossing as one-level intersection of rail transportation (railway, tramway) and automobile transportation do not meet the current requirements of modern-day transportation in terms of necessary speed limits imposed on both types of transportation, dynamic influence on the environment (noise, vibrations), which come from railway and automobile vehicles, concrete slabs' \"keyboarding\" and resulting technical degradation of a crossing based on shift of slabs positioning and change of slabs' fulcrum points. It is accompanied by transmission of vibrations and noise to neighboring objects, often of a historic meaning, situated next to the railway transportation lines e.g. tramway lines. The construction of these crossings is specific in terms of dynamics and acoustics, that dynamic effects coming either from railway vehicles as well as automotive vehicles are transmitted entirely and directly on concrete slabs of the crossing, which affect railway-ties as well as the ground, which is demonstrated in fig. 1. Hence there occurred a necessity of designing the crossings construction that would enable eliminating or at least minimizing those adverse effects.  Based on the research carried out in Poland and abroad and on the author's own expertise in the field of vibroisolation of machines, devices and railroad subgrade for tram and railway lines (PKP railroad station in Kraków, Zwierzyniecka St., Lubicz St.) the concept of vibroisolated railroad crossing was conceived, of which scheme is demonstrated in fig. 2. Resilient elements are introduced in railway crossing construction whose purpose is to isolate the railroad from the automobile road in order to minimize the dynamic effects of vehicles passing through the crossing and to center slabs relatively to the rails. The main element transmitting vibrations coming from railway transportation and automotive vehicles, presented in this solution, is a rail with a rail-tie, which owing to the application of resilient vibroisolating and sound-absorbing materials significantly lowers the dynamic and acoustical effects carried across o the natural environment. It is reflected by the coefficients α <1 and β <1. Comparing of the traditional and vibroisolated railway crossing can be carried out based on dynamic analysis of simplified physical models presented in fig. 3. One of the measures of this effectiveness is the ratio of forces R w / R d , originated during the vehicles' passage, carried to the ground through railway crossing; without the elements of vibro-and sound isolation, and with the application of these elements. where: m p -concrete slab mass + vehicle mass, ρ -rubber plate density, E * -dynamic Young module F -area of rubber plate, -rubber plate thickness, u(x,t) -distortion of rubber plate; x=( 0 or l). It is herby tempting to make an attempt towards approximated evaluation of energy dispersion in railway crossings, i.e. to draw up an energetic balance of energy distribution based on empirical research. The attempt of such an approximated evaluation is the topic of this section. The characteristic property of the constructional solution of the railway crossing is that it contains elastic elements whose purpose is to isolate the railroad from the motor-car road and thereby to reduce dynamic influence of vehicles coming over the railroad crossing and to center the slabs in relation to the rails. The conception of vibroisolated railroad crossing is demonstrated in fig. 4. Main idea of this concept involves minimizing the mutual dynamic influence of railroad line and motor vehicle road, in order to avoid the accelerated destruction of the crossing. In this solution, main element transmitting vibrations coming from railway transportation and automotive vehicles is a rail with a rail-tie, which as a result of the application of resilient vibroisolating and sound-absorbing materials significantly lowers the dynamic and acoustical effects carried across to the natural environment.  where: F z dyn max -maximum dynamic force carried across to the ground, F z stat -static ground loading. Applying the second Newton's law we can put this formula in the form: Using ( 1) and (2) we yield: which after integrating within the limits takes the form: after substituting (4) into the formula we yield: The amount of energy transferred to vibroisolated railway crossing is divided into the energy carried across into the environment E p , energy dispersed by vibroisolated material E r , thermal energy E c , acoustic energy E A and residual energy E reszt which includes, among other ones, the energy associated with magnetic field. The acoustic energy is given by the relation: Given that the energy of the acceleration noise equals: The energy of material vibrations yields: , Vibration energy of post-impact noise is: ) , ( , Therefore the total vibroacoustical energy yields: Thermal energy produced during the work of vibroisolating element is determined by relation: And the energy given off to the surrounding through vibroisolating element yields: Of course, determining values of individual energies based on the relations presented above is very rough and their conformity can be stated no sooner than after performing long and expensive experimental research. Yet, assuming that the total energy transferred to vibroisolated railway crossing is kinetic energy coming from motor vehicle, we can execute a decent energetic balance adapting, these quotients as measure of energy distribution: where: E i -individual determined energies, E k -kinetic energy. Based on the relations allowing determining partial energies approximately, diagram of energetic balance can be drawn up as demonstrated for vibroisolated system in fig. 5. In case of traditional railway crossing (without vibroisolation) the probable energetic balance is demonstrated in fig. 6. i.e. damping energy would be included in the energy carried across to the ground. Probably also vibroacoustical energy would increase, especially post-impact noise and acceleration noise energy levels would go up, which would bring in effect the increase of noise level in the environment surrounding intersecting railway tracks and automobile road. After the analyses of a dozen or so types of railway crossings used in our country it can be stated that there was until now no ideal structure. It seems that close to ideal is the conception of railway crossing settled on a vibroisolation system. All other solutions are quite troublesome owing to the emitted noise or vibrations carried across to the surrounding during the railroad-vehicle or a motorvehicle passage. The latter disadvantage is particularly bothersome in city areas, where there are residential buildings right in the vicinity of railroad lines. This drawback can be effectively eliminated by constructing railroad crossings mounted on a vibroisolated system. In order to construct a prototype railroad crossing, it was necessary to carry out a series of experimental research that were concerning strength properties, durability, temperature influence and vibroisolating parameters (resilience, damping) of the elements being included in the railroad crossing structure (vibroisolating elements, concrete slabs). The results of these researches enabled the choice of elastic surface elements, vibroisolating elements, inertial concrete slabs and other structural elements for vibroisolated railroad crossing. They were also the basis for carrying out the simulation of dynamics of such a crossing under different load conditions. The experience associated with the exploitation of vibroisolated track beds is 18-year long, and for the time being there is no record of the track-beds being excessively worn out or defected. Vibroisolated railroad crossings are now three years old and are subject to constant inspections in terms of their durability as well as vibroisolation effectiveness. As a result of the research carried out by the article author some patents and usage guidance were drawn up. Many vibroisolation systems for track vehicles and automobile vehicles were implemented based on these patents: J. Targosz and brings the risk of emission of the excessive noise or excessive dynamic effects on the surrounding during the vehicles passage. This is best demonstrated in energetic balance of the individual types of railroad crossings in fig. 5 and 6." ;
+        qont:metadata     [ dct:language  "en" ] ;
+        scilake:has_part  <http://scilake-project.eu/res/9eb6b37f#offset_2403_2403> , <http://scilake-project.eu/res/9eb6b37f#offset_1200_2402> , <http://scilake-project.eu/res/9eb6b37f#offset_108_365> , <http://scilake-project.eu/res/9eb6b37f#offset_7451_9381> , <http://scilake-project.eu/res/9eb6b37f#offset_959_1199> , <http://scilake-project.eu/res/9eb6b37f#offset_0_107> , <http://scilake-project.eu/res/9eb6b37f#offset_2404_7450> , <http://scilake-project.eu/res/9eb6b37f#offset_624_958> , <http://scilake-project.eu/res/9eb6b37f#offset_366_623> , <http://scilake-project.eu/res/9eb6b37f#offset_9382_9634> .
+
+<http://scilake-project.eu/res/9eb6b37f#offset_366_623>
+        a                         nif:OffsetBasedString , <dfki:ScientificDocumentPart> ;
+        nif:anchorOf              "This research presents the concept of vibroisolation of railroad lines by example of one of the solutions designed by the author, and contains comparison of distribution of energy carried out to the subgrade of traditional and vibroisolated railroad tracks." ;
+        nif:beginIndex            "366"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "623"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/9eb6b37f> ;
+        dct:section_number        "" ;
+        dct:source                "" ;
+        dct:title                 "This research presents the concept of vibroisolation of railroad lines by example of one of the solutions designed by the author, and contains comparison of distribution of energy carried out to the subgrade of traditional and vibroisolated railroad tracks." ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "abstract" .
+
+<http://scilake-project.eu/res/9eb6b37f#offset_959_1199>
+        a                         <dfki:ScientificDocumentPart> , nif:OffsetBasedString ;
+        nif:anchorOf              "Streszczenie. W pracy przedstawiono koncepcję wibroizolacji torowisk kolejowych na pojedynczym przykładzie zastosowanym przez autora oraz rozkład energii przenoszonej do otoczenia torowisk z zastosowaniem wibroizolacji i bez jej stosowania." ;
+        nif:beginIndex            "959"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "1199"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/9eb6b37f> ;
+        dct:section_number        "" ;
+        dct:source                "" ;
+        dct:title                 "Streszczenie. W pracy przedstawiono koncepcję wibroizolacji torowisk kolejowych na pojedynczym przykładzie zastosowanym przez autora oraz rozkład energii przenoszonej do otoczenia torowisk z zastosowaniem wibroizolacji i bez jej stosowania." ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "abstract" .
+
+<http://scilake-project.eu/res/9eb6b37f#offset_1200_2402>
+        a                         nif:OffsetBasedString , <dfki:ScientificDocumentPart> ;
+        nif:anchorOf              "Present-day constructions of railway crossing as one-level intersection of rail transportation (railway, tramway) and automobile transportation do not meet the current requirements of modern-day transportation in terms of necessary speed limits imposed on both types of transportation, dynamic influence on the environment (noise, vibrations), which come from railway and automobile vehicles, concrete slabs' \"keyboarding\" and resulting technical degradation of a crossing based on shift of slabs positioning and change of slabs' fulcrum points. It is accompanied by transmission of vibrations and noise to neighboring objects, often of a historic meaning, situated next to the railway transportation lines e.g. tramway lines. The construction of these crossings is specific in terms of dynamics and acoustics, that dynamic effects coming either from railway vehicles as well as automotive vehicles are transmitted entirely and directly on concrete slabs of the crossing, which affect railway-ties as well as the ground, which is demonstrated in fig. 1. Hence there occurred a necessity of designing the crossings construction that would enable eliminating or at least minimizing those adverse effects." ;
+        nif:beginIndex            "1200"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "2402"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/9eb6b37f> ;
+        dct:section_number        "1." ;
+        dct:source                "" ;
+        dct:title                 "INTRODUCTION" ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "section" .
+
+<http://scilake-project.eu/res/9eb6b37f#offset_0_107>
+        a                         nif:OffsetBasedString , <dfki:ScientificDocumentPart> ;
+        nif:anchorOf              "VIBROISOLATION OF RAILWAY TRANSPORTATION AND ENERGETIC DISTRIBUTION OF DYNAMIC INFLUENCE ON THE SURROUNDING" ;
+        nif:beginIndex            "0"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "107"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/9eb6b37f> ;
+        dct:section_number        "" ;
+        dct:source                "" ;
+        dct:title                 "VIBROISOLATION OF RAILWAY TRANSPORTATION AND ENERGETIC DISTRIBUTION OF DYNAMIC INFLUENCE ON THE SURROUNDING" ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "title" .
+
+<http://scilake-project.eu/res/9eb6b37f#offset_7451_9381>
+        a                         nif:OffsetBasedString , <dfki:ScientificDocumentPart> ;
+        nif:anchorOf              "After the analyses of a dozen or so types of railway crossings used in our country it can be stated that there was until now no ideal structure. It seems that close to ideal is the conception of railway crossing settled on a vibroisolation system. All other solutions are quite troublesome owing to the emitted noise or vibrations carried across to the surrounding during the railroad-vehicle or a motorvehicle passage. The latter disadvantage is particularly bothersome in city areas, where there are residential buildings right in the vicinity of railroad lines. This drawback can be effectively eliminated by constructing railroad crossings mounted on a vibroisolated system. In order to construct a prototype railroad crossing, it was necessary to carry out a series of experimental research that were concerning strength properties, durability, temperature influence and vibroisolating parameters (resilience, damping) of the elements being included in the railroad crossing structure (vibroisolating elements, concrete slabs). The results of these researches enabled the choice of elastic surface elements, vibroisolating elements, inertial concrete slabs and other structural elements for vibroisolated railroad crossing. They were also the basis for carrying out the simulation of dynamics of such a crossing under different load conditions. The experience associated with the exploitation of vibroisolated track beds is 18-year long, and for the time being there is no record of the track-beds being excessively worn out or defected. Vibroisolated railroad crossings are now three years old and are subject to constant inspections in terms of their durability as well as vibroisolation effectiveness. As a result of the research carried out by the article author some patents and usage guidance were drawn up. Many vibroisolation systems for track vehicles and automobile vehicles were implemented based on these patents:" ;
+        nif:beginIndex            "7451"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "9381"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/9eb6b37f> ;
+        dct:section_number        "3." ;
+        dct:source                "" ;
+        dct:title                 "CONCLUSIONS" ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "section" .
+
+<http://scilake-project.eu/res/9eb6b37f#offset_624_958>
+        a                         nif:OffsetBasedString , <dfki:ScientificDocumentPart> ;
+        nif:anchorOf              "WIBROIZOLACJA DRÓG KOLEJOWYCH ORAZ ROZKŁAD ENERGETYCZNY ODDZIAŁYWAŃ DYNAMICZNYCH NA ŚRODOWISKOStreszczenie. W pracy przedstawiono koncepcję wibroizolacji torowisk kolejowych na pojedynczym przykładzie zastosowanym przez autora oraz rozkład energii przenoszonej do otoczenia torowisk z zastosowaniem wibroizolacji i bez jej stosowania." ;
+        nif:beginIndex            "624"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "958"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/9eb6b37f> ;
+        dct:section_number        "" ;
+        dct:source                "" ;
+        dct:title                 "WIBROIZOLACJA DRÓG KOLEJOWYCH ORAZ ROZKŁAD ENERGETYCZNY ODDZIAŁYWAŃ DYNAMICZNYCH NA ŚRODOWISKOStreszczenie. W pracy przedstawiono koncepcję wibroizolacji torowisk kolejowych na pojedynczym przykładzie zastosowanym przez autora oraz rozkład energii przenoszonej do otoczenia torowisk z zastosowaniem wibroizolacji i bez jej stosowania." ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "abstract" .
+
+<http://scilake-project.eu/res/9eb6b37f#offset_9382_9634>
+        a                         nif:OffsetBasedString , <dfki:ScientificDocumentPart> ;
+        nif:anchorOf              "J. Targosz and brings the risk of emission of the excessive noise or excessive dynamic effects on the surrounding during the vehicles passage. This is best demonstrated in energetic balance of the individual types of railroad crossings in fig. 5 and 6." ;
+        nif:beginIndex            "9382"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "9634"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/9eb6b37f> ;
+        dct:section_number        "" ;
+        dct:source                "" ;
+        dct:title                 "90" ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "acknowledgement" .
