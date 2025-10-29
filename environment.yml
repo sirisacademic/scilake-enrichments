@@ -1,29 +1,22 @@
 name: scilake-enrichments
 channels:
   - conda-forge
-  - pytorch
+  - defaults
 dependencies:
   - python=3.10
   - pip
-  - pytorch>=2.2
-  - torchvision
-  - torchaudio
-  - transformers>=4.45
-  - spacy>=3.7
-  - tqdm
-  - pandas
   - numpy
-  - rdflib>=7.0
-  - regex
-  - requests
-  - typing-extensions
-  - pyyaml
-  - rich
-  - jsonlines
-  - sentencepiece
-  - ipykernel
-  - ipython
+  - pandas
+  - tqdm
+  - openblas
+  - pytorch
   - pip:
+      - gliner==0.2.22
+      - transformers==4.51.0
+      - accelerate>=0.29.0,<1.0
+      - tokenizers>=0.21.0,<0.23.0
+      - spacy>=3.7.2
       - scispacy
-      - gliner
-      - absl-py
+      - rdflib
+      - torch>=2.2.0
+      - safetensors
