@@ -126,17 +126,57 @@ def load_all_nif(base_dir: str, logger=None) -> pd.DataFrame:
 # --------------------------------------------------
 # Acronym detection and expansion
 # --------------------------------------------------
+def is_valid_acronym(abbr: str, long_form: str) -> bool:
+    """Keep only uppercase acronyms of length > 1."""
+    return abbr.isupper() and len(abbr) > 1
+
+STOPWORDS = {"and", "of", "the", "for", "a", "an", "or", "in", "on", "to", "by", "with"}
+
+def acronym_matches_longform(abbr: str, long_form: str) -> bool:
+    """Check if acronym roughly matches initials of long form."""
+    abbr = re.sub(r'[^A-Z]', '', abbr.upper())
+    words = [w for w in re.findall(r'[A-Za-z]+', long_form) if w.lower() not in STOPWORDS]
+    if not words:
+        return False
+    initials = ''.join(w[0].upper() for w in words)
+    return abbr == initials[:len(abbr)] or abbr in initials
+
 def get_acronym_map(fulltext: str) -> dict:
-    """Extract acronym → long-form mappings from fulltext using SciSpacy."""
+    """Extract acronym → long-form mappings using SciSpacy with regex fallback."""
     if not fulltext:
         return {}
+
     nlp = get_nlp()
+    # Normalize spaces around parentheses to help detector
+    fulltext = re.sub(r'\s*\(\s*', ' (', fulltext)
+    fulltext = re.sub(r'\s*\)\s*', ') ', fulltext)
+
     doc = nlp(fulltext)
-    return {
-        abbr.text: abbr._.long_form.text
-        for abbr in doc._.abbreviations
-        if abbr._.long_form
-    }
+
+    acronym_map = {}
+
+    # --- Step 1: Try SciSpacy ---
+    for abbr in doc._.abbreviations:
+        longf = abbr._.long_form
+        if not longf:
+            continue
+        abbr_text = abbr.text.strip()
+        long_text = longf.text.strip()
+        if is_valid_acronym(abbr_text, long_text) and acronym_matches_longform(abbr_text, long_text):
+            acronym_map[abbr_text] = long_text
+
+    # --- Step 2: Regex fallback ---
+    # Capture patterns like "greenhouse gas emissions (GHG)"
+    fallback_matches = re.findall(
+        r'([A-Za-z][A-Za-z\s\-]+?)\s*\(\s*([A-Z]{2,})\s*\)', fulltext
+    )
+    for long_text, abbr_text in fallback_matches:
+        long_text = long_text.strip()
+        abbr_text = abbr_text.strip()
+        if abbr_text not in acronym_map and acronym_matches_longform(abbr_text, long_text):
+            acronym_map[abbr_text] = long_text
+
+    return acronym_map
 
 
 def expand_acronyms_in_text(text: str, acronym_map: dict) -> str:
