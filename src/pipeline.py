@@ -11,15 +11,19 @@ from src.ner_runner import predict_sections_multimodel
 from configs.domain_models import DOMAIN_MODELS
 
 
-def run_ner(domain, input_dir, output_dir, resume=True, file_batch_size=1000):
+def run_ner(domain, input_dir, output_dir, resume=True, file_batch_size=100):
     """
-    Run NER enrichment with batching and checkpoint.
-    Processes NIF files in small batches (e.g., 1k files) to avoid memory blowup.
+    Run NER enrichment by batching multiple papers together.
+    For each batch:
+     - Parse all .ttl files
+     - Expand acronyms
+     - Concatenate all sections
+     - Run NER across all sections at once
+     - Split results back per paper
     """
     os.makedirs(output_dir, exist_ok=True)
     checkpoint_dir = os.path.join(output_dir, "checkpoints")
     os.makedirs(checkpoint_dir, exist_ok=True)
-
     log_dir = os.path.join(output_dir, "logs")
     logger = setup_logger(log_dir, name=f"{domain}_ner")
 
@@ -47,73 +51,88 @@ def run_ner(domain, input_dir, output_dir, resume=True, file_batch_size=1000):
         logger.info(f"\n🧩 Processing batch {start // file_batch_size + 1} "
                     f"({len(batch_files)} files)...")
 
+        all_sections = []
+        paper_map = {}  # section_id → paper_path
+
+        # 1️⃣ Parse all papers in the batch
         for path in tqdm(batch_files, desc=f"Batch {start // file_batch_size + 1}"):
-            if path in processed:
-                continue
-
             try:
-                logger.info(f"🔍 Reading file: {path}")
-                # --- parse single NIF file ---
                 records = parse_nif_file(path, logger=logger)
-
                 if not records:
-                    logger.warning(f"⚠️ No sections found in {path}")
                     processed[path] = {"status": "empty"}
                     continue
 
-                df_sections = pd.DataFrame(records)
-                logger.debug(f"📊 Parsed sections DataFrame shape: {df_sections.shape}")
+                df = pd.DataFrame(records)
+                df = apply_acronym_expansion(df, logger=logger)
+                df["paper_path"] = path
 
-                df_expanded = apply_acronym_expansion(df_sections, logger=logger)
-                logger.debug(f"📖 Expanded acronym DataFrame shape: {df_expanded.shape}")
+                # Keep mapping to rebuild per-paper outputs later
+                for sid in df["section_id"].tolist():
+                    paper_map[sid] = path
 
-                # --- run NER ---
-                logger.info(f"🧠 Running NER on {len(df_expanded)} sections from {os.path.basename(path)}")
-                df_entities = predict_sections_multimodel(
-                    df_expanded,
-                    domain=domain,
-                    text_col="section_content_expanded",
-                    id_col="section_id",
-                    stride=10,
-                    batch_size=8,
-                    logger=logger,
-                )
-
-                print(df_entities)
-
-                logger.debug(f"🏷️ NER output shape: {df_entities.shape}")
-
-                # --- write results ---
-                base_name = os.path.basename(path).replace(".ttl", ".jsonl")
-                out_path = os.path.join(output_dir, base_name)
-                for _, row in df_entities.iterrows():
-                    append_jsonl(row.to_dict(), out_path)
-
-                processed[path] = {"status": "done"}
-                logger.info(f"✔️  Finished {path}")
-
+                all_sections.append(df)
             except Exception as e:
-                # 🔥 Full debug dump on error
-                tb_str = traceback.format_exc()
-                logger.error(f"⚠️ Error on {path}: {e}")
-                logger.debug(f"🔍 Full traceback:\n{tb_str}")
+                logger.error(f"⚠️ Error parsing {path}: {e}")
+                processed[path] = {"status": f"parse_error: {e}"}
 
-                # Add optional extra debugging info if partial data exists
-                try:
-                    logger.debug(f"Partial DF shapes: sections={df_sections.shape if 'df_sections' in locals() else 'n/a'}, "
-                                 f"expanded={df_expanded.shape if 'df_expanded' in locals() else 'n/a'}")
-                except Exception:
-                    pass
+        if not all_sections:
+            logger.warning("⚠️ No sections to process in this batch.")
+            continue
 
-                processed[path] = {"status": f"error: {e}"}
+        df_all = pd.concat(all_sections, ignore_index=True)
+        logger.info(f"📊 Combined batch: {len(df_all)} sections total")
 
-        # save after every batch
+        # 2️⃣ Run NER once for all sections in batch
+        try:
+            df_entities = predict_sections_multimodel(
+                df_all,
+                domain=domain,
+                text_col="section_content_expanded",
+                id_col="section_id",
+                stride=10,
+                batch_size=8,
+                logger=logger,
+            )
+        except Exception as e:
+            tb = traceback.format_exc()
+            logger.error(f"🔥 NER failed on batch: {e}")
+            logger.debug(tb)
+            continue
+
+        # 3️⃣ Group entities per paper and save
+        section_dict = {}
+        if not df_entities.empty:
+            section_dict = dict(zip(df_entities["section_id"], df_entities["entities"]))
+            logger.info(f"🧩 Grouping NER results per paper...")
+
+        for paper_path, group_df in df_all.groupby("paper_path"):
+            section_ids = group_df["section_id"].tolist()
+            # Keep only sections with entities
+            entities_subset = {
+                sid: section_dict.get(sid, [])
+                for sid in section_ids
+                if section_dict.get(sid)
+            }
+
+            if not entities_subset:
+                logger.info(f"⚪ No entities found for {paper_path} — skipping JSONL write.")
+                processed[paper_path] = {"status": "no_entities"}
+                continue
+
+            # Write only non-empty entity sections
+            base_name = os.path.basename(paper_path).replace(".ttl", ".jsonl")
+            out_path = os.path.join(output_dir, base_name)
+            for sid, ents in entities_subset.items():
+                append_jsonl({"section_id": sid, "entities": ents}, out_path)
+
+            processed[paper_path] = {"status": "done"}
+            logger.info(f"✔️ Written {len(entities_subset)} sections for {paper_path}")
+
+        # 4️⃣ Save checkpoint
         save_json(processed, checkpoint_file)
         logger.info(f"✅ Batch complete — total processed so far: {len(processed)} files.")
 
-    save_json(processed, checkpoint_file)
-    logger.info("🎉 All files processed successfully.")
-
+    logger.info("🎉 All batches processed successfully.")
 
 def main():
     parser = argparse.ArgumentParser(description="SciLake NER & Enrichment Pipeline")
