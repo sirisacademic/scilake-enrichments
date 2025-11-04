@@ -52,7 +52,7 @@ def get_model(model_info: Dict[str, Any], logger=None):
             "token-classification",
             model=AutoModelForTokenClassification.from_pretrained(name),
             tokenizer=AutoTokenizer.from_pretrained(name),
-            aggregation_strategy="simple",
+            aggregation_strategy="none",
             device=0 if torch.cuda.is_available() else -1,
         )
 
@@ -64,70 +64,247 @@ def get_model(model_info: Dict[str, Any], logger=None):
 # 2) RoBERTa Post-processing
 # ======================================================
 
-def postprocess_roberta(entities, text: Optional[str] = None):
-    """
-    Merge adjacent RoBERTa subtoken predictions while respecting 'Ġ' boundaries.
-    Fixes partial tokens like 'fer' → 'ferrofluid'.
-    """
-    if not entities:
-        return []
-
-    merged, buffer = [], None
+def process_roberta_output(pipeline_output, text):
+    
+    words = reconstruct_words_with_completion(pipeline_output, text)
+    
+    entities = merge_entities(words, text)
 
     for ent in entities:
-        tag = ent.get("entity_group", ent.get("entity", ""))
-        raw_word = ent["word"]
-        start_new = raw_word.startswith("Ġ")
+        start, end, word = ent['start'], ent['end'], ent['word']
+        if word.count("(") > word.count(")") and end < len(text) and text[end] == ")":
+            end += 1
+            word += ")"
+        elif word.count(")") > word.count("(") and start > 0 and text[start-1] == "(":
+            start -= 1
+            word = "(" + word
+        
+        ent["start"], ent["end"], ent["word"] = start, end, word
+        
+    return entities
 
-        # Clean the token text
-        word = raw_word.replace("Ġ", "").replace("##", "").strip()
-        start, end = ent.get("start"), ent.get("end")
-
-        if buffer is None:
-            buffer = ent.copy()
-            buffer.update(
-                {"word": word, "entity": tag, "start": start, "end": end, "start_new": start_new}
-            )
+def reconstruct_words_with_completion(pipeline_output, text):
+    """
+    Reconstruct complete words, detecting and fixing incomplete words
+    """
+    words = []
+    current_word = None
+    
+    for i, token_data in enumerate(pipeline_output):
+        # Skip special tokens
+        if token_data['word'] in ['<s>', '</s>', '<pad>']:
             continue
-
-        same_type = tag == buffer["entity"]
-        adjacent = (
-            isinstance(start, int)
-            and isinstance(buffer.get("end"), int)
-            and 0 <= start - buffer["end"] <= 2
-        )
-
-        has_space_or_punct = False
-        if text and isinstance(start, int) and isinstance(buffer.get("end"), int):
-            gap = text[buffer["end"]:start]
-            has_space_or_punct = bool(re.match(r"[\s\.,;:]", gap))
-
-        if same_type and adjacent and not start_new and not has_space_or_punct:
-            sep = "" if buffer["word"].endswith("-") else ""
-            buffer["word"] += sep + word
-            buffer["end"] = end
-            buffer["score"] = max(buffer["score"], ent["score"])
+        
+        # Check if new word (has Ġ prefix OR not consecutive index)
+        is_new_word = token_data['word'].startswith('Ġ')
+        
+        # ALSO check index continuity
+        if not is_new_word and current_word:
+            if 'last_index' in current_word:
+                # Multi-token word - check against last token's index
+                if token_data['index'] != current_word['last_index'] + 1:
+                    is_new_word = True
+            else:
+                # Single token word so far - check against its index
+                if token_data['index'] != current_word['index'] + 1:
+                    is_new_word = True
+        
+        if is_new_word:
+            if current_word:
+                # Check if word is complete before saving
+                current_word2 = current_word.copy()
+                current_word = complete_word_if_needed(current_word, text)
+                words.append(current_word)
+            
+            current_word = {
+                'word': token_data['word'].lstrip('Ġ'),
+                'entity': token_data['entity'],
+                'score': token_data['score'],
+                'start': token_data['start'],
+                'end': token_data['end'],
+                'index': token_data['index']
+            }
         else:
-            merged.append(buffer)
-            buffer = ent.copy()
-            buffer.update(
-                {"word": word, "entity": tag, "start": start, "end": end, "start_new": start_new}
-            )
+            # Continue current word (subword without Ġ AND consecutive index)
+            if current_word:
+                current_word['word'] += token_data['word']
+                current_word['end'] = token_data['end']
+                current_word['score'] = (current_word['score'] + token_data['score']) / 2
+                current_word['last_index'] = token_data['index']
+            else:
+                # First token
+                current_word = {
+                    'word': token_data['word'],
+                    'entity': token_data['entity'],
+                    'score': token_data['score'],
+                    'start': token_data['start'],
+                    'end': token_data['end'],
+                    'index': token_data['index']
+                }
+    
+    if current_word:
+        current_word2 = current_word.copy()
+        current_word = complete_word_if_needed(current_word, text)
+        words.append(current_word)
+    
+    return words
 
-    if buffer:
-        merged.append(buffer)
+def complete_word_if_needed(word_data, text): 
+    """
+    Check if word is incomplete and extend to full word boundary (both directions)
+    Keeps hyphens/underscores but removes parentheses and other punctuation
+    """
+    start = word_data['start']
+    end = word_data['end']
+    
+    # Check backward - are we starting mid-word?
+    if start > 0:
+        # Look backwards for word boundary
+        while start > 0 and (text[start-1].isalnum()):
+            start -= 1
+    
+    # Check forward - are we ending mid-word?
+    if end < len(text):
+        # Look forwards for word boundary
+        while end < len(text) and (text[end].isalnum()):
+            end += 1
+    
+    # Also strip any leading/trailing parentheses that might already be in the span
+    while start < end and text[start] in '()[]{}':
+        start += 1
+    while end > start and text[end-1] in '()[]{}':
+        end -= 1
+    
+    # Update word
+    word_data['word'] = text[start:end]
+    word_data['start'] = start
+    word_data['end'] = end
+    
+    return word_data
 
-    # Expand short fragments
-    for e in merged:
-        w = e["word"].lower()
-        if text and len(w) <= 4:
-            snippet = text[e["start"]: e["start"] + 30]
-            m = re.match(rf"{re.escape(w)}[a-zA-Z\-]{{3,}}", snippet)
-            if m:
-                e["word"] = m.group(0)
-        e["word"] = re.sub(r"\s+", " ", e["word"]).strip()
+def merge_entities(words, text):
+    """Merge words into multi-word entities based on BIO tags"""
+    entities = []
+    current_entity = None
 
-    return merged
+    for word in words:
+        if word['entity'].startswith('B-'):
+            entity_type = word['entity'][2:]
+            
+            if current_entity and current_entity['entity'] == entity_type:
+                index_gap = word.get('index', -999) - current_entity.get('last_index', current_entity.get('index', -999))
+                
+                # Check if consecutive OR has hyphen/underscore connector
+                if index_gap == 1:
+                    # Directly consecutive - merge
+                    gap = text[current_entity['end']:word['start']]
+                    current_entity['word'] = current_entity['word'] + gap + word['word']
+                    current_entity['end'] = word['end']
+                    current_entity['score'] = (current_entity['score'] + word['score']) / 2
+                    current_entity['last_index'] = word.get('last_index', word.get('index', -999))
+                elif index_gap == 2:
+                    # One token between - check if it's a connector
+                    gap = text[current_entity['end']:word['start']]
+                    if gap.strip() in ['-', '_', '–']:  # hyphen, underscore, en-dash
+                        # Merge including the connector
+                        current_entity['word'] = current_entity['word'] + gap + word['word']
+                        current_entity['end'] = word['end']
+                        current_entity['score'] = (current_entity['score'] + word['score']) / 2
+                        current_entity['last_index'] = word.get('last_index', word.get('index', -999))
+                    else:
+                        # Something else between - don't merge
+                        entities.append({k: v for k, v in current_entity.items() if k != 'last_index'})
+                        current_entity = {
+                            'entity': entity_type,
+                            'word': word['word'],
+                            'score': word['score'],
+                            'start': word['start'],
+                            'end': word['end'],
+                            'last_index': word.get('last_index', word.get('index', -999))
+                        }
+                else:
+                    # Too far apart - save old, start new
+                    entities.append({k: v for k, v in current_entity.items() if k != 'last_index'})
+                    current_entity = {
+                        'entity': entity_type,
+                        'word': word['word'],
+                        'score': word['score'],
+                        'start': word['start'],
+                        'end': word['end'],
+                        'last_index': word.get('last_index', word.get('index', -999))
+                    }
+            else:
+                if current_entity:
+                    entities.append({k: v for k, v in current_entity.items() if k != 'last_index'})
+                current_entity = {
+                    'entity': entity_type,
+                    'word': word['word'],
+                    'score': word['score'],
+                    'start': word['start'],
+                    'end': word['end'],
+                    'last_index': word.get('last_index', word.get('index', -999))
+                }
+                
+        elif word['entity'].startswith('I-'):
+            # Same logic for I- tags
+            if current_entity and word['entity'][2:] == current_entity['entity']:
+                index_gap = word.get('index', -999) - current_entity.get('last_index', current_entity.get('index', -999))
+                
+                
+                if index_gap == 1:
+                    # Consecutive
+                    gap = text[current_entity['end']:word['start']]
+                    current_entity['word'] = current_entity['word'] + gap + word['word']
+                    current_entity['end'] = word['end']
+                    current_entity['score'] = (current_entity['score'] + word['score']) / 2
+                    current_entity['last_index'] = word.get('last_index', word.get('index', -999))
+                elif index_gap == 2:
+                    # Check for connector
+                    gap = text[current_entity['end']:word['start']]
+                    if gap.strip() in ['-', '_', '–']:
+                        current_entity['word'] = current_entity['word'] + gap + word['word']
+                        current_entity['end'] = word['end']
+                        current_entity['score'] = (current_entity['score'] + word['score']) / 2
+                        current_entity['last_index'] = word.get('last_index', word.get('index', -999))
+                    else:
+                        if current_entity:
+                            entities.append({k: v for k, v in current_entity.items() if k != 'last_index'})
+                        current_entity = {
+                            'entity': word['entity'][2:],
+                            'word': word['word'],
+                            'score': word['score'],
+                            'start': word['start'],
+                            'end': word['end'],
+                            'last_index': word.get('last_index', word.get('index', -999))
+                        }
+                else:
+                    # Too far apart
+                    if current_entity:
+                        entities.append({k: v for k, v in current_entity.items() if k != 'last_index'})
+                    current_entity = {
+                        'entity': word['entity'][2:],
+                        'word': word['word'],
+                        'score': word['score'],
+                        'start': word['start'],
+                        'end': word['end'],
+                        'last_index': word.get('last_index', word.get('index', -999))
+                    }
+            else:
+                if current_entity:
+                    entities.append({k: v for k, v in current_entity.items() if k != 'last_index'})
+                current_entity = {
+                    'entity': word['entity'][2:],
+                    'word': word['word'],
+                    'score': word['score'],
+                    'start': word['start'],
+                    'end': word['end'],
+                    'last_index': word.get('last_index', word.get('index', -999))
+                }
+    
+    if current_entity:
+        entities.append({k: v for k, v in current_entity.items() if k != 'last_index'})
+    
+    return entities
 
 
 # ======================================================
@@ -280,7 +457,7 @@ def predict_entities_batch(
         # Defensive: ensure list length and structure
         preds_batch = preds_batch if isinstance(preds_batch, list) else []
         preds_batch = [
-            postprocess_roberta(preds, text=texts[i]) if i < len(texts) else []
+            process_roberta_output(preds, text=texts[i]) if i < len(texts) else []
             for i, preds in enumerate(preds_batch)
         ]
 
