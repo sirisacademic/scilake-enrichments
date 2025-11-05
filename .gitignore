@@ -213,6 +213,9 @@ pipeline_comparison_results/
 tmp/
 test/
 
+# LibreOffice / OpenOffice lock files
+.~lock.*#
+
 BKP*
 nohup.out
 

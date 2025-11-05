@@ -16,6 +16,10 @@ gliner==0.2.22                 # ✅ requires transformers <=4.51.0
 spacy>=3.7.2
 scispacy>=0.5.3
 
+# Semantic Entity Linking
+sentence-transformers>=2.2.0
+
 # Utils and logging
 protobuf<5.0.0
 loguru>=0.7.0
+

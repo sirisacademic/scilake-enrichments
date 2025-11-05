@@ -439,6 +439,18 @@ def predict_entities_batch(
             offset = offsets[i]
             sid = section_ids[i]
             for e in ents:
+            
+                entity_start = (e.get("start") or 0)
+                entity_end = (e.get("end") or 0)
+                final_start = entity_start + offset
+                final_end = entity_end + offset
+                
+                if logger:
+                    logger.debug(
+                        f"  Entity '{e.get('text')}': chunk_pos=({entity_start},{entity_end}) "
+                        f"+ offset={offset} → final=({final_start},{final_end})"
+                    )
+            
                 results.append(
                     {
                         "entity": (e.get("label") or "").lower(),
@@ -484,6 +496,18 @@ def predict_entities_batch(
                     clean_text = (
                         raw.replace(" ##", "").replace("Ġ", "").replace(" - ", "-").strip()
                     )
+                    
+                    entity_start = p.get("start") or 0
+                    entity_end = p.get("end") or 0
+                    final_start = entity_start + offset
+                    final_end = entity_end + offset
+                    
+                    if logger:
+                        logger.debug(
+                            f"  Entity '{clean_text}': chunk_pos=({entity_start},{entity_end}) "
+                            f"+ offset={offset} → final=({final_start},{final_end})"
+                        )
+                    
                     results.append(
                         {
                             "entity": p.get("entity_group", p.get("entity")),

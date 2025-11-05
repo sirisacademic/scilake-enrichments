@@ -2,12 +2,12 @@ import logging
 import os
 from datetime import datetime
 
-def setup_logger(log_dir, name="scilake"):
+def setup_logger(log_dir, name="scilake", debug=False):
     os.makedirs(log_dir, exist_ok=True)
     log_path = os.path.join(log_dir, f"{name}.log")
 
     logger = logging.getLogger(name)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG if debug else logging.INFO)
 
     # Avoid duplicate handlers
     if not logger.handlers:
@@ -20,6 +20,13 @@ def setup_logger(log_dir, name="scilake"):
         )
         fh.setFormatter(fmt)
         ch.setFormatter(fmt)
+
+        if debug:
+            fh.setLevel(logging.DEBUG)
+            ch.setLevel(logging.DEBUG)
+        else:
+            fh.setLevel(logging.INFO)
+            ch.setLevel(logging.INFO)
 
         logger.addHandler(fh)
         logger.addHandler(ch)

@@ -62,29 +62,25 @@ DOMAIN_MODELS = {
     },
 
     "energy": {
+        "gazetteer": {
+            "enabled": True,
+            "taxonomy_path": "taxonomies/energy/IRENA.tsv"
+        },
         "models": [
-            {
-                "name": "SIRIS-Lab/SciLake-Energy-GLiNER-medium",
-                "type": "gliner",
-                "threshold": 0.9,
-                "for": "energyStorage",
-            },
             {
                 "name": "SIRIS-Lab/SciLake-Energy-roberta-base",
                 "type": "roberta",
-                "threshold": 0.85,
-                "for": "energyType",
+                "threshold": 0.85
             },
         ],
         "labels": {
-            "gliner": ["EnergyStorage"],
-            "roberta": ["EnergyType"],
+            "roberta": ["EnergyType", "EnergyStorage"],
         },
         "kb": {
             "default": "IRENA energy taxonomy",
         },
     },
-
+    
     "maritime": {
         "models": [
             {
