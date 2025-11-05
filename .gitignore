@@ -207,4 +207,24 @@ marimo/_lsp/
 __marimo__/
 
 notebooks/
-outputs/energy_test/
+outputs/
+data/
+pipeline_comparison_results/
+tmp/
+test/
+
+BKP*
+nohup.out
+
+# Scripts for local tasks
+run_all_tests.sh
+test_energy_debug.sh
+test_energy.sh
+find_occurrences.py
+generate_tests_comparison.py
+irena_wikidata_enrichment.py
+jsonl2json.sh
+ner_log_analyzer.py
+
+
+
