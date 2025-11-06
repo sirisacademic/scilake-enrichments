@@ -112,12 +112,12 @@ python -m spacy download en_core_web_sm
 
 Run enrichment on all .ttl files in a domain folder:
 ```bash
-python src/pipeline.py \
-    --domain energy \
-    --input data/energy \
-    --output outputs/energy \
-    --step ner \
-    --batch_size 8
+python -m src.pipeline \
+  --domain energy \
+  --input data/energy \
+  --output outputs/energy \
+  --step ner \
+  --batch_size 8
 ```
 Options:
 | Flag                | Description                                                      |
@@ -132,7 +132,17 @@ Options:
 
 Example:
 ```bash
-python src/pipeline.py --domain ccam --input data/ccam --output outputs/ccam --step all
+python -m src.pipeline --domain ccam --input data/ccam --output outputs/ccam --step all
+```
+
+Run geotag:
+```bash
+python -m src.pipeline \
+  --domain energy \
+  --input data/energy \
+  --output outputs/energy \
+  --step geotagging \
+  --batch_size 8
 ```
 
 🧩 The pipeline automatically:
