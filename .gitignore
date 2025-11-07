@@ -216,6 +216,7 @@ test/
 # LibreOffice / OpenOffice lock files
 .~lock.*#
 
+*BKP*
 BKP*
 nohup.out
 

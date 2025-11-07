@@ -1,30 +1,41 @@
 """
-Semantic entity linking using multilingual-e5-base.
-Links NER entities to taxonomies via sentence context matching.
-Generic implementation supporting any taxonomy in TSV format.
+Entity linking using instruction-based embedding models.
+Uses instruction-based retrieval: queries have instructions, documents don't.
+Compatible with models like multilingual-e5-large-instruct.
 """
 
-from sentence_transformers import SentenceTransformer
 import numpy as np
 import pandas as pd
 import spacy
-from typing import Dict, List, Optional, Tuple
+from sentence_transformers import SentenceTransformer
+from typing import List, Dict, Optional, Tuple
 from pathlib import Path
 
-class SemanticLinker:
+
+class InstructLinker:
     def __init__(
         self, 
         taxonomy_path: str,
-        model_name: str = "intfloat/multilingual-e5-base",
-        threshold: float = 0.6,
+        model_name: str = "intfloat/multilingual-e5-large-instruct",
+        threshold: float = 0.7,
         context_window: int = 3,
         max_contexts: int = 3,
         use_sentence_context: bool = False,
         logger=None
     ):
         """
-        Initialize semantic linker with taxonomy.
+        Initialize instruction-based linker with taxonomy.
+        
+        Args:
+            taxonomy_path: Path to taxonomy TSV file
+            model_name: Instruction-based embedding model
+            threshold: Minimum similarity score for linking
+            context_window: Number of tokens around entity (for token-based contexts)
+            max_contexts: Maximum number of contexts to extract (sentences or token windows)
+            use_sentence_context: If True, use full sentences; if False, use token windows
+            logger: Optional logger instance
         """
+        self.model_name = model_name
         self.threshold = threshold
         self.context_window = context_window
         self.max_contexts = max_contexts
@@ -32,38 +43,35 @@ class SemanticLinker:
         self.logger = logger
         
         if self.logger:
-            self.logger.info(f"🤖 Loading sentence transformer: {model_name}")
+            self.logger.info(f"🤖 Loading model: {model_name}")
         
         self.model = SentenceTransformer(model_name)
         
         if self.logger:
-            self.logger.info("📝 Loading spaCy for sentence segmentation")
+            self.logger.info("📖 Loading spaCy for context extraction")
         
         self.nlp = spacy.load("en_core_web_sm", disable=["ner"])
         
-        # Build in-memory taxonomy index
         if self.logger:
-            self.logger.info(f"🏗️  Building taxonomy index from {taxonomy_path}")
+            self.logger.info(f"🗃️ Building taxonomy index from {taxonomy_path}")
         
-        self.taxonomy_index = self._build_taxonomy_index_centroid(taxonomy_path)
+        self.taxonomy_index = self._build_taxonomy_index(taxonomy_path)
         
         if self.logger:
             self.logger.info(
-                f"✅ Taxonomy index ready: {len(self.taxonomy_index['metadata'])} entries "
-                f"(context_window={context_window}, sentence_context={use_sentence_context})"
-                f"({self.taxonomy_index['embeddings'].shape[0]} embeddings)"
+                f"✅ Taxonomy ready: {len(self.taxonomy_index['metadata'])} entries "
+                f"(context_window={context_window}, max_contexts={max_contexts}, "
+                f"sentence_context={use_sentence_context})"
             )
-
-    def _build_taxonomy_index_centroid(self, taxonomy_path: str) -> Dict:
+    
+    def _get_detailed_instruct(self, task_description: str, query: str) -> str:
+        """Format query with instruction (e5-instruct format)"""
+        return f'Instruct: {task_description}\nQuery: {query}'
+    
+    def _build_taxonomy_index(self, taxonomy_path: str) -> Dict:
         """
-        Build in-memory index with embeddings for all taxonomy concepts + aliases.
-        Combines concept and aliases into a single centroid embedding.
-        
-        Returns:
-            {
-                'embeddings': np.array [N, 768],
-                'metadata': List[Dict] with taxonomy_id, matched_text, wikidata_id
-            }
+        Build taxonomy index with rich documents (NO instruction prefix).
+        Documents include: concept + description + aliases.
         """
         # Resolve path
         if not Path(taxonomy_path).is_absolute():
@@ -72,55 +80,64 @@ class SemanticLinker:
         
         df = pd.read_csv(taxonomy_path, sep='\t').fillna('')
         
-        embeddings = []
+        documents = []
         metadata = []
         
         for _, row in df.iterrows():
-            # Primary concept
-            concept = row['concept']
-            wikidata_id = row.get('wikidata_id', '')
+            # Build rich document
+            doc = row['concept']
             
-            # Encode the concept embedding (no prefix for symmetric similarity)
-            concept_emb = self.model.encode([concept], normalize_embeddings=True)[0]
+            # Add description if available
+            if row.get('description'):
+                doc += f". {row['description']}"
             
-            # Collect alias embeddings
-            alias_embeddings = [concept_emb]  # Start with the concept embedding
-            aliases = row.get('wikidata_aliases')
-            if pd.notna(aliases) and isinstance(aliases, str):
-                for alias in aliases.split(' | '):
-                    alias = alias.strip()
-                    if alias:
-                        # Generate embedding for alias (no prefix)
-                        alias_emb = self.model.encode([alias], normalize_embeddings=True)[0]
-                        alias_embeddings.append(alias_emb)
+            # Add aliases if available
+            if row.get('wikidata_aliases'):
+                aliases = row['wikidata_aliases'].replace(' | ', ', ')
+                doc += f". Also known as: {aliases}"
             
-            # Compute the centroid (average) of the concept and its aliases
-            centroid_emb = np.mean(alias_embeddings, axis=0)
-            embeddings.append(centroid_emb)
+            documents.append(doc)
             
-            # Store only one metadata entry per concept
             metadata.append({
                 'taxonomy_id': str(row['id']),
-                'matched_text': concept,
-                'wikidata_id': wikidata_id,
+                'concept': row['concept'],
+                'wikidata_id': row.get('wikidata_id', ''),
                 'type': row.get('type', '')
             })
         
         if self.logger:
-            self.logger.info(f"📊 Built index: {len(metadata)} concepts with centroid embeddings")
+            self.logger.info(f"📊 Encoding {len(documents)} taxonomy documents...")
+        
+        # Encode documents WITHOUT instruction
+        embeddings = self.model.encode(
+            documents,
+            normalize_embeddings=True,
+            show_progress_bar=True,
+            batch_size=32
+        )
         
         return {
             'embeddings': np.array(embeddings),
             'metadata': metadata
         }
-
+    
     def _extract_all_contexts(self, doc, entity_text: str) -> List[str]:
+        """
+        Extract contexts for entity occurrences (handles multi-word entities).
+        
+        Args:
+            doc: spaCy Doc object
+            entity_text: Entity surface form (can be multi-word)
+            
+        Returns:
+            List of unique contexts containing the entity (limited to max_contexts)
+        """
         entity_lower = entity_text.lower()
         contexts = []
         seen_positions = set()
         
         if self.use_sentence_context:
-            # Extract sentences containing entity
+            # Sentence-based extraction
             for sent in doc.sents:
                 if entity_lower in sent.text.lower():
                     if sent.start_char not in seen_positions:
@@ -150,45 +167,50 @@ class SemanticLinker:
                             break
         
         return contexts
-
-    def link_entity_all_contexts(
+    
+    def link_entity_with_contexts(
         self, 
-        entity_text: str, 
+        entity_text: str,
         contexts: List[str],
-        taxonomy_source: str = "Taxonomy"
+        taxonomy_source: str = "IRENA"
     ) -> Optional[List[Dict]]:
         """
-        Link entity using centroid of all context embeddings (symmetric similarity).
+        Link entity using contexts (if available).
         
         Args:
             entity_text: Entity surface form
-            contexts: List of contexts (strings) containing the entity
-            taxonomy_source: Name of taxonomy source for linking metadata (e.g., "IRENA", "UBERON")
+            contexts: List of context strings
+            taxonomy_source: Name of taxonomy (e.g., "IRENA")
             
         Returns:
             List of linking dicts, or None if below threshold
         """
-        if not contexts:
-            return None
+        # Build query text
+        if contexts and self.max_contexts > 0:
+            # Limit to self.max_contexts contexts to avoid exceeding token limit
+            context_examples = "\n".join([f"- {ctx}" for ctx in contexts[:self.max_contexts]])
+            query_text = f"{entity_text}\n\nExample occurrences:\n{context_examples}"
+            task = f'Given the term "{entity_text}" with usage examples, retrieve the taxonomy entry that matches this term'
+        else:
+            query_text = entity_text
+            task = f'Given the term "{entity_text}", retrieve the taxonomy entry that matches this term'
         
-        # Generate embeddings for all contexts (no prefix - symmetric similarity)
-        context_embeddings = []
-        for context in contexts:
-            context_emb = self.model.encode(
-                context,
-                normalize_embeddings=True,
-                show_progress_bar=False
-            )
-            context_embeddings.append(context_emb)
+        # Add instruction
+        query = self._get_detailed_instruct(task, query_text)
         
-        # Compute centroid by averaging the embeddings
-        centroid_emb = np.mean(context_embeddings, axis=0)
+        # Encode query
+        query_emb = self.model.encode(
+            query,
+            normalize_embeddings=True,
+            show_progress_bar=False
+        )
         
-        # Compute similarity with taxonomy index
-        scores = centroid_emb @ self.taxonomy_index['embeddings'].T
+        # Compute similarities
+        scores = query_emb @ self.taxonomy_index['embeddings'].T
         best_idx = int(scores.argmax())
         best_score = float(scores[best_idx])
         
+        # Check threshold
         if best_score < self.threshold:
             if self.logger:
                 self.logger.debug(
@@ -200,7 +222,7 @@ class SemanticLinker:
         
         if self.logger:
             self.logger.debug(
-                f"✅ '{entity_text}' → '{match['matched_text']}' "
+                f"✅ '{entity_text}' → '{match['concept']}' "
                 f"({taxonomy_source}:{match['taxonomy_id']}, score={best_score:.3f})"
             )
         
@@ -208,27 +230,27 @@ class SemanticLinker:
         linking = [{
             'source': taxonomy_source,
             'id': match['taxonomy_id'],
-            'name': match['matched_text'],
+            'name': match['concept'],
             'score': best_score
         }]
         
         # Add Wikidata if available
-        if match['wikidata_id'] and isinstance(match['wikidata_id'], str):
+        if match['wikidata_id']:
             wd_id = match['wikidata_id'].split('/')[-1]
             linking.append({
                 'source': 'Wikidata',
                 'id': wd_id,
-                'name': match['matched_text']
+                'name': match['concept']
             })
         
         return linking
-
+    
     def link_entities_in_section(
         self,
         section_text: str,
         entities: List[Dict],
         cache: Dict,
-        taxonomy_source: str = "Taxonomy"
+        taxonomy_source: str = "IRENA"
     ) -> Tuple[List[Dict], Dict]:
         """
         Link all entities in a section, using cache.
@@ -237,7 +259,7 @@ class SemanticLinker:
             section_text: Full section text
             entities: List of entity dicts from NER
             cache: Linking cache {entity_text: {linking, contexts}}
-            taxonomy_source: Name of taxonomy source (e.g., "IRENA", "UBERON")
+            taxonomy_source: Name of taxonomy (e.g., "IRENA")
             
         Returns:
             (enriched_entities, updated_cache)
@@ -259,7 +281,7 @@ class SemanticLinker:
             if entity_text in cache:
                 if self.logger:
                     self.logger.debug(f"💾 Cache hit for '{entity_text}'")
-                    
+                
                 entity_copy = entity.copy()
                 entity_copy['linking'] = cache[entity_text]['linking']
                 enriched.append(entity_copy)
@@ -268,32 +290,23 @@ class SemanticLinker:
                     links_added += 1
                 continue
             
-            # Extract all contexts for this entity in the section text
+            # Extract contexts
+            contexts = []
             doc = self.nlp(section_text)
             contexts = self._extract_all_contexts(doc, entity['text'])
-
-            # Deduplicate while preserving order
-            contexts = list(dict.fromkeys(contexts))
-
-            if self.logger:
-                self.logger.debug(f"📍 Found {len(contexts)} occurrences of '{entity['text']}'")
-
-            if not contexts:
-                if self.logger:
-                    self.logger.debug(f"⚠️  Could not extract context for '{entity['text']}'")
-                enriched.append(entity)
-                cache_misses += 1
-                continue
+            contexts = list(dict.fromkeys(contexts))  # Deduplicate
             
-            # Link using centroid of all contexts
-            linking = self.link_entity_all_contexts(entity['text'], contexts, taxonomy_source)
-
+            if self.logger:
+                self.logger.debug(f"🔍 Found {len(contexts)} occurrences of '{entity['text']}'")
+            
+            # Link entity
+            linking = self.link_entity_with_contexts(entity['text'], contexts, taxonomy_source)
+            
             # Cache result (even if None)
             cache[entity_text] = {
                 'linking': linking,
                 'contexts': contexts
             }
-            
             cache_misses += 1
             
             # Add linking to entity

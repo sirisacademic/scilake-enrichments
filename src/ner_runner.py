@@ -343,7 +343,7 @@ def chunk_text(text: str, max_tokens: int = 512, stride: int = 50):
 # 4) Entity Merging
 # ======================================================
 
-def merge_adjacent_entities(entities: List[Dict[str, Any]], max_gap: int = 2):
+def merge_adjacent_entities(entities: List[Dict[str, Any]], max_gap: int = 1):
     """Merge nearby entities of the same type and model."""
     if not entities:
         return []

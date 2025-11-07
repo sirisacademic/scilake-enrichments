@@ -11,6 +11,17 @@ from src.ner_runner import predict_sections_multimodel
 from src.gazetteer_linker import GazetteerLinker
 from configs.domain_models import DOMAIN_MODELS
 
+def log_cache_stats(cache: dict, logger):
+    """Log cache statistics"""
+    if not cache:
+        return
+    
+    total = len(cache)
+    rejected = sum(1 for v in cache.values() if v.get('debug', {}).get('rejected', False))
+    linked = total - rejected
+    
+    logger.info(f"📊 Cache stats: {total} total, {linked} linked ({100*linked/total:.1f}%), {rejected} rejected ({100*rejected/total:.1f}%)")
+
 def merge_gazetteer_and_ner(df_gaz, df_ner, logger):
     """Merge gazetteer and NER entities, removing overlaps."""
     merged = []
@@ -207,55 +218,140 @@ def run_el(
     domain: str,
     ner_output_dir: str,
     el_output_dir: str,
+    linker_type: str = "auto",
+    model_name: str = "intfloat/multilingual-e5-base",
     taxonomy_path: str = "taxonomies/energy/IRENA.tsv",
     taxonomy_source: str = "IRENA",
-    threshold: float = 0.86,
+    threshold: float = 0.7,
+    context_window: int = 3,
+    max_contexts: int = 3,
+    use_sentence_context: bool = False,
+    use_context_for_retrieval: bool = False,
+    # Reranker-specific parameters
+    reranker_llm: str = "Qwen/Qwen3-1.7B",
+    reranker_top_k: int = 5,
+    reranker_fallbacks: bool = True,
+    reranker_thinking: bool = False,
     resume: bool = True,
     debug: bool = False
 ):
     """
-    Run Entity Linking on NER outputs using semantic similarity.
+    Run Entity Linking on NER outputs.
     
     Args:
         domain: Domain name
         ner_output_dir: Directory with NER .jsonl outputs
         el_output_dir: Output directory for linked entities
+        linker_type: Type of linker (auto | semantic | instruct | reranker)
+        model_name: Embedding model name (used for semantic/instruct/reranker retrieval)
         taxonomy_path: Path to taxonomy TSV file
-        taxonomy_source: Name of taxonomy (e.g., "IRENA", "UBERON") for metadata
-        threshold: Similarity threshold for linking
+        taxonomy_source: Name of taxonomy (e.g., "IRENA", "UBERON")
+        threshold: Similarity threshold for embedding retrieval
+        context_window: Number of tokens to consider in context window (0 = no context)
+        max_contexts: Max number of contexts to extract
+        use_sentence_context: Use full sentences instead of token windows
+        use_context_for_retrieval: Use context in embedding retrieval (default: False)
+                                   LLM always uses context regardless of this setting
+        reranker_llm: LLM model for reranker linker
+        reranker_top_k: Number of candidates for reranker
+        reranker_fallbacks: Add top-level fallbacks in reranker
+        reranker_thinking: Enable LLM thinking mode (slower but more accurate)
         resume: Resume from checkpoint
         debug: Enable debug logging
     """
-    from src.semantic_linker import SemanticLinker
-    
     os.makedirs(el_output_dir, exist_ok=True)
     checkpoint_dir = os.path.join(el_output_dir, "checkpoints")
     os.makedirs(checkpoint_dir, exist_ok=True)
     log_dir = os.path.join(el_output_dir, "logs")
     logger = setup_logger(log_dir, name=f"{domain}_el", debug=debug)
     
+    # Auto-detect linker type from model name
+    if linker_type == "auto":
+        if "qwen" in model_name.lower() or "qwen" in reranker_llm.lower():
+            linker_type = "reranker"
+        elif "instruct" in model_name.lower():
+            linker_type = "instruct"
+        else:
+            linker_type = "semantic"
+    
     logger.info(f"🔗 Starting Entity Linking for domain={domain}")
     logger.info(f"NER input: {ner_output_dir}")
     logger.info(f"EL output: {el_output_dir}")
+    logger.info(f"Linker type: {linker_type}")
     logger.info(f"Taxonomy: {taxonomy_path} (source: {taxonomy_source})")
     logger.info(f"Threshold: {threshold}")
-    
+    logger.info(f"Context window: {context_window} {'tokens' if context_window > 0 else '(disabled)'}")
+    logger.info(f"Max. contexts: {max_contexts}")
+    if context_window > 0:
+        logger.info(f"Context type: {'sentences' if use_sentence_context else 'token windows'}")
+
     # Load checkpoint
     checkpoint_file = os.path.join(checkpoint_dir, "processed.json")
     processed = load_json(checkpoint_file, default={})
     logger.info(f"📦 Checkpoint loaded: {len(processed)} files already processed")
     
     # Load cache
-    cache_file = os.path.join(el_output_dir, "linking_cache.json")
+    cache_file = os.path.join(el_output_dir, "cache/linking_cache.json")
     cache = load_json(cache_file, default={})
     logger.info(f"💾 Cache loaded: {len(cache)} entries")
+
+    # Initialize linker based on type
+    if linker_type == "reranker":
+        from src.reranker_linker import RerankerLinker
+        
+        logger.info(f"Reranker configuration:")
+        logger.info(f"  Embedding model: {model_name}")
+        logger.info(f"  LLM model: {reranker_llm}")
+        logger.info(f"  Top-k candidates: {reranker_top_k}")
+        logger.info(f"  Context for retrieval: {use_context_for_retrieval}")  # NEW
+        logger.info(f"  Top-level fallbacks: {reranker_fallbacks}")
+        logger.info(f"  Thinking mode: {reranker_thinking}")
+        
+        linker = RerankerLinker(
+            taxonomy_path=taxonomy_path,
+            domain=domain,
+            embedding_model_name=model_name,
+            llm_model_name=reranker_llm,
+            threshold=threshold,
+            context_window=context_window,
+            max_contexts=max_contexts,
+            use_sentence_context=use_sentence_context,
+            use_context_for_retrieval=use_context_for_retrieval,  # NEW
+            top_k_candidates=reranker_top_k,
+            add_top_level_fallbacks=reranker_fallbacks,
+            enable_thinking=reranker_thinking,
+            logger=logger
+        )
     
-    # Initialize linker (builds taxonomy index in memory)
-    linker = SemanticLinker(
-        taxonomy_path=taxonomy_path,
-        threshold=threshold,
-        logger=logger
-    )
+    elif linker_type == "instruct":
+        from src.instruct_linker import InstructLinker
+        
+        logger.info(f"Instruct model: {model_name}")
+        
+        linker = InstructLinker(
+            model_name=model_name,
+            taxonomy_path=taxonomy_path,
+            threshold=threshold,
+            context_window=context_window,
+            max_contexts=max_contexts,
+            use_sentence_context=use_sentence_context,
+            logger=logger
+        )
+    
+    else:  # semantic
+        from src.semantic_linker import SemanticLinker
+        
+        logger.info(f"Semantic model: {model_name}")
+        
+        linker = SemanticLinker(
+            model_name=model_name,
+            taxonomy_path=taxonomy_path,
+            threshold=threshold,
+            context_window=context_window,
+            max_contexts=max_contexts,
+            use_sentence_context=use_sentence_context,
+            logger=logger
+        )
     
     # Find NER output files
     ner_files = [
@@ -265,7 +361,7 @@ def run_el(
     ]
     remaining = [f for f in ner_files if f not in processed]
     logger.info(f"📂 Found {len(ner_files)} NER files ({len(remaining)} pending)")
-    
+       
     # Load expanded sections directory (for text context)
     expanded_dir = os.path.join(os.path.dirname(ner_output_dir), "sections")
     
@@ -273,7 +369,9 @@ def run_el(
         logger.error(f"❌ Expanded directory not found: {expanded_dir}")
         logger.error("   Run NER step first to generate expanded sections")
         return
-    
+
+    files_processed = 0
+
     # Process each file
     for ner_file in tqdm(remaining, desc="Linking entities"):
         try:
@@ -313,7 +411,12 @@ def run_el(
                 
                 # Link entities with taxonomy source
                 enriched_entities, cache = linker.link_entities_in_section(
-                    section_text, entities, cache, taxonomy_source
+                    section_text, 
+                    entities, 
+                    cache, 
+                    taxonomy_source,
+                    filename=os.path.basename(ner_file),
+                    section_id=section_id
                 )
                                
                 # Count statistics
@@ -346,6 +449,21 @@ def run_el(
                 f"({100*total_linked/total_entities:.1f}%)"
             )
             
+            # Save checkpoint and cache
+            save_json(processed, checkpoint_file)
+            
+            files_processed += 1
+            
+            # Save cache every 100 files
+            if files_processed % 100 == 0:
+                save_json(cache, cache_file)
+                if logger:
+                    logger.info(f"💾 Cache checkpoint saved: {len(cache)} entries")
+                    
+            # After every 500 files save stats
+            if files_processed % 500 == 0:
+                log_cache_stats(cache, logger)
+            
         except Exception as e:
             logger.error(f"❌ Error processing {ner_file}: {e}")
             import traceback
@@ -375,9 +493,33 @@ def main():
     parser.add_argument("--input", help="Path to input NIF directory (for NER step)")
     parser.add_argument("--output", required=True, help="Path to output directory")
     parser.add_argument("--step", default="all", help="ner | el | all")
-    parser.add_argument("--threshold", type=float, default=0.86, help="EL similarity threshold")
+    
+    # Entity Linking arguments
+    parser.add_argument("--threshold", type=float, default=0.7, help="EL similarity threshold")
+    parser.add_argument("--use_sentence_context", action="store_true", help="Use sentences instead of token windows")
+    parser.add_argument("--use_context_for_retrieval", action="store_true",
+                       help="Use context in embedding retrieval (stage 1). LLM (stage 2) always uses context.")
+    parser.add_argument("--max_contexts", type=int, default=3, help="Max number of contexts to extract")
+    parser.add_argument("--context_window", type=int, default=3, help="EL similarity context window")
+    parser.add_argument("--el_model_name", default="intfloat/multilingual-e5-base", help="Model for entity linking")
     parser.add_argument("--taxonomy", default="taxonomies/energy/IRENA.tsv", help="Path to taxonomy TSV")
     parser.add_argument("--taxonomy_source", default="IRENA", help="Taxonomy source name (e.g., IRENA, UBERON)")
+    
+    # Linker type arguments
+    parser.add_argument("--linker_type", default="auto", 
+                       help="Linker type: auto | semantic | instruct | reranker")
+    
+    # NEW: Reranker-specific arguments
+    parser.add_argument("--reranker_llm", default="Qwen/Qwen3-1.7B", 
+                       help="LLM model for reranker linker")
+    parser.add_argument("--reranker_top_k", type=int, default=5, 
+                       help="Number of candidates for reranker")
+    parser.add_argument("--reranker_fallbacks", action="store_true", default=True,
+                       help="Add top-level fallbacks in reranker")
+    parser.add_argument("--reranker_thinking", action="store_true", 
+                       help="Enable LLM thinking mode (slower but more accurate)")
+    
+    # Other arguments
     parser.add_argument("--resume", action="store_true", help="Resume from checkpoint")
     parser.add_argument("--batch_size", type=int, default=1000, help="Files per batch (for NER)")
     parser.add_argument("--debug", action="store_true", help="Enable debug logging")
@@ -400,11 +542,21 @@ def main():
     elif args.step == "el":
         run_el(
             domain=args.domain,
+            model_name=args.el_model_name,
             ner_output_dir=os.path.join(args.output, "ner"),
             el_output_dir=os.path.join(args.output, "el"),
             taxonomy_path=args.taxonomy,
             taxonomy_source=args.taxonomy_source,
+            use_sentence_context=args.use_sentence_context,
+            use_context_for_retrieval=args.use_context_for_retrieval,
             threshold=args.threshold,
+            context_window=args.context_window,
+            max_contexts=args.max_contexts,
+            linker_type=args.linker_type,
+            reranker_llm=args.reranker_llm,
+            reranker_top_k=args.reranker_top_k,
+            reranker_fallbacks=args.reranker_fallbacks,
+            reranker_thinking=args.reranker_thinking,
             resume=args.resume,
             debug=args.debug
         )
@@ -428,11 +580,21 @@ def main():
         print("\n🔹 Step 2/2: Running Entity Linking...")
         run_el(
             domain=args.domain,
+            model_name=args.el_model_name,
             ner_output_dir=os.path.join(args.output, "ner"),
             el_output_dir=os.path.join(args.output, "el"),
             taxonomy_path=args.taxonomy,
             taxonomy_source=args.taxonomy_source,
+            use_sentence_context=args.use_sentence_context,
+            use_context_for_retrieval=args.use_context_for_retrieval,
             threshold=args.threshold,
+            context_window=args.context_window,
+            max_contexts=args.max_contexts,
+            linker_type=args.linker_type,
+            reranker_llm=args.reranker_llm,
+            reranker_top_k=args.reranker_top_k,
+            reranker_fallbacks=args.reranker_fallbacks,
+            reranker_thinking=args.reranker_thinking,
             resume=args.resume,
             debug=args.debug
         )
