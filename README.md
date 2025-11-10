@@ -109,7 +109,32 @@ python src/pipeline.py \
 | `--batch_size` | Files per batch (for checkpointing) | 1000 |
 | `--resume` | Resume from checkpoint if interrupted | Flag |
 
-**Example:**
+**🧬 Run NER**
+
+```bash
+python -m src.pipeline --domain energy --input data/energy --output outputs/energy --step ner --batch_size 8
+```
+
+**🌍 Run Geotagging**
+
+Example:
+```bash
+python -m src.pipeline \
+  --domain energy \
+  --input data/energy \
+  --output outputs/energy \
+  --step geotagging \
+  --batch_size 8
+```
+You can then link geotagged outputs:
+```
+python -m src.geo_linker \
+  --input_dir outputs/energy/geotagging-ner \
+  --output_dir outputs/energy/geotagging-linked
+
+```
+
+**🏛️ Run Affiliation Enrichment (AffilGood)**
 ```bash
 python -m src.pipeline --domain energy --input data/energy_v2 --output outputs/energy --step affiliations --batch_size 8
 ```
