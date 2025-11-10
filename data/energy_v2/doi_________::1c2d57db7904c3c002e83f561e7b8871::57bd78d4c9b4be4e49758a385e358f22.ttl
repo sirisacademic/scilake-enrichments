@@ -1,0 +1,565 @@
+@prefix lkg-res: <http://lkg.lynx-project.eu/res/> .
+@prefix eli:   <http://data.europa.eu/eli/ontology#> .
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix itsrdf: <http://www.w3.org/2005/11/its/rdf#> .
+@prefix lkg:   <http://lkg.lynx-project.eu/def/> .
+@prefix skos:  <http://www.w3.org/2004/02/skos/core#> .
+@prefix nif:   <http://persistence.uni-leipzig.org/nlp2rdf/ontologies/nif-core#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dbo:   <http://dbpedia.org/ontology/> .
+@prefix qont:  <http://qurator-projekt.de/ontology/> .
+@prefix nif-ann: <http://persistence.uni-leipzig.org/nlp2rdf/ontologies/nif-annotation#> .
+@prefix dct:   <http://purl.org/dc/terms/> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix dbr:   <http://dbpedia.org/resource/> .
+@prefix sci-res: <http://scilake-projekt.eu/res/> .
+@prefix foaf:  <http://xmlns.com/foaf/0.1/> .
+@prefix scilake: <http://scilake-projekt.eu/ontology/> .
+
+<http://scilake-project.eu/res/850f5102/affiliation/aff1>
+        a                           scilake:ScientificAffiliation ;
+        nif:referenceContext        <http://qurator-projekt.de/res/> ;
+        dct:source                  "" ;
+        qont:metadata               []  ;
+        qont:metadata               []  ;
+        qont:metadata               []  ;
+        qont:metadata               []  ;
+        qont:metadata               []  ;
+        qont:metadata               []  ;
+        scilake:affCountry          "USA" ;
+        scilake:affFailAffiliation  false ;
+        scilake:affKey              "aff1" ;
+        scilake:affPostCode         "20771" ;
+        scilake:affRawAffiliationString
+                "\n\t\t\t\t\t\t\t\tNASA Goddard Space Flight Center\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t20771\n\t\t\t\t\t\t\t\t\tGreenbelt\n\t\t\t\t\t\t\t\t\tMD\n\t\t\t\t\t\t\t\t\tUSA\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t" ;
+        scilake:affRegion           "MD" ;
+        scilake:affSettlement       "Greenbelt" ;
+        scilake:has_institution     <http://scilake-project.eu/res/850f5102/location/NASA_Goddard_Space_Flight_Center> .
+
+<http://scilake-project.eu/res/850f5102/location/Science_Systems_and_Applications_Inc>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/850f5102> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        qont:metadata         []  ;
+        scilake:locationName  "Science Systems and Applications Inc" .
+
+<http://scilake-project.eu/res/850f5102/author/cf80b183>
+        a                        scilake:ScientificAuthor ;
+        nif:referenceContext     <http://scilake-project.eu/res/f8ea29ca> ;
+        dct:source               "" ;
+        qont:metadata            []  ;
+        scilake:corresp          false ;
+        scilake:firstname        "Thomas" ;
+        scilake:has_affiliation  <http://scilake-project.eu/res/850f5102/affiliation/aff2> ;
+        scilake:lastname         "Wagner" ;
+        scilake:valid            false .
+
+<http://scilake-project.eu/res/850f5102#offset_29281_32961>
+        a                         nif:OffsetBasedString , <dfki:ScientificDocumentPart> ;
+        nif:anchorOf              "In this study, we developed a new method by coupling the 1D CTM-independent methodology (Liu et al., 2022), MISATEAM, with the 2D divergence approach (Beirle et al., 2019) to generate maps of NO x emissions across US cities, using TROPOMI NO 2 observations. This coupled method, 2D MISATEAM, is suitable for sources within polluted backgrounds. Our initial application of the approach used synthetic NU-WRF-generated tropospheric NO 2 VCDs over the continental United States to evaluate the method. The evaluation yielded robust agreement with the NU-WRF given values, presenting a high correlation coefficient (R = 0.99) and a minimal bias (NMB = −0.01). Subsequently, we applied 2D MISATEAM to TROPOMI NO 2 retrievals across the US cities from 2018 to 2021. We estimated NO x emissions for 39 US cities. Our resulting total city emissions estimates align strongly with NEI (R = 0.90), albeit with a moderate bias (NMB = −0.24). Our derived emissions delineate differences in spatial patterns across certain cities, implying potential inaccuracies in emission allocation and/or missing sources in NEI. Our current estimates suggest that uncertainties in NO x emissions arising from 2D MISATEAM method itself are approximately 20 % for a large and mid-size US city. Additional uncertainties stem primarily from errors in the reanalysis wind dataset as well as the TROPOMI NO 2 retrieval, increasing the overall uncertainties of resulting emissions to about 47 %. The 2D MISATEAM algorithm is contingent on 1D MIS-ATEAM for NO x lifetime estimation. The 1D MISATEAM algorithm relies on NO 2 observations under calm wind conditions to infer lifetimes, which in turn influences the temporal resolution of the emissions data we can confidently derive. Our investigation indicates that typically 3 to 6 months of TROPOMI data is required to ensure comprehensive data coverage of calm-wind NO 2 observations for urban emissions analysis. Therefore, we advise caution when considering the use of 2D MISATEAM for emission estimations over periods shorter than 3 months, unless we want to use prescribed or externally sourced lifetimes. In our future research, we plan to extend the application of 2D MISATEAM to observations from geostationary satellites to estimate diurnal variations in urban emissions. Geostationary sensors include the South Korean Geostationary Environmental Monitoring Spectrometer (GEMS; Kim et al., 2012), NASA's Tropospheric Emissions: Monitoring of Pollution (TEMPO; Chance et al., 2012), and ESA's Sentinel-4 (Ingmann et al., 2012). These instruments possess spatial resolutions similar to TROPOMI and the validation of NU-WRF simulation (4 km) utilized in this study. For applications based on geostationary satellites with local observation time extending beyond the early afternoon time frame of TROPOMI in this study, further exploration into the impact of the diurnal cycle of NO x lifetime will be necessary. When applying the 2D MISATEAM to cities globally, particularly in non-OECD countries, it may be necessary to adjust population thresholds to reflect local demographics and urban profiles. We advise removing cities with emissions signals that are too weak following this study, i.e., b calm / mean VCDs > 50 % (Sect. S2), as such a high ratio can introduce significant uncertainties associated with determined background b calm . In the next phase of our work, we will strive to harmonize bottom-up and satellite-derived urban emissions estimates to produce a fused emission inventory (Liu et al., 2018). This will enable the provision of timely NO x emissions estimates that will be of value to both air quality and climate modeling communities." ;
+        nif:beginIndex            "29281"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "32961"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/850f5102> ;
+        dct:section_number        "4" ;
+        dct:source                "" ;
+        dct:title                 "Conclusions" ;
+        qont:LabelUnit            [ a       qont:Label ;
+                                    <dfki:ScientificDocumentSection>
+                                            "introduction"
+                                  ] ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "section" .
+
+<http://scilake-project.eu/res/850f5102/affiliation/aff6>
+        a                           scilake:ScientificAffiliation ;
+        nif:referenceContext        <http://qurator-projekt.de/res/> ;
+        dct:source                  "" ;
+        qont:metadata               []  ;
+        qont:metadata               []  ;
+        scilake:affCountry          "USA" ;
+        scilake:affFailAffiliation  false ;
+        scilake:affKey              "aff6" ;
+        scilake:affPostCode         "22030" ;
+        scilake:affRawAffiliationString
+                "\n\t\t\t\t\t\t\t\tCenter for Spatial Information Science and Systems\n\t\t\t\t\t\t\t\tGeorge Mason University\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t22030\n\t\t\t\t\t\t\t\t\tFairfax\n\t\t\t\t\t\t\t\t\tVA\n\t\t\t\t\t\t\t\t\tUSA\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t" ;
+        scilake:affRegion           "VA" ;
+        scilake:affSettlement       "Fairfax" ;
+        scilake:has_department      <http://scilake-project.eu/res/850f5102/location/Center_for_Spatial_Information_Science_and_Systems> ;
+        scilake:has_institution     <http://scilake-project.eu/res/850f5102/location/George_Mason_University> .
+
+<http://scilake-project.eu/res/850f5102/affiliation/aff0>
+        a                           scilake:ScientificAffiliation ;
+        nif:referenceContext        <http://qurator-projekt.de/res/> ;
+        dct:source                  "" ;
+        qont:metadata               []  ;
+        qont:metadata               []  ;
+        qont:metadata               []  ;
+        scilake:affCountry          "USA" ;
+        scilake:affFailAffiliation  false ;
+        scilake:affKey              "aff0" ;
+        scilake:affPostCode         "21251" ;
+        scilake:affRawAffiliationString
+                "\n\t\t\t\t\t\t\t\tGoddard Earth Sciences Technology and Research (GESTAR) II\n\t\t\t\t\t\t\t\tMorgan State University\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t21251\n\t\t\t\t\t\t\t\t\tBaltimore\n\t\t\t\t\t\t\t\t\tMD\n\t\t\t\t\t\t\t\t\tUSA\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t" ;
+        scilake:affRegion           "MD" ;
+        scilake:affSettlement       "Baltimore" ;
+        scilake:has_department      <http://scilake-project.eu/res/850f5102/location/Goddard_Earth_Sciences_Technology_and_Research_(GESTAR)_II> ;
+        scilake:has_institution     <http://scilake-project.eu/res/850f5102/location/Morgan_State_University> .
+
+<http://scilake-project.eu/res/850f5102#offset_18790_20676>
+        a                         <dfki:ScientificDocumentPart> , nif:OffsetBasedString ;
+        nif:anchorOf              "We compare MISATEAM-derived NO x emissions E NU-WRF with given emissions E NU-WRF to validate 2D MISATEAM. The validation indicates the uncertainty of MISATEAM assuming a best-case scenario with perfect knowledge of the winds and errorless satellite NO 2 retrievals. Figure 2 compares the total emissions from the two datasets for the 33 cities (Table S1). The correlation coefficient is 0.99, which indicates an excellent agreement between the two datasets. The overall bias computed over all valid cities is generally low (NMB = −0.01), and the RMSE is also low (0.21 kg s −1 ). We assess 2D MISATEAM's performance to infer the spatial distribution of emissions. Figure 3 displays the emission maps around the city of Jacksonville, Florida. E NU-WRF (Fig. 3c) and E NU-WRF (Fig. 3d) show a high intracity spatial correlation R intracity of 0.92. This good consistency is substantially better than the comparison of E NU-WRF with the tropospheric NO 2 VCD NU-WRF (Fig. 3a; R intracity = 0.75), which is often considered to be a reasonable spatial proxy for emissions locations. We further compare the correlation with the comparison of E NU-WRF with NU-WRF under calm wind conditions (Fig. 3b). We use the threshold of 2 m s −1 as the criterion for calm wind, allowing for the attainment of an adequate sample size. This threshold reduces the error associated with transport by increasing R intracity from 0.75 (Fig. 3a) to 0.80 (Fig. 3b). However, this correlation is still smaller than that between E NU-WRF and E NU-WRF , suggesting that 2D MISATEAM is successful in allocating emissions by accounting for NO x transport. Similar enhanced correlations are observed for all 33 cities. Figure 2 illustrates R intracity of E NU-WRF and E NU-WRF for individual cities (0.88 ± 0.06, mean ± standard deviation). These correlations are larger than the comparison of NU-WRF (0.78 ± 0.09) or" ;
+        nif:beginIndex            "18790"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "20676"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/850f5102> ;
+        dct:section_number        "3.1" ;
+        dct:source                "" ;
+        dct:title                 "Validation using NU-WRF simulations" ;
+        qont:LabelUnit            [ a       qont:Label ;
+                                    <dfki:ScientificDocumentSection>
+                                            "introduction"
+                                  ] ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "section" .
+
+<http://scilake-project.eu/res/850f5102/location/Morgan_State_University>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/850f5102> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        qont:metadata         []  ;
+        qont:metadata         []  ;
+        scilake:locationName  "Morgan State University" .
+
+<http://scilake-project.eu/res/850f5102/location/Center_for_Spatial_Information_Science_and_Systems>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/850f5102> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        qont:metadata         []  ;
+        scilake:locationName  "Center for Spatial Information Science and Systems" .
+
+<http://scilake-project.eu/res/850f5102/location/Goddard_Earth_Sciences_Technology_and_Research_(GESTAR)_II>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/850f5102> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        qont:metadata         []  ;
+        qont:metadata         []  ;
+        scilake:locationName  "Goddard Earth Sciences Technology and Research (GESTAR) II" .
+
+<http://scilake-project.eu/res/850f5102/affiliation/aff5>
+        a                           scilake:ScientificAffiliation ;
+        nif:referenceContext        <http://qurator-projekt.de/res/> ;
+        dct:source                  "" ;
+        qont:metadata               []  ;
+        qont:metadata               []  ;
+        scilake:affCountry          "USA" ;
+        scilake:affFailAffiliation  false ;
+        scilake:affKey              "aff5" ;
+        scilake:affPostCode         "22030" ;
+        scilake:affRawAffiliationString
+                "\n\t\t\t\t\t\t\t\tDepartment of Atmospheric, Oceanic and Earth Sciences\n\t\t\t\t\t\t\t\tGeorge Mason University\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t22030\n\t\t\t\t\t\t\t\t\tFairfax\n\t\t\t\t\t\t\t\t\tVA\n\t\t\t\t\t\t\t\t\tUSA\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t" ;
+        scilake:affRegion           "VA" ;
+        scilake:affSettlement       "Fairfax" ;
+        scilake:has_department      <http://scilake-project.eu/res/850f5102/location/Department_of_Atmospheric,_Oceanic_and_Earth_Sciences> ;
+        scilake:has_institution     <http://scilake-project.eu/res/850f5102/location/George_Mason_University> .
+
+<http://scilake-project.eu/res/850f5102/location/Max-Planck-Institut_für_Chemie>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/850f5102> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        qont:metadata         []  ;
+        scilake:locationName  "Max-Planck-Institut für Chemie" .
+
+<http://scilake-project.eu/res/850f5102/location/Pacific_Northwest_National_Laboratory>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/850f5102> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:locationName  "Pacific Northwest National Laboratory" .
+
+<http://scilake-project.eu/res/850f5102>
+        a                    scilake:ScientificDocument , nif:OffsetBasedString , nif:Context ;
+        nif:beginIndex       "0"^^xsd:nonNegativeInteger ;
+        nif:endIndex         "32961"^^xsd:nonNegativeInteger ;
+        nif:isString         "High-resolution mapping of nitrogen oxide emissions in large US cities from TROPOMI retrievals of tropospheric nitrogen dioxide columns Satellite-derived spatiotemporal patterns of nitrogen oxide (NO x ) emissions can improve accuracy of emission inventories to better support air quality and climate research and policy studies. In this study, we develop a new method by coupling the chemical transport Model-Independent SATellite-derived Emission estimation Algorithm for Mixed-sources (MISATEAM) with a divergence method to map high-resolution NO x emissions across US cities using TROPOspheric Monitoring Instrument (TROPOMI) tropospheric nitrogen dioxide (NO 2 ) retrievals. The accuracy of the coupled method is validated through application to synthetic NO 2 observations from the NASA-Unified Weather Research and Forecasting (NU-WRF) model, with a horizontal spatial resolution of 4 km × 4 km for 33 large and mid-size US cities. Validation reveals excellent agreement between inferred and NU-WRF-provided emission magnitudes (R = 0.99, normalized mean bias, NMB = −0.01) and a consistent spatial pattern when comparing emissions for individual grid cells (R = 0.88 ± 0.06). We then develop a TROPOMI-based database reporting annual emissions for 39 US cities at a horizontal spatial resolution of 0.05°× 0.05°from 2018 to 2021. This database demonstrates a strong correlation (R = 0.90) with the National Emission Inventory (NEI) but reveals some bias (NMB = −0.24). There are noticeable differences in the spatial patterns of emissions in some cities. Our analysis suggests that uncertainties in TROPOMI-based emissions and potential misallocation of emissions and/or missing sources in bottom-up emission inventories both contribute to these differences. Nitrogen oxides (NO x ), including nitrogen dioxide (NO 2 ) and nitric oxide (NO), play a vital role as trace gases in the atmosphere. They substantially contribute to the formation of secondary aerosols and tropospheric ozone (Seinfeld and Pandis, 2006), which in turn impact climate and human health. The primary source of NO x emissions is fossil fuel combustion from mobile and industrial sources, often concentrated in urban areas (Crippa et al., 2018). Traditionally, NO x emissions are compiled using \"bottom-up\" methods that rely on total fuel usage and average emission factors. However, determining urban emissions is challenging due to the difficulty of obtaining comprehensive data on operating conditions of emitters and their rapidly changing emission factors (Liu et al., 2016b) at the city level (Butler et al., 2008). Spatial distribution of emissions is commonly estimated by applying proxies, such as road network maps and/or population density maps, to allocate total emissions onto a grid. This process may introduce significant biases due to spatial mismatches between emission locations and spatial proxies (Woodard et al., 2014;Hogue et al., 2016). Tropospheric NO 2 vertical column densities (VCDs) retrieved from satellite observations offer valuable insights into the magnitude and location of global NO x emissions (Martin et al., 2003;Lamsal et al., 2011). Techniques leveraging chemical transport models (CTMs) have been developed to relate NO 2 VCDs to NO x emissions, for example, the extended (Ding et al., 2017) and ensemble (Miyazaki et al., 2017) Kalman filter, the four-dimensional variational (4D-Var) method (Henze et al., 2009), and the hybrid mass balance/4D-Var (Qu et al., 2019). Alternative methods, which are independent of CTMs, have also been proposed to characterize NO x plumes from major sources (e.g., Beirle et al., 2011;Liu et al., 2016a;Laughner and Cohen, 2019). Early studies employed onedimensional (1D) empirical plume dispersion functions to fit NO 2 VCDs surrounding isolated sources. Liu et al. (2016aLiu et al. ( , 2022) ) refined these functions to accommodate the description of NO 2 plumes from sources in polluted background. The derived fitting parameters yield the magnitude of NO x emissions for point sources, such as power plants (de Foy et al., 2014), and cities, by assuming these sources to be equivalent point sources (Lu et al., 2015;Liu et al., 2017;Goldberg et al., 2019). A recent study (Beirle et al., 2019) introduced a two-dimensional (2D) divergence approach, enabling the identification of finer details in NO x distributions and thus facilitating the detection of smaller sources. Subsequent studies have further refined this approach to enhance divergence calculation (de Foy and Schauer, 2022) and to optimize its performance over mountainous regions (Sun, 2022). Current applications of this divergence method primarily focus on inferring emissions from point sources, e.g., power plants in South Asia (de Foy and Schauer, 2022), oil and gas production areas in the United States (Dix et al., 2022), and a global catalog of point sources (Beirle et al., 2021(Beirle et al., , 2023)). However, the robustness of applying the approach for area sources such as cities has seldom been investigated. The main goal of this study is to map NO x emissions across major cities in the United States based on the TRO-POspheric Monitoring Instrument (TROPOMI; Veefkind et al., 2012) retrievals of NO 2 VCDs (Ialongo et al., 2020). We will couple the 1D (Liu et al., 2022) and 2D (Beirle et al., 2019) CTM-independent approaches to infer gridded NO x emissions. Due to the absence of established \"true emissions\" to serve as a standard for comparison, gauging the precision of the coupled method becomes challenging. We will employ synthetic NO 2 observations, generated by a model simulation, to appraise the accuracy of the approach. Section 2 offers a summary of the satellite data used to map urban NO x emissions and the synthetic NO 2 observations used for validation. In Sect. 3.1, we assess the coupled approach by juxtaposing the emissions inferred from synthetic NO 2 observations with the true emissions used by the model for generating the synthetic observations. In Sect. 3.2, we compare the emissions derived from satellite data with the National Emission Inventory (NEI) developed by the United States Environmental Protection Agency (US EPA) to shed light on the uncertainties of both satellite-derived and bottom-up emissions. Section 3.3 summarizes the uncertainties of the method and the TROPOMI-derived emissions. We discuss the robustness of the derived emissions and outline the planned work in Sect. 4.  TROPOMI is a UV-VIS-NIR-SWIR nadir-viewing imaging spectrometer (Veefkind et al., 2012) on board the Sentinel 5 Precursor (S5P) satellite that was launched in 2017. It had a ground pixel size at nadir of 7.5 km × 3.5 km before 6 August 2019 and improved to 5.5 km × 3.5 km afterwards. It provides daily global coverage with a local Equator crossing time of approximately 13:30 local time (LT; the time zone for all instances in the text is LT). The instrument's radiance and irradiance measurements are utilized to obtain slant NO 2 columns using the differential optical absorption spectroscopy (DOAS) algorithm (Platt and Stutz, 2008). The slant columns are subsequently differentiated into stratospheric and tropospheric parts, with the tropospheric slant columns being further converted to vertical columns based on air mass factors. We selected TROPOMI NO 2 retrieved by the NASA Goddard Space Flight Center (GSFC) TROPOMI Multi-Decadal Nitrogen Dioxide and Derived Products from Satellites (MINDS) NO 2 product (Lamsal et al., 2022), in this study due to its utility in investigating emission trends. The official NO 2 product available at the commencement of this study switched the processor version in December 2020, which introduced a discontinuity in the time series (van Geffen et al., 2022). The GSFC product (Lamsal et al., 2022) utilizes slant columns from the official product to retrieve a full time series of tropospheric NO 2 VCDs from spring to autumn months of 2018 to 2021 based on the algorithm developed for the Ozone Monitoring Instrument (OMI) Aura NO 2 standard product version 4.0 (Lamsal et al., 2021). TROPOMI NO 2 data have been reported to have an overall low bias (Judd et al., 2020;Tack et al., 2021;Verhoelst et al., 2021;Wang et al., 2020), which will be propagated into emissions inferred from TROPOMI NO 2 . We further aggregate TROPOMI's individual measurements at spatial resolution of 0.05°× 0.05°by averaging the original pixels weighted by the fraction of the overlapping surface area. Only high-quality pixels with a quality assurance value (qa_value) above 0.75 are considered for averaging, which excludes cloud-covered scenes with cloud radiance fraction > 0.5. Following the approach of earlier research (e.g., Liu et al., 2017), our analysis is confined to the data from May through September. This decision is made to omit winter data, characterized by longer NO x lifetimes, which in turn lead to greater uncertainties to the method. We couple our 1D CTM-Independent SATellite-derived Emission estimation Algorithm for Mixed-sources (MIS-ATEAM; Liu et al., 2022) with the 2D divergency method of Beirle et al. (2019). The 1D MISATEAM algorithm quantifies the magnitude of city-level NO x lifetime and emissions by conceptualizing urban areas as point sources and thus does not capture the spatial variability within the urban areas. Conversely, the 2D divergence method allows for the resolution of finer spatial details in NO x distributions but relies on additional, often external, sources for determining NO x lifetimes, which can be a significant limitation. The coupled algorithm (hereafter referred to as 2D MISATEAM for simplicity) leverages the strengths of both: it maps NO x emissions over urban areas with enhanced spatial detail and does so independently by deriving lifetimes directly from NO 2 measurements, thereby overcoming the need for prescribed or externally sourced lifetime constraints. The 1D and 2D MISATEAM methods deliver consistent estimates for total emissions, displaying a small relative difference of −5±9 %. While this result demonstrates the internal consistency of the MISATEAM methods, it is important to note that such coherence is due to the shared fundamental principle of mass balance underlying both methodologies. The cities listed in Table S1 in the Supplement that failed NU-WRF validation demonstrate a similar consistency between the two methods, with a relative difference 1 ± 14 %. Therefore, the similarity in emissions estimations should not be viewed as an independent validation metric. We average both NO 2 VCDs and reanalysis wind data from May to September each year. We then use those av-eraged data to infer NO x emissions E by summing the divergence of the NO x flux D with the NO x sink S based on the continuity equation for a steady state as follows: where F is the NO x flux. It is calculated from the horizontal fluxes of NO 2 VCDs . R NO x : NO 2 is the ratio of NO x to NO 2 columns. Following previous studies (Beirle et al., 2019), we use an R NO x : NO 2 value of 1.32 to represent \"typical urban conditions and noontime sun\" (Seinfeld and Pandis, 2006). We interpolate the Goddard Earth Observing System Forward Processing for Instrument Teams' (GEOS FP-IT) reanalysis wind vectors (Lucchesi, 2015) to the TROPOMI overpass time and average layers from the surface to 1000 m altitude to derive v used in Eq. ( 2). Since the NO x sinks are dominated by the chemical loss through the reaction of NO 2 with OH at TROPOMI's local overpass time (13:30), it can be characterized by a first-order effective NO x lifetime τ . Consequently, it bears a proportionate relationship to the NO 2 VCD itself in Eq. ( 3). Note that we assume a relatively constant background and subtract the NO 2 background b from in the calculation of the divergences and the sinks because we aim to remove the natural and nonlocal contributions from the total emissions for each urban area in order to infer urban emissions. For each city, we infer b and τ by applying 1D MISATEAM (Liu et al., 2022) to NO 2 VCDs averaged from May through September 2018-2021, assuming b and τ are constant over years. Additional technical details for deriving b and τ are given in Fig. S1 and Sect. S1 of the Supplement. The city of New York serves as a case study to showcase our approach. With its substantial size and numerous point and area sources, this city is an ideal illustration of the capability of 2D MISATEAM to map emissions from various sources. Figure 1a-c illustrate maps of the derived sink S, the divergence D, and the resulting NO x emissions E, respectively. The divergence of the NO x flux (Fig. 1b) presents enhancement throughout the urban area due to emissions from traffic and industrial sources. The divergence is negative outside the urban areas because the change in the NO x flux is dominated by chemical loss here. The addition of sinks (Fig. 1a) compensates for such negative divergences, resulting in the emission pattern E (Fig. 1c). Two point source emissions on Long Island stand out: Glenwood Landing power station (labeled as power plant, PP) and John F. Kennedy (JFK) airport, respectively. We apply 2D MISATEAM to US cities with populations exceeding 200 000, a categorization that corresponds to medium to large urban areas as designated in Organization for Economic Co-operation and Development (OECD) countries. Adjacent cities, those situated within 50 km of the https://doi.org/10.5194/acp-24-3717-2024 Atmos. Chem. Phys., 24, 3717-3728, 2024 Wind speed is given in the units of knots, where 1 kn is equal to 1 nautical mile per hour (1.9 km h −1 ). Each short and long barb represents 5 kn (9.3 km h −1 ) and 10 kn (18.5 km h −1 ), respectively. most populous city in an urban conglomeration, are treated as a single city cluster. Cities producing significantly weaker NO 2 signals than the surroundings are excluded (see criteria in Sect. S2). The specified criteria yield a combined count of 52 cities and urban conglomerations (refer to Table S1) that are suitable for the application of 2D MISATEAM. We obtained valid results from 39 of these cities shown in Fig. S2. Cities with invalid results are associated with large fitting errors (see Sect. S2). We compare emissions derived in this study with those of the bottom-up NEI 2019 processed by George Mason University (Ma and Tong, 2022). NEI is a comprehensive estimate of emissions of criteria air pollutants and their precursors from point, mobile, and area sources, which has been widely used to support urban air quality model simulations. The large point sources in NEI are compiled based on direct stack emissions measurements by continuous emissions monitoring systems (CEMSs). For non-point sources, the gridded data are generated using spatial proxies such as roadwaylevel traffic data for distributing aggregate emissions to grid cells. Figure 1d displays a map of NEI estimates E NEI at a spatial resolution of 12 km for 2019. NEI has been reported to be biased high by 30 %-70 % in the early years of the 2010s (Choi and Souri, 2015;Dickerson et al., 2019). For example, NEI NO x estimates for 2011 were potentially overestimated by 51 %-70 % over the Baltimore-Washington region (Anderson et al., 2014), 30 %-60 % in the Southeastern United States (Travis et al., 2016), and 30 %-60 % over urban areas of Texas (Souri et al., 2016). NEI NO x emissions for mobile sources alone were reported to be biased high by 28 % (McDonald et al., 2018). We use the lower bound of the reported bias (30 %) as the uncertainty for NEI emissions in this study. The spatial distribution of our estimated emissions E (Fig. 1c) is generally in good agreement with that of NEI emissions (Fig. 1d), with a correlation coefficient of 0.71. More comparisons between these two inventories will be discussed in Sect. 3.2. We use a regional modeling system, the NASA-Unified Weather Research and Forecasting (NU-WRF; Tao et al., 2013;Peters-Lidard et al., 2015), to provide synthetic tropospheric NO 2 VCDs NU-WRF and wind fields v NU -W RF over the continental United States. The domain of the simulation is illustrated in Fig. 2 of Liu et al. (2022). We perform the 2016 NU-WRF simulation at a high horizontal spatial resolution of 4 km × 4 km, comparable to the TROPOMI footprint. The meteorological and chemical initial conditions and their lateral boundaries are obtained from NASA's Modern Era Retrospective-Analysis for Research and Applications version 2 (MERRA-2; Gelaro et al., 2017) and the Community Atmosphere Model with chemistry (CAM-chem; Lamarque et al., 2012), respectively. Additional model setup information, including the chemical mechanism, aerosol module, and emissions, is detailed in Tao et al. (2020) and Liu et al. (2022). We integrate simulated NO 2 concentrations from the surface to the tropopause to provide NU-WRF . We average wind fields used by NU-WRF from the surface to an altitude of 1000 m to compute v NU -W RF . We apply 2D MISATEAM to the synthetic NO 2 VCDs NU-WRF and wind fields v NU -W RF to map NO x emissions E NU-WRF for cities in Table S1. We derive valid results for 33 cities (see Sect. S2). We have valid results for a smaller number of cities compared to results derived from TROPOMI data, as cities at the edge of the NU-WRF domain, such as Seattle and San Francisco, are omitted. Since the model output partially lacks the data for their inflow/outflow plumes, it fails to satisfy the requirement for the application of 2D MISATEAM. We further compare E NU-WRF with \"true emissions\" directly given by the model E NU-WRF (hereafter referred to as \"given emissions\"), which are used to drive NU-WRF simulations, to assess the accuracy of 2D MISATEAM. We sum up NO x emissions from each grid cell within the city's domain to provide a total emission for an individual city. The city domain is defined as 70 km × 70 km around the city center for most cities, which is large enough to include all urban areas. We use a larger domain of 100 km × 100 km for New York, Chicago, Los Angeles, and Houston due to their larger expanse. The model performance metrics of the normalized mean bias (NMB) and the root mean squared error (RMSE) for the evaluation are defined as respectively, where i denotes an individual city, and n refers to the total count of cities utilized for the evaluation. Emis denotes the total emission from the MISATEAM-derived datasets (i.e., E or E NU-WRF ), and Emis denotes the total emission from benchmark emission datasets (i.e., E NEI or E NU-WRF ). We also assess the intracity spatial correlation R intracity by calculating the correlation coefficient of emissions at grid level over the city domain between E and E NEI or between E NU-WRF and E NU-WRF . 3 Results and discussions We compare MISATEAM-derived NO x emissions E NU-WRF with given emissions E NU-WRF to validate 2D MISATEAM. The validation indicates the uncertainty of MISATEAM assuming a best-case scenario with perfect knowledge of the winds and errorless satellite NO 2 retrievals. Figure 2 compares the total emissions from the two datasets for the 33 cities (Table S1). The correlation coefficient is 0.99, which indicates an excellent agreement between the two datasets. The overall bias computed over all valid cities is generally low (NMB = −0.01), and the RMSE is also low (0.21 kg s −1 ). We assess 2D MISATEAM's performance to infer the spatial distribution of emissions. Figure 3 displays the emission maps around the city of Jacksonville, Florida. E NU-WRF (Fig. 3c) and E NU-WRF (Fig. 3d) show a high intracity spatial correlation R intracity of 0.92. This good consistency is substantially better than the comparison of E NU-WRF with the tropospheric NO 2 VCD NU-WRF (Fig. 3a; R intracity = 0.75), which is often considered to be a reasonable spatial proxy for emissions locations. We further compare the correlation with the comparison of E NU-WRF with NU-WRF under calm wind conditions (Fig. 3b). We use the threshold of 2 m s −1 as the criterion for calm wind, allowing for the attainment of an adequate sample size. This threshold reduces the error associated with transport by increasing R intracity from 0.75 (Fig. 3a) to 0.80 (Fig. 3b). However, this correlation is still smaller than that between E NU-WRF and E NU-WRF , suggesting that 2D MISATEAM is successful in allocating emissions by accounting for NO x transport. Similar enhanced correlations are observed for all 33 cities. Figure 2 illustrates R intracity of E NU-WRF and E NU-WRF for individual cities (0.88 ± 0.06, mean ± standard deviation). These correlations are larger than the comparison of NU-WRF (0.78 ± 0.09) or We compare TROPOMI-based NO x emissions E with NEI estimates E NEI for 2019 in Fig. 4. The total emission estimates for individual cities in the two datasets generally agree well with each other, with a correlation R of 0.90. This level of correlation is comparable to the validation using NU-WRF simulations. The relative difference of the total emission between E and E NEI is within the uncertainty range of E (47 %; see Sect. 3.3) for 31 out of 39 cities. The comparison for all cities shows a bias with NMB of −0.24. The bias is likely associated with uncertainties in the TROPOMI NO 2 retrievals, which have been reported to be biased low by 23 % on average (van Geffen et al., 2022). The bias may also arise from the uncertainties in NEI, which has been reported to be biased high by over 30 % (Sect. 2.3). Figure 5 compares the NO x emission patterns from TROPOMI NO 2 with those reported in the NEI, using Dallas and Tucson as case studies. Consistent with observations in New York (as shown in Fig. 1), TROPOMI-derived emission maps reveal several more pronounced point sources as compared to NEI. Notable emissions from the Dallas Fort Worth International Airport, Perot Field Fort Worth Alliance Airport, and three major cement factories -TXI, Holcim, and Ash Grove -are distinctly evident (Fig. 5a), whereas these details appear diffused in NEI (Fig. 5b). Similarly, emissions from the Asarco Mission copper mine are clearly discernible in the TROPOMI data (Fig. 5c) but are not as apparent in the NEI data (Fig. 5d). We use R intracity to compare the intracity spatial distribution of emissions for more cities in Fig. 4. We upscale E to the same spatial resolution of E NEI to calculate their R intracity (Fig. S3). R intracity between E and E NEI is 0.57 ± 0.16, which is smaller than that between E NU-WRF and E NU-WRF in the evaluation using model data (0.88 ± 0.06; Fig. 2). The generally smaller values of R intracity are likely caused by the uncer- tainties of both TROPOMI-based and NEI emissions. Compared to E NU-WRF inferred from perfect NO 2 columns and wind fields, the uncertainties of TROPOMI NO 2 retrievals (25 %; van Geffen et al., 2022) and GEOS FP-IT wind reanalysis (30 %; Liu et al., 2022) are propagated into the uncertainties of TROPOMI-based emissions E and may result in incorrect spatial patterns. More details about the uncertainties are discussed in Sect. 3.3. Uncertainties in E NEI also contribute to the disagreement. NEI uses spatial-distribution proxies, such as maps of population densities or road networks, to allocate country-level emissions from non-point sources onto a grid. This procedure may be associated with biases due to either a spatial mismatch between the loca- tions of emissions and spatial proxies or incorrect emission magnitudes. Some hotspots shown in E are missing from E NEI , for instance, JFK airport (Fig. 1) and Asarco Mission mine (Fig. 5), indicating missing sources or misallocation of sources. Figure 6 presents the trends of derived NO x emissions across US cities from 2018 to 2021. A significant dip in emissions was observed in 2020, primarily attributed to the diminished NO x emissions in response to COVID-related lockdown policies (e.g., Liu et al., 2020). The 2020 emissions saw an average reduction of approximately 25 % from 2019, in agreement with the findings of other studies (Goldberg et al., 2020;Miyazaki et al., 2021). Emissions in 2021 experienced a rebound compared to those in 2020; however, they are still lower than the pre-pandemic levels. The slopes of the linear regression lines in Fig. 6 decrease from 0.91 in 2019 to 0.85 in 2021. This decline aligns with the long-term trend of decreasing emissions in the United States, primarily driven by the downturn trend in vehicular NO x emissions (McDonald et al., 2018). The reduced slope in 2021 (0.85) relative to 2019 (0.91) may also encapsulate lingering impacts of diminished traffic from the COVID-19 pandemic, since the traffic and commercial flight metrics at the end of 2020 were still substantially lower than their January 2020 levels (Laughner et al., 2021). We follow the method proposed by Liu et al. (2022) to evaluate the uncertainties associated with the derived results. We attribute an uncertainty of 20 % to the inferred emissions, based on the relative differences between E NU-WRF and E NU-WRF for all 33 cities using the NU-WRF synthetic data (2 ± 24 %). Since the differences are less than 20 % for most cities (73 %), this estimate may be conservative. Instead of using data spanning multiple years (2018-2021), we apply 1D MISATEAM to annual data to investigate the uncertainty introduced by presuming a consistent NO x lifetime over several years. For each city, we infer τ by applying 1D MISATEAM to TROPOMI NO 2 VCDs, averaged from May to September for each individual year from 2018 to 2021. Among the cities analyzed, 14 cities (listed in Table S1) have valid NO x lifetimes available for all 4 years. The ratio of the standard deviation of the fitted τ for these individual years to the average τ , as derived from data from 2018 to 2021, stands at 16 %. This indicates an uncertainty of 16 % in relation to the assumption of a constant NO x lifetime. We identify additional uncertainties that may arise when implementing 2D MISATEAM to TROPOMI and GEOS-IT data as opposed to synthetic data, as follows: -The uncertainty of TROPOMI NO 2 observations carries over into the uncertainty of the inferred emissions. We consider an overall uncertainty of 25 % for TROPOMI tropospheric NO 2 VCDs, following the recommendation from a recent validation using ground-based measurements (van Geffen et al., 2022). The uncertainty originates from various factors, including the spectral fitting process during the retrieval, the separation of stratospheric and tropospheric columns, and the tropospheric air mass factor (AMF). AMF accounts for the variable sensitivity of satellite observations to NO 2 at different atmospheric altitudes, which is informed by a priori knowledge of NO 2 vertical distribution as provided by chemical transport models. Laughner et al. (2016) demonstrated that urban NO x emissions estimated via NO 2 VCDs with daily, highresolution a priori profiles are considerably higher than those derived from retrievals using coarser-resolution profiles. This presents a relevant challenge for our study. To refine the assessment of AMF influences on 2D MISATEAM-derived emissions, a sensitivity analysis where TROPOMI's AMFs are applied to NU-WRF profiles is of help. This would generate NO 2 columns with AMF biases, which, when used to calculate emissions, can be contrasted with those derived from idealized columns. Such a comparison would reveal the extent to which AMF biases systematically affect the emissions determined by 2D MISATEAM. Given the extensive computational demands of such a sensitivity analysis, we had to exclude it from this study. Instead, we aim to perform a comprehensive investigation in future research. The potential bias arising from the separation of stratospheric and tropospheric columns is eliminated by the employment of the background terms b and b calm within the model functions of MISATEAM. Since the random uncertainty of the tropospheric NO 2 observations could be suppressed due to the consideration of long-term means, this estimate may be conservative. -The presence of clouds is an additional source of uncertainties. We exclude TROPOMI NO 2 data with cloud radiance fraction of 0.5 or greater in our analysis. This exclusion may lead to a bias in the NO 2 VCD averages, a consequence of eliminating data with changing the NO x lifetime and NO x /NO 2 ratio during cloudy conditions (Geddes et al., 2012). We attribute an uncertainty of 10 % to cloud selection criteria based on an assessment carried out at urban locations (Geddes et al., 2012). More sensitivity analysis regarding the impact of clouds has been discussed by Liu et al. (2022). -The precision of wind fields plays an important role in determining the total uncertainty, as it limits the model functions' ability to describe NO 2 transport. We estimate the corresponding uncertainties to be 30 % based on an assessment of reanalysis wind products using sounding measurements (refer to Table S3 in Liu et al., 2016a). We define the overall uncertainty of the inferred emissions as the root of the quadratic sum of the above-mentioned uncertainties, which are assumed to be independent. We thus calculate that the total uncertainty of MISATEAM-derived NO x emissions for a mid-size US city is 47 %. In this study, we developed a new method by coupling the 1D CTM-independent methodology (Liu et al., 2022), MISATEAM, with the 2D divergence approach (Beirle et al., 2019) to generate maps of NO x emissions across US cities, using TROPOMI NO 2 observations. This coupled method, 2D MISATEAM, is suitable for sources within polluted backgrounds. Our initial application of the approach used synthetic NU-WRF-generated tropospheric NO 2 VCDs over the continental United States to evaluate the method. The evaluation yielded robust agreement with the NU-WRF given values, presenting a high correlation coefficient (R = 0.99) and a minimal bias (NMB = −0.01). Subsequently, we applied 2D MISATEAM to TROPOMI NO 2 retrievals across the US cities from 2018 to 2021. We estimated NO x emissions for 39 US cities. Our resulting total city emissions estimates align strongly with NEI (R = 0.90), albeit with a moderate bias (NMB = −0.24). Our derived emissions delineate differences in spatial patterns across certain cities, implying potential inaccuracies in emission allocation and/or missing sources in NEI. Our current estimates suggest that uncertainties in NO x emissions arising from 2D MISATEAM method itself are approximately 20 % for a large and mid-size US city. Additional uncertainties stem primarily from errors in the reanalysis wind dataset as well as the TROPOMI NO 2 retrieval, increasing the overall uncertainties of resulting emissions to about 47 %. The 2D MISATEAM algorithm is contingent on 1D MIS-ATEAM for NO x lifetime estimation. The 1D MISATEAM algorithm relies on NO 2 observations under calm wind conditions to infer lifetimes, which in turn influences the temporal resolution of the emissions data we can confidently derive. Our investigation indicates that typically 3 to 6 months of TROPOMI data is required to ensure comprehensive data coverage of calm-wind NO 2 observations for urban emissions analysis. Therefore, we advise caution when considering the use of 2D MISATEAM for emission estimations over periods shorter than 3 months, unless we want to use prescribed or externally sourced lifetimes. In our future research, we plan to extend the application of 2D MISATEAM to observations from geostationary satellites to estimate diurnal variations in urban emissions. Geostationary sensors include the South Korean Geostationary Environmental Monitoring Spectrometer (GEMS; Kim et al., 2012), NASA's Tropospheric Emissions: Monitoring of Pollution (TEMPO; Chance et al., 2012), and ESA's Sentinel-4 (Ingmann et al., 2012). These instruments possess spatial resolutions similar to TROPOMI and the validation of NU-WRF simulation (4 km) utilized in this study. For applications based on geostationary satellites with local observation time extending beyond the early afternoon time frame of TROPOMI in this study, further exploration into the impact of the diurnal cycle of NO x lifetime will be necessary. When applying the 2D MISATEAM to cities globally, particularly in non-OECD countries, it may be necessary to adjust population thresholds to reflect local demographics and urban profiles. We advise removing cities with emissions signals that are too weak following this study, i.e., b calm / mean VCDs > 50 % (Sect. S2), as such a high ratio can introduce significant uncertainties associated with determined background b calm . In the next phase of our work, we will strive to harmonize bottom-up and satellite-derived urban emissions estimates to produce a fused emission inventory (Liu et al., 2018). This will enable the provision of timely NO x emissions estimates that will be of value to both air quality and climate modeling communities." ;
+        qont:metadata        [ dct:language  "en" ] ;
+        scilake:has_authors  <http://scilake-project.eu/res/850f5102/author/0da38827> , <http://scilake-project.eu/res/850f5102/author/2d6136e4> , <http://scilake-project.eu/res/850f5102/author/cf80b183> , <http://scilake-project.eu/res/850f5102/author/67443663> , <http://scilake-project.eu/res/850f5102/author/9805f46f> , <http://scilake-project.eu/res/850f5102/author/7d3c3be9> , <http://scilake-project.eu/res/850f5102/author/49763cc6> , <http://scilake-project.eu/res/850f5102/author/1dd7f881> , <http://scilake-project.eu/res/850f5102/author/a19daf1f> , <http://scilake-project.eu/res/850f5102/author/67548626> , <http://scilake-project.eu/res/850f5102/author/122e0920> ;
+        scilake:has_part     <http://scilake-project.eu/res/850f5102#offset_1767_6467> , <http://scilake-project.eu/res/850f5102#offset_17736_18789> , <http://scilake-project.eu/res/850f5102#offset_18790_20676> , <http://scilake-project.eu/res/850f5102#offset_24800_29280> , <http://scilake-project.eu/res/850f5102#offset_20677_24799> , <http://scilake-project.eu/res/850f5102#offset_14245_15854> , <http://scilake-project.eu/res/850f5102#offset_6468_6468> , <http://scilake-project.eu/res/850f5102#offset_29281_32961> , <http://scilake-project.eu/res/850f5102#offset_8954_14244> , <http://scilake-project.eu/res/850f5102#offset_0_135> , <http://scilake-project.eu/res/850f5102#offset_15855_17735> , <http://scilake-project.eu/res/850f5102#offset_136_1766> , <http://scilake-project.eu/res/850f5102#offset_6469_8953> .
+
+<http://scilake-project.eu/res/850f5102/location/Joint_Global_Change_Research_Institute>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/850f5102> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:locationName  "Joint Global Change Research Institute" .
+
+<http://scilake-project.eu/res/850f5102/author/122e0920>
+        a                        scilake:ScientificAuthor ;
+        nif:referenceContext     <http://scilake-project.eu/res/4231dd89> ;
+        dct:source               "" ;
+        qont:metadata            []  ;
+        scilake:corresp          false ;
+        scilake:email            "fei.liu@nasa.gov" ;
+        scilake:firstname        "Fei" ;
+        scilake:has_affiliation  <http://scilake-project.eu/res/850f5102/affiliation/aff1> , <http://scilake-project.eu/res/850f5102/affiliation/aff0> ;
+        scilake:lastname         "Liu" ;
+        scilake:valid            false .
+
+<http://scilake-project.eu/res/850f5102/location/Satellite_Remote_Sensing_Group>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/850f5102> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        qont:metadata         []  ;
+        scilake:locationName  "Satellite Remote Sensing Group" .
+
+<http://scilake-project.eu/res/850f5102#offset_20677_24799>
+        a                         <dfki:ScientificDocumentPart> , nif:OffsetBasedString ;
+        nif:anchorOf              "We compare TROPOMI-based NO x emissions E with NEI estimates E NEI for 2019 in Fig. 4. The total emission estimates for individual cities in the two datasets generally agree well with each other, with a correlation R of 0.90. This level of correlation is comparable to the validation using NU-WRF simulations. The relative difference of the total emission between E and E NEI is within the uncertainty range of E (47 %; see Sect. 3.3) for 31 out of 39 cities. The comparison for all cities shows a bias with NMB of −0.24. The bias is likely associated with uncertainties in the TROPOMI NO 2 retrievals, which have been reported to be biased low by 23 % on average (van Geffen et al., 2022). The bias may also arise from the uncertainties in NEI, which has been reported to be biased high by over 30 % (Sect. 2.3). Figure 5 compares the NO x emission patterns from TROPOMI NO 2 with those reported in the NEI, using Dallas and Tucson as case studies. Consistent with observations in New York (as shown in Fig. 1), TROPOMI-derived emission maps reveal several more pronounced point sources as compared to NEI. Notable emissions from the Dallas Fort Worth International Airport, Perot Field Fort Worth Alliance Airport, and three major cement factories -TXI, Holcim, and Ash Grove -are distinctly evident (Fig. 5a), whereas these details appear diffused in NEI (Fig. 5b). Similarly, emissions from the Asarco Mission copper mine are clearly discernible in the TROPOMI data (Fig. 5c) but are not as apparent in the NEI data (Fig. 5d). We use R intracity to compare the intracity spatial distribution of emissions for more cities in Fig. 4. We upscale E to the same spatial resolution of E NEI to calculate their R intracity (Fig. S3). R intracity between E and E NEI is 0.57 ± 0.16, which is smaller than that between E NU-WRF and E NU-WRF in the evaluation using model data (0.88 ± 0.06; Fig. 2). The generally smaller values of R intracity are likely caused by the uncer- tainties of both TROPOMI-based and NEI emissions. Compared to E NU-WRF inferred from perfect NO 2 columns and wind fields, the uncertainties of TROPOMI NO 2 retrievals (25 %; van Geffen et al., 2022) and GEOS FP-IT wind reanalysis (30 %; Liu et al., 2022) are propagated into the uncertainties of TROPOMI-based emissions E and may result in incorrect spatial patterns. More details about the uncertainties are discussed in Sect. 3.3. Uncertainties in E NEI also contribute to the disagreement. NEI uses spatial-distribution proxies, such as maps of population densities or road networks, to allocate country-level emissions from non-point sources onto a grid. This procedure may be associated with biases due to either a spatial mismatch between the loca- tions of emissions and spatial proxies or incorrect emission magnitudes. Some hotspots shown in E are missing from E NEI , for instance, JFK airport (Fig. 1) and Asarco Mission mine (Fig. 5), indicating missing sources or misallocation of sources. Figure 6 presents the trends of derived NO x emissions across US cities from 2018 to 2021. A significant dip in emissions was observed in 2020, primarily attributed to the diminished NO x emissions in response to COVID-related lockdown policies (e.g., Liu et al., 2020). The 2020 emissions saw an average reduction of approximately 25 % from 2019, in agreement with the findings of other studies (Goldberg et al., 2020;Miyazaki et al., 2021). Emissions in 2021 experienced a rebound compared to those in 2020; however, they are still lower than the pre-pandemic levels. The slopes of the linear regression lines in Fig. 6 decrease from 0.91 in 2019 to 0.85 in 2021. This decline aligns with the long-term trend of decreasing emissions in the United States, primarily driven by the downturn trend in vehicular NO x emissions (McDonald et al., 2018). The reduced slope in 2021 (0.85) relative to 2019 (0.91) may also encapsulate lingering impacts of diminished traffic from the COVID-19 pandemic, since the traffic and commercial flight metrics at the end of 2020 were still substantially lower than their January 2020 levels (Laughner et al., 2021)." ;
+        nif:beginIndex            "20677"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "24799"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/850f5102> ;
+        dct:section_number        "3.2" ;
+        dct:source                "" ;
+        dct:title                 "TROPOMI-based NO x emissions" ;
+        qont:LabelUnit            [ a       qont:Label ;
+                                    <dfki:ScientificDocumentSection>
+                                            "introduction"
+                                  ] ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "section" .
+
+<http://scilake-project.eu/res/850f5102/location/NASA_Goddard_Space_Flight_Center>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/850f5102> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        qont:metadata         []  ;
+        qont:metadata         []  ;
+        qont:metadata         []  ;
+        qont:metadata         []  ;
+        qont:metadata         []  ;
+        scilake:locationName  "NASA Goddard Space Flight Center" .
+
+<http://scilake-project.eu/res/850f5102/affiliation/aff4>
+        a                           scilake:ScientificAffiliation ;
+        nif:referenceContext        <http://qurator-projekt.de/res/> ;
+        dct:source                  "" ;
+        qont:metadata               []  ;
+        scilake:affCountry          "USA" ;
+        scilake:affFailAffiliation  false ;
+        scilake:affKey              "aff4" ;
+        scilake:affPostCode         "20740" ;
+        scilake:affRawAffiliationString
+                "\n\t\t\t\t\t\t\t\tJoint Global Change Research Institute\n\t\t\t\t\t\t\t\tPacific Northwest National Laboratory\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t20740\n\t\t\t\t\t\t\t\t\tCollege Park\n\t\t\t\t\t\t\t\t\tMD\n\t\t\t\t\t\t\t\t\tUSA\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t" ;
+        scilake:affRegion           "MD" ;
+        scilake:affSettlement       "College Park" ;
+        scilake:has_institution     <http://scilake-project.eu/res/850f5102/location/Joint_Global_Change_Research_Institute> , <http://scilake-project.eu/res/850f5102/location/Pacific_Northwest_National_Laboratory> .
+
+<http://scilake-project.eu/res/850f5102#offset_17736_18789>
+        a                         nif:OffsetBasedString , <dfki:ScientificDocumentPart> ;
+        nif:anchorOf              "We sum up NO x emissions from each grid cell within the city's domain to provide a total emission for an individual city. The city domain is defined as 70 km × 70 km around the city center for most cities, which is large enough to include all urban areas. We use a larger domain of 100 km × 100 km for New York, Chicago, Los Angeles, and Houston due to their larger expanse. The model performance metrics of the normalized mean bias (NMB) and the root mean squared error (RMSE) for the evaluation are defined as respectively, where i denotes an individual city, and n refers to the total count of cities utilized for the evaluation. Emis denotes the total emission from the MISATEAM-derived datasets (i.e., E or E NU-WRF ), and Emis denotes the total emission from benchmark emission datasets (i.e., E NEI or E NU-WRF ). We also assess the intracity spatial correlation R intracity by calculating the correlation coefficient of emissions at grid level over the city domain between E and E NEI or between E NU-WRF and E NU-WRF . 3 Results and discussions" ;
+        nif:beginIndex            "17736"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "18789"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/850f5102> ;
+        dct:section_number        "2.5" ;
+        dct:source                "" ;
+        dct:title                 "Performance evaluation" ;
+        qont:LabelUnit            [ a       qont:Label ;
+                                    <dfki:ScientificDocumentSection>
+                                            "introduction"
+                                  ] ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "section" .
+
+<http://scilake-project.eu/res/850f5102/author/7d3c3be9>
+        a                        scilake:ScientificAuthor ;
+        nif:referenceContext     <http://scilake-project.eu/res/0b26dd6c> ;
+        dct:source               "" ;
+        qont:metadata            []  ;
+        scilake:corresp          false ;
+        scilake:firstname        "Steven" ;
+        scilake:has_affiliation  <http://scilake-project.eu/res/850f5102/affiliation/aff4> ;
+        scilake:lastname         "Smith" ;
+        scilake:middlename       "J" ;
+        scilake:valid            false .
+
+<http://scilake-project.eu/res/850f5102#offset_136_1766>
+        a                         <dfki:ScientificDocumentPart> , nif:OffsetBasedString ;
+        nif:anchorOf              "Satellite-derived spatiotemporal patterns of nitrogen oxide (NO x ) emissions can improve accuracy of emission inventories to better support air quality and climate research and policy studies. In this study, we develop a new method by coupling the chemical transport Model-Independent SATellite-derived Emission estimation Algorithm for Mixed-sources (MISATEAM) with a divergence method to map high-resolution NO x emissions across US cities using TROPOspheric Monitoring Instrument (TROPOMI) tropospheric nitrogen dioxide (NO 2 ) retrievals. The accuracy of the coupled method is validated through application to synthetic NO 2 observations from the NASA-Unified Weather Research and Forecasting (NU-WRF) model, with a horizontal spatial resolution of 4 km × 4 km for 33 large and mid-size US cities. Validation reveals excellent agreement between inferred and NU-WRF-provided emission magnitudes (R = 0.99, normalized mean bias, NMB = −0.01) and a consistent spatial pattern when comparing emissions for individual grid cells (R = 0.88 ± 0.06). We then develop a TROPOMI-based database reporting annual emissions for 39 US cities at a horizontal spatial resolution of 0.05°× 0.05°from 2018 to 2021. This database demonstrates a strong correlation (R = 0.90) with the National Emission Inventory (NEI) but reveals some bias (NMB = −0.24). There are noticeable differences in the spatial patterns of emissions in some cities. Our analysis suggests that uncertainties in TROPOMI-based emissions and potential misallocation of emissions and/or missing sources in bottom-up emission inventories both contribute to these differences." ;
+        nif:beginIndex            "136"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "1766"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/850f5102> ;
+        dct:section_number        "" ;
+        dct:source                "" ;
+        dct:title                 "Satellite-derived spatiotemporal patterns of nitrogen oxide (NO x ) emissions can improve accuracy of emission inventories to better support air quality and climate research and policy studies. In this study, we develop a new method by coupling the chemical transport Model-Independent SATellite-derived Emission estimation Algorithm for Mixed-sources (MISATEAM) with a divergence method to map high-resolution NO x emissions across US cities using TROPOspheric Monitoring Instrument (TROPOMI) tropospheric nitrogen dioxide (NO 2 ) retrievals. The accuracy of the coupled method is validated through application to synthetic NO 2 observations from the NASA-Unified Weather Research and Forecasting (NU-WRF) model, with a horizontal spatial resolution of 4 km × 4 km for 33 large and mid-size US cities. Validation reveals excellent agreement between inferred and NU-WRF-provided emission magnitudes (R = 0.99, normalized mean bias, NMB = −0.01) and a consistent spatial pattern when comparing emissions for individual grid cells (R = 0.88 ± 0.06). We then develop a TROPOMI-based database reporting annual emissions for 39 US cities at a horizontal spatial resolution of 0.05°× 0.05°from 2018 to 2021. This database demonstrates a strong correlation (R = 0.90) with the National Emission Inventory (NEI) but reveals some bias (NMB = −0.24). There are noticeable differences in the spatial patterns of emissions in some cities. Our analysis suggests that uncertainties in TROPOMI-based emissions and potential misallocation of emissions and/or missing sources in bottom-up emission inventories both contribute to these differences." ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "abstract" .
+
+<http://scilake-project.eu/res/850f5102#offset_1767_6467>
+        a                         nif:OffsetBasedString , <dfki:ScientificDocumentPart> ;
+        nif:anchorOf              "Nitrogen oxides (NO x ), including nitrogen dioxide (NO 2 ) and nitric oxide (NO), play a vital role as trace gases in the atmosphere. They substantially contribute to the formation of secondary aerosols and tropospheric ozone (Seinfeld and Pandis, 2006), which in turn impact climate and human health. The primary source of NO x emissions is fossil fuel combustion from mobile and industrial sources, often concentrated in urban areas (Crippa et al., 2018). Traditionally, NO x emissions are compiled using \"bottom-up\" methods that rely on total fuel usage and average emission factors. However, determining urban emissions is challenging due to the difficulty of obtaining comprehensive data on operating conditions of emitters and their rapidly changing emission factors (Liu et al., 2016b) at the city level (Butler et al., 2008). Spatial distribution of emissions is commonly estimated by applying proxies, such as road network maps and/or population density maps, to allocate total emissions onto a grid. This process may introduce significant biases due to spatial mismatches between emission locations and spatial proxies (Woodard et al., 2014;Hogue et al., 2016). Tropospheric NO 2 vertical column densities (VCDs) retrieved from satellite observations offer valuable insights into the magnitude and location of global NO x emissions (Martin et al., 2003;Lamsal et al., 2011). Techniques leveraging chemical transport models (CTMs) have been developed to relate NO 2 VCDs to NO x emissions, for example, the extended (Ding et al., 2017) and ensemble (Miyazaki et al., 2017) Kalman filter, the four-dimensional variational (4D-Var) method (Henze et al., 2009), and the hybrid mass balance/4D-Var (Qu et al., 2019). Alternative methods, which are independent of CTMs, have also been proposed to characterize NO x plumes from major sources (e.g., Beirle et al., 2011;Liu et al., 2016a;Laughner and Cohen, 2019). Early studies employed onedimensional (1D) empirical plume dispersion functions to fit NO 2 VCDs surrounding isolated sources. Liu et al. (2016aLiu et al. ( , 2022) ) refined these functions to accommodate the description of NO 2 plumes from sources in polluted background. The derived fitting parameters yield the magnitude of NO x emissions for point sources, such as power plants (de Foy et al., 2014), and cities, by assuming these sources to be equivalent point sources (Lu et al., 2015;Liu et al., 2017;Goldberg et al., 2019). A recent study (Beirle et al., 2019) introduced a two-dimensional (2D) divergence approach, enabling the identification of finer details in NO x distributions and thus facilitating the detection of smaller sources. Subsequent studies have further refined this approach to enhance divergence calculation (de Foy and Schauer, 2022) and to optimize its performance over mountainous regions (Sun, 2022). Current applications of this divergence method primarily focus on inferring emissions from point sources, e.g., power plants in South Asia (de Foy and Schauer, 2022), oil and gas production areas in the United States (Dix et al., 2022), and a global catalog of point sources (Beirle et al., 2021(Beirle et al., , 2023)). However, the robustness of applying the approach for area sources such as cities has seldom been investigated. The main goal of this study is to map NO x emissions across major cities in the United States based on the TRO-POspheric Monitoring Instrument (TROPOMI; Veefkind et al., 2012) retrievals of NO 2 VCDs (Ialongo et al., 2020). We will couple the 1D (Liu et al., 2022) and 2D (Beirle et al., 2019) CTM-independent approaches to infer gridded NO x emissions. Due to the absence of established \"true emissions\" to serve as a standard for comparison, gauging the precision of the coupled method becomes challenging. We will employ synthetic NO 2 observations, generated by a model simulation, to appraise the accuracy of the approach. Section 2 offers a summary of the satellite data used to map urban NO x emissions and the synthetic NO 2 observations used for validation. In Sect. 3.1, we assess the coupled approach by juxtaposing the emissions inferred from synthetic NO 2 observations with the true emissions used by the model for generating the synthetic observations. In Sect. 3.2, we compare the emissions derived from satellite data with the National Emission Inventory (NEI) developed by the United States Environmental Protection Agency (US EPA) to shed light on the uncertainties of both satellite-derived and bottom-up emissions. Section 3.3 summarizes the uncertainties of the method and the TROPOMI-derived emissions. We discuss the robustness of the derived emissions and outline the planned work in Sect. 4." ;
+        nif:beginIndex            "1767"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "6467"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/850f5102> ;
+        dct:section_number        "1" ;
+        dct:source                "" ;
+        dct:title                 "Introduction" ;
+        qont:LabelUnit            [ a       qont:Label ;
+                                    <dfki:ScientificDocumentSection>
+                                            "introduction"
+                                  ] ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "section" .
+
+<http://scilake-project.eu/res/850f5102/affiliation/aff3>
+        a                           scilake:ScientificAffiliation ;
+        nif:referenceContext        <http://qurator-projekt.de/res/> ;
+        dct:source                  "" ;
+        qont:metadata               []  ;
+        qont:metadata               []  ;
+        scilake:affCountry          "USA" ;
+        scilake:affFailAffiliation  false ;
+        scilake:affKey              "aff3" ;
+        scilake:affPostCode         "20706" ;
+        scilake:affRawAffiliationString
+                "\n\t\t\t\t\t\t\t\tScience Systems and Applications Inc\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t20706\n\t\t\t\t\t\t\t\t\tLanham\n\t\t\t\t\t\t\t\t\tMD\n\t\t\t\t\t\t\t\t\tUSA\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t" ;
+        scilake:affRegion           "MD" ;
+        scilake:affSettlement       "Lanham" ;
+        scilake:has_institution     <http://scilake-project.eu/res/850f5102/location/Science_Systems_and_Applications_Inc> .
+
+<http://scilake-project.eu/res/850f5102/location/George_Mason_University>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/850f5102> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        qont:metadata         []  ;
+        qont:metadata         []  ;
+        qont:metadata         []  ;
+        scilake:locationName  "George Mason University" .
+
+<http://scilake-project.eu/res/850f5102#offset_14245_15854>
+        a                         nif:OffsetBasedString , <dfki:ScientificDocumentPart> ;
+        nif:anchorOf              "We compare emissions derived in this study with those of the bottom-up NEI 2019 processed by George Mason University (Ma and Tong, 2022). NEI is a comprehensive estimate of emissions of criteria air pollutants and their precursors from point, mobile, and area sources, which has been widely used to support urban air quality model simulations. The large point sources in NEI are compiled based on direct stack emissions measurements by continuous emissions monitoring systems (CEMSs). For non-point sources, the gridded data are generated using spatial proxies such as roadwaylevel traffic data for distributing aggregate emissions to grid cells. Figure 1d displays a map of NEI estimates E NEI at a spatial resolution of 12 km for 2019. NEI has been reported to be biased high by 30 %-70 % in the early years of the 2010s (Choi and Souri, 2015;Dickerson et al., 2019). For example, NEI NO x estimates for 2011 were potentially overestimated by 51 %-70 % over the Baltimore-Washington region (Anderson et al., 2014), 30 %-60 % in the Southeastern United States (Travis et al., 2016), and 30 %-60 % over urban areas of Texas (Souri et al., 2016). NEI NO x emissions for mobile sources alone were reported to be biased high by 28 % (McDonald et al., 2018). We use the lower bound of the reported bias (30 %) as the uncertainty for NEI emissions in this study. The spatial distribution of our estimated emissions E (Fig. 1c) is generally in good agreement with that of NEI emissions (Fig. 1d), with a correlation coefficient of 0.71. More comparisons between these two inventories will be discussed in Sect. 3.2." ;
+        nif:beginIndex            "14245"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "15854"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/850f5102> ;
+        dct:section_number        "2.3" ;
+        dct:source                "" ;
+        dct:title                 "National Emission Inventory (NEI)" ;
+        qont:LabelUnit            [ a       qont:Label ;
+                                    <dfki:ScientificDocumentSection>
+                                            "introduction"
+                                  ] ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "section" .
+
+<http://scilake-project.eu/res/850f5102/author/0da38827>
+        a                        scilake:ScientificAuthor ;
+        nif:referenceContext     <http://scilake-project.eu/res/d2d18852> ;
+        dct:source               "" ;
+        qont:metadata            []  ;
+        scilake:corresp          false ;
+        scilake:firstname        "Zachary" ;
+        scilake:has_affiliation  <http://scilake-project.eu/res/850f5102/affiliation/aff1> , <http://scilake-project.eu/res/850f5102/affiliation/aff3> ;
+        scilake:lastname         "Fasnacht" ;
+        scilake:middlename       "T" ;
+        scilake:valid            false .
+
+<http://scilake-project.eu/res/850f5102/author/2d6136e4>
+        a                        scilake:ScientificAuthor ;
+        nif:referenceContext     <http://scilake-project.eu/res/89aab100> ;
+        dct:source               "" ;
+        qont:metadata            []  ;
+        scilake:corresp          false ;
+        scilake:firstname        "Steffen" ;
+        scilake:has_affiliation  <http://scilake-project.eu/res/850f5102/affiliation/aff2> ;
+        scilake:lastname         "Beirle" ;
+        scilake:valid            false .
+
+<http://scilake-project.eu/res/850f5102/author/a19daf1f>
+        a                        scilake:ScientificAuthor ;
+        nif:referenceContext     <http://scilake-project.eu/res/8c0f91e5> ;
+        dct:source               "" ;
+        qont:metadata            []  ;
+        scilake:corresp          false ;
+        scilake:firstname        "K" ;
+        scilake:has_affiliation  <http://scilake-project.eu/res/850f5102/affiliation/aff1> , <http://scilake-project.eu/res/850f5102/affiliation/aff0> ;
+        scilake:lastname         "Knowland" ;
+        scilake:middlename       "Emma" ;
+        scilake:valid            false .
+
+<http://scilake-project.eu/res/850f5102/location/Department_of_Atmospheric,_Oceanic_and_Earth_Sciences>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/850f5102> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        qont:metadata         []  ;
+        scilake:locationName  "Department of Atmospheric, Oceanic and Earth Sciences" .
+
+<http://scilake-project.eu/res/850f5102/affiliation/aff2>
+        a                           scilake:ScientificAffiliation ;
+        nif:referenceContext        <http://qurator-projekt.de/res/> ;
+        dct:source                  "" ;
+        qont:metadata               []  ;
+        qont:metadata               []  ;
+        scilake:affCountry          "Germany" ;
+        scilake:affFailAffiliation  false ;
+        scilake:affKey              "aff2" ;
+        scilake:affPostCode         "55128" ;
+        scilake:affRawAffiliationString
+                "\n\t\t\t\t\t\t\t\tSatellite Remote Sensing Group\n\t\t\t\t\t\t\t\tMax-Planck-Institut für Chemie\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t55128\n\t\t\t\t\t\t\t\t\tMainz\n\t\t\t\t\t\t\t\t\tGermany\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t" ;
+        scilake:affSettlement       "Mainz" ;
+        scilake:has_department      <http://scilake-project.eu/res/850f5102/location/Max-Planck-Institut_für_Chemie> , <http://scilake-project.eu/res/850f5102/location/Satellite_Remote_Sensing_Group> .
+
+<http://scilake-project.eu/res/850f5102/author/67548626>
+        a                        scilake:ScientificAuthor ;
+        nif:referenceContext     <http://scilake-project.eu/res/639c6f6c> ;
+        dct:source               "" ;
+        qont:metadata            []  ;
+        scilake:corresp          false ;
+        scilake:firstname        "Zhining" ;
+        scilake:has_affiliation  <http://scilake-project.eu/res/850f5102/affiliation/aff1> , <http://scilake-project.eu/res/850f5102/affiliation/aff0> ;
+        scilake:lastname         "Tao" ;
+        scilake:valid            false .
+
+<http://scilake-project.eu/res/850f5102#offset_6469_8953>
+        a                         <dfki:ScientificDocumentPart> , nif:OffsetBasedString ;
+        nif:anchorOf              "TROPOMI is a UV-VIS-NIR-SWIR nadir-viewing imaging spectrometer (Veefkind et al., 2012) on board the Sentinel 5 Precursor (S5P) satellite that was launched in 2017. It had a ground pixel size at nadir of 7.5 km × 3.5 km before 6 August 2019 and improved to 5.5 km × 3.5 km afterwards. It provides daily global coverage with a local Equator crossing time of approximately 13:30 local time (LT; the time zone for all instances in the text is LT). The instrument's radiance and irradiance measurements are utilized to obtain slant NO 2 columns using the differential optical absorption spectroscopy (DOAS) algorithm (Platt and Stutz, 2008). The slant columns are subsequently differentiated into stratospheric and tropospheric parts, with the tropospheric slant columns being further converted to vertical columns based on air mass factors. We selected TROPOMI NO 2 retrieved by the NASA Goddard Space Flight Center (GSFC) TROPOMI Multi-Decadal Nitrogen Dioxide and Derived Products from Satellites (MINDS) NO 2 product (Lamsal et al., 2022), in this study due to its utility in investigating emission trends. The official NO 2 product available at the commencement of this study switched the processor version in December 2020, which introduced a discontinuity in the time series (van Geffen et al., 2022). The GSFC product (Lamsal et al., 2022) utilizes slant columns from the official product to retrieve a full time series of tropospheric NO 2 VCDs from spring to autumn months of 2018 to 2021 based on the algorithm developed for the Ozone Monitoring Instrument (OMI) Aura NO 2 standard product version 4.0 (Lamsal et al., 2021). TROPOMI NO 2 data have been reported to have an overall low bias (Judd et al., 2020;Tack et al., 2021;Verhoelst et al., 2021;Wang et al., 2020), which will be propagated into emissions inferred from TROPOMI NO 2 . We further aggregate TROPOMI's individual measurements at spatial resolution of 0.05°× 0.05°by averaging the original pixels weighted by the fraction of the overlapping surface area. Only high-quality pixels with a quality assurance value (qa_value) above 0.75 are considered for averaging, which excludes cloud-covered scenes with cloud radiance fraction > 0.5. Following the approach of earlier research (e.g., Liu et al., 2017), our analysis is confined to the data from May through September. This decision is made to omit winter data, characterized by longer NO x lifetimes, which in turn lead to greater uncertainties to the method." ;
+        nif:beginIndex            "6469"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "8953"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/850f5102> ;
+        dct:section_number        "2.1" ;
+        dct:source                "" ;
+        dct:title                 "TROPOMI NO 2 dataset" ;
+        qont:LabelUnit            [ a       qont:Label ;
+                                    <dfki:ScientificDocumentSection>
+                                            "introduction"
+                                  ] ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "section" .
+
+<http://scilake-project.eu/res/850f5102/author/9805f46f>
+        a                        scilake:ScientificAuthor ;
+        nif:referenceContext     <http://scilake-project.eu/res/b67ba4ae> ;
+        dct:source               "" ;
+        qont:metadata            []  ;
+        scilake:corresp          false ;
+        scilake:firstname        "Daniel" ;
+        scilake:has_affiliation  <http://scilake-project.eu/res/850f5102/affiliation/aff5> , <http://scilake-project.eu/res/850f5102/affiliation/aff6> ;
+        scilake:lastname         "Tong" ;
+        scilake:middlename       "Q" ;
+        scilake:valid            false .
+
+<http://scilake-project.eu/res/850f5102#offset_0_135>
+        a                         <dfki:ScientificDocumentPart> , nif:OffsetBasedString ;
+        nif:anchorOf              "High-resolution mapping of nitrogen oxide emissions in large US cities from TROPOMI retrievals of tropospheric nitrogen dioxide columns" ;
+        nif:beginIndex            "0"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "135"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/850f5102> ;
+        dct:section_number        "" ;
+        dct:source                "" ;
+        dct:title                 "High-resolution mapping of nitrogen oxide emissions in large US cities from TROPOMI retrievals of tropospheric nitrogen dioxide columns" ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "title" .
+
+<http://scilake-project.eu/res/850f5102/author/67443663>
+        a                        scilake:ScientificAuthor ;
+        nif:referenceContext     <http://scilake-project.eu/res/95e56f7e> ;
+        dct:source               "" ;
+        qont:metadata            []  ;
+        scilake:corresp          false ;
+        scilake:firstname        "Joanna" ;
+        scilake:has_affiliation  <http://scilake-project.eu/res/850f5102/affiliation/aff1> ;
+        scilake:lastname         "Joiner" ;
+        scilake:valid            false .
+
+<http://scilake-project.eu/res/850f5102/author/49763cc6>
+        a                        scilake:ScientificAuthor ;
+        nif:referenceContext     <http://scilake-project.eu/res/5ca8e650> ;
+        dct:source               "" ;
+        qont:metadata            []  ;
+        scilake:corresp          false ;
+        scilake:firstname        "Sungyeon" ;
+        scilake:has_affiliation  <http://scilake-project.eu/res/850f5102/affiliation/aff1> , <http://scilake-project.eu/res/850f5102/affiliation/aff3> ;
+        scilake:lastname         "Choi" ;
+        scilake:valid            false .
+
+<http://scilake-project.eu/res/850f5102/author/1dd7f881>
+        a                        scilake:ScientificAuthor ;
+        nif:referenceContext     <http://scilake-project.eu/res/a863e852> ;
+        dct:source               "" ;
+        qont:metadata            []  ;
+        scilake:corresp          false ;
+        scilake:firstname        "Siqi" ;
+        scilake:has_affiliation  <http://scilake-project.eu/res/850f5102/affiliation/aff6> , <http://scilake-project.eu/res/850f5102/affiliation/aff5> ;
+        scilake:lastname         "Ma" ;
+        scilake:valid            false .
+
+<http://scilake-project.eu/res/850f5102#offset_24800_29280>
+        a                         nif:OffsetBasedString , <dfki:ScientificDocumentPart> ;
+        nif:anchorOf              "We follow the method proposed by Liu et al. (2022) to evaluate the uncertainties associated with the derived results. We attribute an uncertainty of 20 % to the inferred emissions, based on the relative differences between E NU-WRF and E NU-WRF for all 33 cities using the NU-WRF synthetic data (2 ± 24 %). Since the differences are less than 20 % for most cities (73 %), this estimate may be conservative. Instead of using data spanning multiple years (2018-2021), we apply 1D MISATEAM to annual data to investigate the uncertainty introduced by presuming a consistent NO x lifetime over several years. For each city, we infer τ by applying 1D MISATEAM to TROPOMI NO 2 VCDs, averaged from May to September for each individual year from 2018 to 2021. Among the cities analyzed, 14 cities (listed in Table S1) have valid NO x lifetimes available for all 4 years. The ratio of the standard deviation of the fitted τ for these individual years to the average τ , as derived from data from 2018 to 2021, stands at 16 %. This indicates an uncertainty of 16 % in relation to the assumption of a constant NO x lifetime. We identify additional uncertainties that may arise when implementing 2D MISATEAM to TROPOMI and GEOS-IT data as opposed to synthetic data, as follows: -The uncertainty of TROPOMI NO 2 observations carries over into the uncertainty of the inferred emissions. We consider an overall uncertainty of 25 % for TROPOMI tropospheric NO 2 VCDs, following the recommendation from a recent validation using ground-based measurements (van Geffen et al., 2022). The uncertainty originates from various factors, including the spectral fitting process during the retrieval, the separation of stratospheric and tropospheric columns, and the tropospheric air mass factor (AMF). AMF accounts for the variable sensitivity of satellite observations to NO 2 at different atmospheric altitudes, which is informed by a priori knowledge of NO 2 vertical distribution as provided by chemical transport models. Laughner et al. (2016) demonstrated that urban NO x emissions estimated via NO 2 VCDs with daily, highresolution a priori profiles are considerably higher than those derived from retrievals using coarser-resolution profiles. This presents a relevant challenge for our study. To refine the assessment of AMF influences on 2D MISATEAM-derived emissions, a sensitivity analysis where TROPOMI's AMFs are applied to NU-WRF profiles is of help. This would generate NO 2 columns with AMF biases, which, when used to calculate emissions, can be contrasted with those derived from idealized columns. Such a comparison would reveal the extent to which AMF biases systematically affect the emissions determined by 2D MISATEAM. Given the extensive computational demands of such a sensitivity analysis, we had to exclude it from this study. Instead, we aim to perform a comprehensive investigation in future research. The potential bias arising from the separation of stratospheric and tropospheric columns is eliminated by the employment of the background terms b and b calm within the model functions of MISATEAM. Since the random uncertainty of the tropospheric NO 2 observations could be suppressed due to the consideration of long-term means, this estimate may be conservative. -The presence of clouds is an additional source of uncertainties. We exclude TROPOMI NO 2 data with cloud radiance fraction of 0.5 or greater in our analysis. This exclusion may lead to a bias in the NO 2 VCD averages, a consequence of eliminating data with changing the NO x lifetime and NO x /NO 2 ratio during cloudy conditions (Geddes et al., 2012). We attribute an uncertainty of 10 % to cloud selection criteria based on an assessment carried out at urban locations (Geddes et al., 2012). More sensitivity analysis regarding the impact of clouds has been discussed by Liu et al. (2022). -The precision of wind fields plays an important role in determining the total uncertainty, as it limits the model functions' ability to describe NO 2 transport. We estimate the corresponding uncertainties to be 30 % based on an assessment of reanalysis wind products using sounding measurements (refer to Table S3 in Liu et al., 2016a). We define the overall uncertainty of the inferred emissions as the root of the quadratic sum of the above-mentioned uncertainties, which are assumed to be independent. We thus calculate that the total uncertainty of MISATEAM-derived NO x emissions for a mid-size US city is 47 %." ;
+        nif:beginIndex            "24800"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "29280"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/850f5102> ;
+        dct:section_number        "3.3" ;
+        dct:source                "" ;
+        dct:title                 "Uncertainty analysis" ;
+        qont:LabelUnit            [ a       qont:Label ;
+                                    <dfki:ScientificDocumentSection>
+                                            "introduction"
+                                  ] ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "section" .
+
+<http://scilake-project.eu/res/850f5102#offset_8954_14244>
+        a                         nif:OffsetBasedString , <dfki:ScientificDocumentPart> ;
+        nif:anchorOf              "We couple our 1D CTM-Independent SATellite-derived Emission estimation Algorithm for Mixed-sources (MIS-ATEAM; Liu et al., 2022) with the 2D divergency method of Beirle et al. (2019). The 1D MISATEAM algorithm quantifies the magnitude of city-level NO x lifetime and emissions by conceptualizing urban areas as point sources and thus does not capture the spatial variability within the urban areas. Conversely, the 2D divergence method allows for the resolution of finer spatial details in NO x distributions but relies on additional, often external, sources for determining NO x lifetimes, which can be a significant limitation. The coupled algorithm (hereafter referred to as 2D MISATEAM for simplicity) leverages the strengths of both: it maps NO x emissions over urban areas with enhanced spatial detail and does so independently by deriving lifetimes directly from NO 2 measurements, thereby overcoming the need for prescribed or externally sourced lifetime constraints. The 1D and 2D MISATEAM methods deliver consistent estimates for total emissions, displaying a small relative difference of −5±9 %. While this result demonstrates the internal consistency of the MISATEAM methods, it is important to note that such coherence is due to the shared fundamental principle of mass balance underlying both methodologies. The cities listed in Table S1 in the Supplement that failed NU-WRF validation demonstrate a similar consistency between the two methods, with a relative difference 1 ± 14 %. Therefore, the similarity in emissions estimations should not be viewed as an independent validation metric. We average both NO 2 VCDs and reanalysis wind data from May to September each year. We then use those av-eraged data to infer NO x emissions E by summing the divergence of the NO x flux D with the NO x sink S based on the continuity equation for a steady state as follows: where F is the NO x flux. It is calculated from the horizontal fluxes of NO 2 VCDs . R NO x : NO 2 is the ratio of NO x to NO 2 columns. Following previous studies (Beirle et al., 2019), we use an R NO x : NO 2 value of 1.32 to represent \"typical urban conditions and noontime sun\" (Seinfeld and Pandis, 2006). We interpolate the Goddard Earth Observing System Forward Processing for Instrument Teams' (GEOS FP-IT) reanalysis wind vectors (Lucchesi, 2015) to the TROPOMI overpass time and average layers from the surface to 1000 m altitude to derive v used in Eq. ( 2). Since the NO x sinks are dominated by the chemical loss through the reaction of NO 2 with OH at TROPOMI's local overpass time (13:30), it can be characterized by a first-order effective NO x lifetime τ . Consequently, it bears a proportionate relationship to the NO 2 VCD itself in Eq. ( 3). Note that we assume a relatively constant background and subtract the NO 2 background b from in the calculation of the divergences and the sinks because we aim to remove the natural and nonlocal contributions from the total emissions for each urban area in order to infer urban emissions. For each city, we infer b and τ by applying 1D MISATEAM (Liu et al., 2022) to NO 2 VCDs averaged from May through September 2018-2021, assuming b and τ are constant over years. Additional technical details for deriving b and τ are given in Fig. S1 and Sect. S1 of the Supplement. The city of New York serves as a case study to showcase our approach. With its substantial size and numerous point and area sources, this city is an ideal illustration of the capability of 2D MISATEAM to map emissions from various sources. Figure 1a-c illustrate maps of the derived sink S, the divergence D, and the resulting NO x emissions E, respectively. The divergence of the NO x flux (Fig. 1b) presents enhancement throughout the urban area due to emissions from traffic and industrial sources. The divergence is negative outside the urban areas because the change in the NO x flux is dominated by chemical loss here. The addition of sinks (Fig. 1a) compensates for such negative divergences, resulting in the emission pattern E (Fig. 1c). Two point source emissions on Long Island stand out: Glenwood Landing power station (labeled as power plant, PP) and John F. Kennedy (JFK) airport, respectively. We apply 2D MISATEAM to US cities with populations exceeding 200 000, a categorization that corresponds to medium to large urban areas as designated in Organization for Economic Co-operation and Development (OECD) countries. Adjacent cities, those situated within 50 km of the https://doi.org/10.5194/acp-24-3717-2024 Atmos. Chem. Phys., 24, 3717-3728, 2024 Wind speed is given in the units of knots, where 1 kn is equal to 1 nautical mile per hour (1.9 km h −1 ). Each short and long barb represents 5 kn (9.3 km h −1 ) and 10 kn (18.5 km h −1 ), respectively. most populous city in an urban conglomeration, are treated as a single city cluster. Cities producing significantly weaker NO 2 signals than the surroundings are excluded (see criteria in Sect. S2). The specified criteria yield a combined count of 52 cities and urban conglomerations (refer to Table S1) that are suitable for the application of 2D MISATEAM. We obtained valid results from 39 of these cities shown in Fig. S2. Cities with invalid results are associated with large fitting errors (see Sect. S2)." ;
+        nif:beginIndex            "8954"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "14244"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/850f5102> ;
+        dct:section_number        "2.2" ;
+        dct:source                "" ;
+        dct:title                 "Emission mapping algorithm" ;
+        qont:LabelUnit            [ a       qont:Label ;
+                                    <dfki:ScientificDocumentSection>
+                                            "introduction"
+                                  ] ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "section" .
+
+<http://scilake-project.eu/res/850f5102#offset_15855_17735>
+        a                         <dfki:ScientificDocumentPart> , nif:OffsetBasedString ;
+        nif:anchorOf              "We use a regional modeling system, the NASA-Unified Weather Research and Forecasting (NU-WRF; Tao et al., 2013;Peters-Lidard et al., 2015), to provide synthetic tropospheric NO 2 VCDs NU-WRF and wind fields v NU -W RF over the continental United States. The domain of the simulation is illustrated in Fig. 2 of Liu et al. (2022). We perform the 2016 NU-WRF simulation at a high horizontal spatial resolution of 4 km × 4 km, comparable to the TROPOMI footprint. The meteorological and chemical initial conditions and their lateral boundaries are obtained from NASA's Modern Era Retrospective-Analysis for Research and Applications version 2 (MERRA-2; Gelaro et al., 2017) and the Community Atmosphere Model with chemistry (CAM-chem; Lamarque et al., 2012), respectively. Additional model setup information, including the chemical mechanism, aerosol module, and emissions, is detailed in Tao et al. (2020) and Liu et al. (2022). We integrate simulated NO 2 concentrations from the surface to the tropopause to provide NU-WRF . We average wind fields used by NU-WRF from the surface to an altitude of 1000 m to compute v NU -W RF . We apply 2D MISATEAM to the synthetic NO 2 VCDs NU-WRF and wind fields v NU -W RF to map NO x emissions E NU-WRF for cities in Table S1. We derive valid results for 33 cities (see Sect. S2). We have valid results for a smaller number of cities compared to results derived from TROPOMI data, as cities at the edge of the NU-WRF domain, such as Seattle and San Francisco, are omitted. Since the model output partially lacks the data for their inflow/outflow plumes, it fails to satisfy the requirement for the application of 2D MISATEAM. We further compare E NU-WRF with \"true emissions\" directly given by the model E NU-WRF (hereafter referred to as \"given emissions\"), which are used to drive NU-WRF simulations, to assess the accuracy of 2D MISATEAM." ;
+        nif:beginIndex            "15855"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "17735"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/850f5102> ;
+        dct:section_number        "2.4" ;
+        dct:source                "" ;
+        dct:title                 "NU-WRF simulations" ;
+        qont:LabelUnit            [ a       qont:Label ;
+                                    <dfki:ScientificDocumentSection>
+                                            "introduction"
+                                  ] ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "section" .
+
+<http://scilake-project.eu/res/850f5102#offset_6468_6468>
+        a                         nif:OffsetBasedString , <dfki:ScientificDocumentPart> ;
+        nif:anchorOf              "" ;
+        nif:beginIndex            "6468"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "6468"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/850f5102> ;
+        dct:section_number        "2" ;
+        dct:source                "" ;
+        dct:title                 "Data and methods" ;
+        qont:LabelUnit            [ a       qont:Label ;
+                                    <dfki:ScientificDocumentSection>
+                                            "introduction"
+                                  ] ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "section" .

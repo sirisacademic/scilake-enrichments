@@ -1,0 +1,149 @@
+@prefix lkg-res: <http://lkg.lynx-project.eu/res/> .
+@prefix eli:   <http://data.europa.eu/eli/ontology#> .
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix itsrdf: <http://www.w3.org/2005/11/its/rdf#> .
+@prefix lkg:   <http://lkg.lynx-project.eu/def/> .
+@prefix skos:  <http://www.w3.org/2004/02/skos/core#> .
+@prefix nif:   <http://persistence.uni-leipzig.org/nlp2rdf/ontologies/nif-core#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dbo:   <http://dbpedia.org/ontology/> .
+@prefix qont:  <http://qurator-projekt.de/ontology/> .
+@prefix nif-ann: <http://persistence.uni-leipzig.org/nlp2rdf/ontologies/nif-annotation#> .
+@prefix dct:   <http://purl.org/dc/terms/> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix dbr:   <http://dbpedia.org/resource/> .
+@prefix sci-res: <http://scilake-projekt.eu/res/> .
+@prefix foaf:  <http://xmlns.com/foaf/0.1/> .
+@prefix scilake: <http://scilake-projekt.eu/ontology/> .
+
+<http://scilake-project.eu/res/9ec987a4/author/4e0e4fd5>
+        a                        scilake:ScientificAuthor ;
+        nif:referenceContext     <http://scilake-project.eu/res/cc14f4a7> ;
+        dct:source               "" ;
+        qont:metadata            []  ;
+        scilake:corresp          false ;
+        scilake:has_affiliation  <http://scilake-project.eu/res/9ec987a4/affiliation/aff0> ;
+        scilake:valid            false .
+
+<http://scilake-project.eu/res/9ec987a4>
+        a                    nif:OffsetBasedString , scilake:ScientificDocument , nif:Context ;
+        nif:beginIndex       "0"^^xsd:nonNegativeInteger ;
+        nif:endIndex         "3438"^^xsd:nonNegativeInteger ;
+        nif:isString         "Special Issue on Future Powertrain Technologies Beside others, climate change and digitalization are trends of huge public interest, which highly influence the development process of future powertrain technologies. To handle these trends, new disruptive technologies are integrated into the development process. They open up space for diverse research, which is distributed over the entire vehicle design process. Recent research on this topic incorporates results for selecting and designing the powertrain topology [1-7] with their vehicle operating strategy [8,9], as well as results for handling the reliability of new powertrain components [10][11][12]. In [7], the optimal passenger car vehicle fleet transformation is developed based on lifecycle assessment. The results differ for short-range and long-range requirements, where battery electric vehicles are best for short-range. For longer distances, and at least until 2040, plug-in hybrid electric vehicles (PHEV) offer the greatest potential. In accordance with these results, ref. [6] optimizes an aftermarket hybridization kit, which can convert a combustion engine vehicle into a PHEV. Such kits may accelerate the passenger car vehicle fleet transition. With [1], a method for measuring non-volatile particle emissions is given. This method is highly relevant in the context of upcoming vehicle regulations within the transformation process. In case of battery electric vehicles (BEV), ref. [5] investigates the influence of increasing the speed of the electric machine. Whilst this increases the system complexity through a higher gear ratio, a better power density of the overall powertrain system may be achieved. Different powertrain complexities in case of vehicles with dedicated hybrid transmissions are compared in [4]. The results show that a high complexity in the transmission may lead to a higher potential in reducing the vehicle's CO 2 emissions. However, an increased powertrain complexity also increases the cost. In [2], a low-end multipurpose vehicle is proposed. Here, the combustion engine is designed only to meet the constant driving power requirements. On short distances, this vehicle drives purely electric. For longer distances, the constant driving power is delivered by the combustion engine. In [3], the environmental and ecological benefits of a dual-battery BEV are considered. The authors propose to decrease the size of the Lithium-Ion battery and use a Zinc-Air battery pack as range extender. The results show that the vehicle cost can be reduced significantly by introducing a second, less costly battery. PHEV offer new possibilities for intelligent operating strategies. A user-specific operating strategy that adapts during operating is proposed in [9]. The strategy uses supervised machine learning methods, and achieves lower consumption compared to a reference. Furthermore, new vehicle concepts, such as fuel cell vehicles, may introduce additional requirements regarding their operating strategy. In [8], an operating strategy for a fuel cell bus with a supercapacitor is developed based on real life data from London, UK. Here, it has to be assured that the capacitor is never over-or undercharged, and that the power requirements can be met. Future powertrain technologies must be equipped with new and reliable system components. For example, in [12], condition monitoring and remaining useful lifetime estimation methods for" ;
+        qont:metadata        [ dct:language  "en" ] ;
+        scilake:has_authors  <http://scilake-project.eu/res/9ec987a4/author/ac266531> , <http://scilake-project.eu/res/9ec987a4/author/87d524d1> , <http://scilake-project.eu/res/9ec987a4/author/06e8082f> , <http://scilake-project.eu/res/9ec987a4/author/4e0e4fd5> , <http://scilake-project.eu/res/9ec987a4/author/bfbed4a7> ;
+        scilake:has_part     <http://scilake-project.eu/res/9ec987a4#offset_48_3438> , <http://scilake-project.eu/res/9ec987a4#offset_0_47> .
+
+<http://scilake-project.eu/res/9ec987a4/author/06e8082f>
+        a                        scilake:ScientificAuthor ;
+        nif:referenceContext     <http://scilake-project.eu/res/579dbb4f> ;
+        dct:source               "" ;
+        qont:metadata            []  ;
+        scilake:corresp          false ;
+        scilake:has_affiliation  <http://scilake-project.eu/res/9ec987a4/affiliation/aff1> ;
+        scilake:valid            false .
+
+<http://scilake-project.eu/res/9ec987a4/author/87d524d1>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/4b4dce04> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:email         "esser@ims.tu-darmstadt.de" ;
+        scilake:firstname     "Arved" ;
+        scilake:lastname      "Esser" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/9ec987a4/affiliation/aff1>
+        a                           scilake:ScientificAffiliation ;
+        nif:referenceContext        <http://qurator-projekt.de/res/> ;
+        dct:source                  "" ;
+        qont:metadata               []  ;
+        scilake:affCountry          "Germany" ;
+        scilake:affFailAffiliation  false ;
+        scilake:affKey              "aff1" ;
+        scilake:affPostCode         "64287" ;
+        scilake:affRawAffiliationString
+                "\n\t\t\t\t\t\t\t\tTechnical University of Darmstadt\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t64287\n\t\t\t\t\t\t\t\t\tDarmstadt\n\t\t\t\t\t\t\t\t\tGermany\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t" ;
+        scilake:affSettlement       "Darmstadt" ;
+        scilake:has_institution     <http://scilake-project.eu/res/9ec987a4/location/Technical_University_of_Darmstadt> .
+
+<http://scilake-project.eu/res/9ec987a4#offset_48_3438>
+        a                         nif:OffsetBasedString , <dfki:ScientificDocumentPart> ;
+        nif:anchorOf              "Beside others, climate change and digitalization are trends of huge public interest, which highly influence the development process of future powertrain technologies. To handle these trends, new disruptive technologies are integrated into the development process. They open up space for diverse research, which is distributed over the entire vehicle design process. Recent research on this topic incorporates results for selecting and designing the powertrain topology [1-7] with their vehicle operating strategy [8,9], as well as results for handling the reliability of new powertrain components [10][11][12]. In [7], the optimal passenger car vehicle fleet transformation is developed based on lifecycle assessment. The results differ for short-range and long-range requirements, where battery electric vehicles are best for short-range. For longer distances, and at least until 2040, plug-in hybrid electric vehicles (PHEV) offer the greatest potential. In accordance with these results, ref. [6] optimizes an aftermarket hybridization kit, which can convert a combustion engine vehicle into a PHEV. Such kits may accelerate the passenger car vehicle fleet transition. With [1], a method for measuring non-volatile particle emissions is given. This method is highly relevant in the context of upcoming vehicle regulations within the transformation process. In case of battery electric vehicles (BEV), ref. [5] investigates the influence of increasing the speed of the electric machine. Whilst this increases the system complexity through a higher gear ratio, a better power density of the overall powertrain system may be achieved. Different powertrain complexities in case of vehicles with dedicated hybrid transmissions are compared in [4]. The results show that a high complexity in the transmission may lead to a higher potential in reducing the vehicle's CO 2 emissions. However, an increased powertrain complexity also increases the cost. In [2], a low-end multipurpose vehicle is proposed. Here, the combustion engine is designed only to meet the constant driving power requirements. On short distances, this vehicle drives purely electric. For longer distances, the constant driving power is delivered by the combustion engine. In [3], the environmental and ecological benefits of a dual-battery BEV are considered. The authors propose to decrease the size of the Lithium-Ion battery and use a Zinc-Air battery pack as range extender. The results show that the vehicle cost can be reduced significantly by introducing a second, less costly battery. PHEV offer new possibilities for intelligent operating strategies. A user-specific operating strategy that adapts during operating is proposed in [9]. The strategy uses supervised machine learning methods, and achieves lower consumption compared to a reference. Furthermore, new vehicle concepts, such as fuel cell vehicles, may introduce additional requirements regarding their operating strategy. In [8], an operating strategy for a fuel cell bus with a supercapacitor is developed based on real life data from London, UK. Here, it has to be assured that the capacitor is never over-or undercharged, and that the power requirements can be met. Future powertrain technologies must be equipped with new and reliable system components. For example, in [12], condition monitoring and remaining useful lifetime estimation methods for" ;
+        nif:beginIndex            "48"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "3438"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/9ec987a4> ;
+        dct:section_number        "" ;
+        dct:source                "" ;
+        dct:title                 "Beside others, climate change and digitalization are trends of huge public interest, which highly influence the development process of future powertrain technologies. To handle these trends, new disruptive technologies are integrated into the development process. They open up space for diverse research, which is distributed over the entire vehicle design process. Recent research on this topic incorporates results for selecting and designing the powertrain topology [1-7] with their vehicle operating strategy [8,9], as well as results for handling the reliability of new powertrain components [10][11][12]. In [7], the optimal passenger car vehicle fleet transformation is developed based on lifecycle assessment. The results differ for short-range and long-range requirements, where battery electric vehicles are best for short-range. For longer distances, and at least until 2040, plug-in hybrid electric vehicles (PHEV) offer the greatest potential. In accordance with these results, ref. [6] optimizes an aftermarket hybridization kit, which can convert a combustion engine vehicle into a PHEV. Such kits may accelerate the passenger car vehicle fleet transition. With [1], a method for measuring non-volatile particle emissions is given. This method is highly relevant in the context of upcoming vehicle regulations within the transformation process. In case of battery electric vehicles (BEV), ref. [5] investigates the influence of increasing the speed of the electric machine. Whilst this increases the system complexity through a higher gear ratio, a better power density of the overall powertrain system may be achieved. Different powertrain complexities in case of vehicles with dedicated hybrid transmissions are compared in [4]. The results show that a high complexity in the transmission may lead to a higher potential in reducing the vehicle's CO 2 emissions. However, an increased powertrain complexity also increases the cost. In [2], a low-end multipurpose vehicle is proposed. Here, the combustion engine is designed only to meet the constant driving power requirements. On short distances, this vehicle drives purely electric. For longer distances, the constant driving power is delivered by the combustion engine. In [3], the environmental and ecological benefits of a dual-battery BEV are considered. The authors propose to decrease the size of the Lithium-Ion battery and use a Zinc-Air battery pack as range extender. The results show that the vehicle cost can be reduced significantly by introducing a second, less costly battery. PHEV offer new possibilities for intelligent operating strategies. A user-specific operating strategy that adapts during operating is proposed in [9]. The strategy uses supervised machine learning methods, and achieves lower consumption compared to a reference. Furthermore, new vehicle concepts, such as fuel cell vehicles, may introduce additional requirements regarding their operating strategy. In [8], an operating strategy for a fuel cell bus with a supercapacitor is developed based on real life data from London, UK. Here, it has to be assured that the capacitor is never over-or undercharged, and that the power requirements can be met. Future powertrain technologies must be equipped with new and reliable system components. For example, in [12], condition monitoring and remaining useful lifetime estimation methods for" ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "abstract" .
+
+<http://scilake-project.eu/res/9ec987a4/location/Institute_for_Mechatronic_Systems_in_Mechanical_Engineering>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/9ec987a4> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:locationName  "Institute for Mechatronic Systems in Mechanical Engineering" .
+
+<http://scilake-project.eu/res/9ec987a4/location/Department_of_Mechanical_Engineering>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/9ec987a4> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:locationName  "Department of Mechanical Engineering" .
+
+<http://scilake-project.eu/res/9ec987a4/author/ac266531>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/0c352a28> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:email         "jardin@ims.tu-darmstadt.de" ;
+        scilake:firstname     "Philippe" ;
+        scilake:lastname      "Jardin" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/9ec987a4#offset_0_47>
+        a                         nif:OffsetBasedString , <dfki:ScientificDocumentPart> ;
+        nif:anchorOf              "Special Issue on Future Powertrain Technologies" ;
+        nif:beginIndex            "0"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "47"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/9ec987a4> ;
+        dct:section_number        "" ;
+        dct:source                "" ;
+        dct:title                 "Special Issue on Future Powertrain Technologies" ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "title" .
+
+<http://scilake-project.eu/res/9ec987a4/location/Technical_University_of_Darmstadt>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/9ec987a4> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:locationName  "Technical University of Darmstadt" .
+
+<http://scilake-project.eu/res/9ec987a4/author/bfbed4a7>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/371e7bcb> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:email         "rinderknecht@ims.tu-darmstadt.de" ;
+        scilake:firstname     "Stephan" ;
+        scilake:lastname      "Rinderknecht" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/9ec987a4/affiliation/aff0>
+        a                           scilake:ScientificAffiliation ;
+        nif:referenceContext        <http://qurator-projekt.de/res/> ;
+        dct:source                  "" ;
+        qont:metadata               []  ;
+        scilake:affFailAffiliation  false ;
+        scilake:affKey              "aff0" ;
+        scilake:affRawAffiliationString
+                "\n\t\t\t\t\t\t\t\tDepartment of Mechanical Engineering\n\t\t\t\t\t\t\t\tInstitute for Mechatronic Systems in Mechanical Engineering\n\t\t\t\t\t\t\t" ;
+        scilake:has_department      <http://scilake-project.eu/res/9ec987a4/location/Department_of_Mechanical_Engineering> ;
+        scilake:has_institution     <http://scilake-project.eu/res/9ec987a4/location/Institute_for_Mechatronic_Systems_in_Mechanical_Engineering> .

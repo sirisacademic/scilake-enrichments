@@ -19,3 +19,6 @@ scispacy>=0.5.3
 # Utils and logging
 protobuf<5.0.0
 loguru>=0.7.0
+
+# AffilGood
+git+https://github.com/sirisacademic/affilgood@v3.0.0 # or @main

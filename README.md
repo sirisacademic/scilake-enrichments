@@ -143,6 +143,16 @@ python -m src.pipeline \
   --output outputs/energy \
   --step geotagging \
   --batch_size 8
+
+python -m src.geo_linker \
+  --input_dir outputs/energy/geotagging-ner \
+  --output_dir outputs/energy/geotagging-linked
+
+```
+
+Running affilgood 
+```bash
+python -m src.pipeline --domain energy --input data/energy_v2 --output outputs/energy --step affiliations --batch_size 8
 ```
 
 🧩 The pipeline automatically:

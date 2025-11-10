@@ -264,6 +264,119 @@ def run_geotagging(domain, input_dir, output_dir, resume=True, file_batch_size=1
 
     logger.info("🎉 All Geotagging batches processed successfully.")
 
+def run_affiliations(domain, input_dir, output_dir, resume=True, file_batch_size=500, device="cuda"):
+    """
+    Extract, clean, and enrich affiliations from NIF .ttl files using AffilGood.
+    Combines raw extraction + AffilGood processing in one step.
+    Supports resume via checkpoint (avoids reprocessing the same affiliations).
+    """
+    from rdflib import Graph
+    import re
+    import pandas as pd
+    from tqdm import tqdm
+    from src.affilgood_runner import run_affilgood_batch
+    from src.utils.io_utils import load_json, save_json, append_jsonl
+    from affilgood.affilgood import AffilGood  # assuming installed
+
+    # --- Setup output and logging ---
+    os.makedirs(output_dir, exist_ok=True)
+    checkpoint_dir = os.path.join(output_dir, "checkpoints")
+    os.makedirs(checkpoint_dir, exist_ok=True)
+    log_dir = os.path.join(output_dir, "logs")
+    logger = setup_logger(log_dir, name=f"{domain}_affilgood_combined")
+
+    # --- Load checkpoint ---
+    checkpoint_file = os.path.join(checkpoint_dir, "processed.json")
+    processed = load_json(checkpoint_file, default={})
+    logger.info(f"📒 Loaded checkpoint: {len(processed)} affiliations already processed")
+
+    # --- Initialize AffilGood model ---
+    logger.info(f"🏗️ Initializing AffilGood (device={device})...")
+    affil_good = AffilGood(
+        span_separator='',
+        span_model_path='SIRIS-Lab/affilgood-span-multilingual',
+        ner_model_path='SIRIS-Lab/affilgood-NER-multilingual',
+        entity_linkers=['Whoosh'],
+        return_scores=True,
+        metadata_normalization=True,
+        verbose=False,
+        device=device,
+    )
+    logger.info("✅ AffilGood model initialized successfully.")
+
+    # --- Find all .ttl input files ---
+    all_files = [
+        os.path.join(root, f)
+        for root, _, files in os.walk(input_dir)
+        for f in files if f.endswith(".ttl")
+    ]
+    logger.info(f"Found {len(all_files)} TTL files")
+
+    seen_affiliations = set(processed.keys())
+
+    # --- Process files ---
+    for path in tqdm(all_files, desc="Extracting + processing affiliations"):
+        try:
+            g = Graph()
+            g.parse(path, format="turtle")
+
+            affiliations = []
+            for subj, pred, obj in g.triples((None, None, None)):
+                if "affRawAffiliationString" in str(pred):
+                    aff = str(obj)
+                    # 🧹 Clean text
+                    aff = re.sub(r"[\n\t]+", ", ", aff)
+                    aff = re.sub(r"\s*,\s*", ", ", aff)
+                    aff = re.sub(r"\s{2,}", " ", aff)
+                    aff = aff.strip(" ,;")
+
+                    aff_id = str(subj)
+                    # Skip duplicates if resume mode
+                    if resume and aff_id in seen_affiliations:
+                        continue
+
+                    affiliations.append({
+                        "affiliation_id": aff_id,
+                        "raw_affiliation": aff,
+                        "source_file": os.path.basename(path),
+                    })
+                    seen_affiliations.add(aff_id)
+
+            if not affiliations:
+                logger.info(f"⚪ {os.path.basename(path)} — no new affiliations found")
+                continue
+
+            logger.info(f"📄 {os.path.basename(path)} — {len(affiliations)} new affiliations found")
+
+            # Convert to DataFrame for batch processing
+            df = pd.DataFrame(affiliations)
+            base_name = os.path.basename(path).replace(".ttl", "_affilgood.jsonl")
+            out_path = os.path.join(output_dir, base_name)
+
+            # 🔥 Run AffilGood enrichment
+            results = run_affilgood_batch(
+                df_batch=df,
+                affilgood=affil_good,
+                logger=logger,
+                batch_size=file_batch_size,
+                output_path=out_path,
+            )
+
+            # Update checkpoint
+            for r in results:
+                processed[r["affiliation_id"]] = {
+                    "status": "done",
+                    "source_file": r["raw_affiliation"],
+                }
+
+            save_json(processed, checkpoint_file)
+            logger.info(f"💾 Saved checkpoint ({len(processed)} total processed)")
+
+        except Exception as e:
+            logger.error(f"⚠️ Error processing {path}: {e}")
+
+    logger.info("🎉 Finished extracting and enriching all affiliations with AffilGood.")
+
 
 def main():
     parser = argparse.ArgumentParser(description="SciLake NER & Enrichment Pipeline")
@@ -296,6 +409,14 @@ def main():
             resume=args.resume,
             file_batch_size=args.batch_size,
             device=device,  
+        )
+    elif args.step == "affiliations":
+        run_affiliations(
+            domain=args.domain,
+            input_dir=args.input,
+            output_dir=os.path.join(args.output, "affiliations"),
+            resume=args.resume,
+            file_batch_size=args.batch_size,
         )
     else:
         print("Only NER and Geotagging implemented so far — Linking coming soon.")
