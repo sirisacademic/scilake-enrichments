@@ -1,0 +1,295 @@
+@prefix lkg-res: <http://lkg.lynx-project.eu/res/> .
+@prefix eli:   <http://data.europa.eu/eli/ontology#> .
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix itsrdf: <http://www.w3.org/2005/11/its/rdf#> .
+@prefix lkg:   <http://lkg.lynx-project.eu/def/> .
+@prefix skos:  <http://www.w3.org/2004/02/skos/core#> .
+@prefix nif:   <http://persistence.uni-leipzig.org/nlp2rdf/ontologies/nif-core#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dbo:   <http://dbpedia.org/ontology/> .
+@prefix qont:  <http://qurator-projekt.de/ontology/> .
+@prefix nif-ann: <http://persistence.uni-leipzig.org/nlp2rdf/ontologies/nif-annotation#> .
+@prefix dct:   <http://purl.org/dc/terms/> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix dbr:   <http://dbpedia.org/resource/> .
+@prefix sci-res: <http://scilake-projekt.eu/res/> .
+@prefix foaf:  <http://xmlns.com/foaf/0.1/> .
+@prefix scilake: <http://scilake-projekt.eu/ontology/> .
+
+<http://scilake-project.eu/res/9ed37608/author/ea07d610>
+        a                        scilake:ScientificAuthor ;
+        nif:referenceContext     <http://scilake-project.eu/res/0dfa63bd> ;
+        dct:source               "" ;
+        qont:metadata            []  ;
+        scilake:corresp          false ;
+        scilake:firstname        "Romi" ;
+        scilake:has_affiliation  <http://scilake-project.eu/res/9ed37608/affiliation/aff0> ;
+        scilake:lastname         "Saputra" ;
+        scilake:valid            false .
+
+<http://scilake-project.eu/res/9ed37608/location/Department_of_Civil_Engineering>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/9ed37608> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        qont:metadata         []  ;
+        scilake:locationName  "Department of Civil Engineering" .
+
+<http://scilake-project.eu/res/9ed37608/location/Politeknik_Negeri_Lhokseumawe>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/9ed37608> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:locationName  "Politeknik Negeri Lhokseumawe" .
+
+<http://scilake-project.eu/res/9ed37608#offset_1262_5045>
+        a                         nif:OffsetBasedString , <dfki:ScientificDocumentPart> ;
+        nif:anchorOf              "Asphalt concrete layer (laston) is a road pavement construction layer consisting of coarse aggregate, fine aggregate, filler and asphalt [1,2]. Currently, the fillers that are often used are rock ash, portland cement and lime, but the fillers used from these materials are relatively expensive, so there is a need for new innovations using alternative materials that are more economical by utilizing community production waste materials for raw materials [3][4][5]. As a substitute for filler, one of them is the utilization of waste in a nutmeg factory which produces waste in the form of nutmeg shells where Aceh Province is the largest nutmeg producing area to be precise in Beutong Peulumat Village, Labuhan Haji Timur District, South Aceh Regency with a nutmeg plantation area reaching 14,971 Ha and a total production of 5,567 tons per year and Nutmeg shell waste produced annually reaches 556.7 tons per year [6,7]. Therefore, to reduce community production waste and environmental pollution, nutmeg shells are used as filler substitutes in asphalt mixtures [8,9] In addition, nutmeg shell ash can be used as a filler because it contains pozzolanic chemical compounds which function as cavity filling materials in the mixture. The main element found in nutmeg shell ash is silica (SiO2), which is 40.03% which is expected to be able to increase the quality of the asphalt mixture and the specific gravity of nutmeg shells is obtained at 0.9968 gr/cm3 [10]. The use of waste materials that contain silica (SiO2) as a substitute for part of the cement in the mixture can increase the strength/stability of asphalt and is able to provide a strong bond between aggregates and fill in the voids between aggregates [11,12]. Nutmeg is a type of spice that is widely used in the food and pharmaceutical industries. Nutmeg fruit consists of flesh, membrane, shell and seeds. The seeds and membranes are used as a spice, while the nutmeg pulp is processed into products such as preserves, syrups and jellies. So far, nutmeg shells have not been used properly and thrown away so that they become waste that causes environmental pollution, therefore to reduce this waste it is used as filler [13,14].  ISSN: 1978-1520 .. x, July 201x : first_page -end_page Nutmeg shell is one of the materials with a high cellulose content of 21.34%, in addition to cellulose nutmeg shell also contains hemicellulose levels of around 46.82%, where in nutmeg shells there are levels of cellulose and hemicellulose which when added to the asphalt mixture these compounds will fill in the voids in the aggregate so that it can provide additional strength between particles and inhibit water from entering the material and can produce a stronger mixture [15,16]. Asphalt mix design requires an initial planning asphalt content value before the optimum asphalt content (KAO) is obtained. This initial asphalt content or estimated asphalt content is the middle/ideal asphalt content (a%) which will later be varied into 5 variations of initial planning asphalt content can be determined using a formula or equation one, which is known as the design asphalt content (Pb) from the following equation [17]: Pb = 0,035 (%CA) + 0,045(%FA) + 0,18 (%Filler) + K Asphalt compressive strength (stability) depends on the physical properties and chemical constituents of the mixture. The higher the strength of the mixture, the higher the quality of the asphalt in receiving traffic loads and permanent deformation (decreased shape on the highway) [18]. Based on equation two asphalt compressive strength (stability) is calculated using Equation as follows: S = p x q x r (2) Information: S = Asphalt compressive strength/stability (Kg) p = Equipment calibration q = Marshall Quoentient r = Correction of the test object" ;
+        nif:beginIndex            "1262"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "5045"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/9ed37608> ;
+        dct:section_number        "1." ;
+        dct:source                "" ;
+        dct:title                 "INTRODUCTION" ;
+        qont:LabelUnit            [ a       qont:Label ;
+                                    <dfki:ScientificDocumentSection>
+                                            "introduction"
+                                  ] ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "section" .
+
+<http://scilake-project.eu/res/9ed37608#offset_8856_12803>
+        a                         nif:OffsetBasedString , <dfki:ScientificDocumentPart> ;
+        nif:anchorOf              "Based on the equation in number one to calculate the asphalt content value, based on the planning gradation, the content value for each fraction is: Ca = 31,6%, Fa = 63,1%, Filler = 5.3% and the constant taken is 0.5. Then the middle asphalt content is: Pb = 0,035 (%CA) + 0,045 (%FA) + 0,18 (%Filler) + Konstanta = 0,035 (31,6%) + 0,045 (63,1%) + 0,18 (5,3%) + 0,5 = 5,0 Asphalt compressive strength (stability) testing using the Marshall test produces the following data: Based on Table 4, the void in mix (Void in Mix/VIM) value shows that the addition of filler variations causes the VIM value to increase. The test results show that the VIM value that still meets the requirements of Bina Marga 2010 revision 4 is a variation of 15% nutmeg shell ash and 25% nutmeg shell ash. The Void Mineral Aggregate (VMA) value indicates that the more nutmeg shell ash filler variations in the mixture, the VMA value increases. This is due to the specific gravity of nutmeg shell ash filler being lighter than Portland cement filler, so that the amount of filler in the mixture increases, causing the bitumen that should bind between aggregates to be absorbed by the nutmeg shell ash filler, making the voids larger. The highest VMA value was in the composition of 50% nutmeg shell ash, namely 17.84%, while the lowest value was in the composition of 15% nutmeg shell ash, namely 14.52%. Cavities filled with asphalt (Void Filled by Asphalt/VFA) show that the VFA value decreases with increasing variation of nutmeg shell ash filler in the asphalt mixture. This is because the amount of nutmeg shell ash filler in the mixture is too much so that the asphalt that should cover the aggregate decreases. The highest VFA value was in the composition of 15% nutmeg shell ash, namely 84.21%, while the lowest VFA value was in the composition of 100%, namely 55.99%. While the value of flow/melting of the test object shows that the value of flow tends to decrease along with the increase in the composition of the nutmeg shell ash filler in the mixture. This decrease is  ISSN: 1978-1520 .. x, July 201x : first_page -end_page due to the fact that the mixture is stiffer and the pavement cracks more easily. The highest flow value was at 4.50% asphalt content at 15% nutmeg shell ash composition, namely 4.60 mm and the lowest value at 5.50% asphalt content at 25% nutmeg shell ash composition, namely 2.03 mm. And the marshall quotient (MQ) value increased with increasing asphalt content in the mixture. The highest Marshall Quotient (MQ) value occurred in the 25% nutmeg shell ash composition with 5.50% asphalt content, namely 406.02 Kg/mm and while the lowest value occurred in the 15% nutmeg shell ash composition with 4.50% asphalt content, namely 206.85 Kg/mm. Marshall compressive strength (stability) data on asphalt concrete based on these graph of the effect of nutmeg shell ash filler substitution and Portland cement is as follows: Based on Figure 2. it shows that the increasing composition of nutmeg shell ash substitution (ACP) has decreased this is because the specific gravity of the nutmeg shell ash filler is lighter than portland cement so that the bitumen that should cover the aggregate covers more of the nutmeg shell ash filler. The highest stability value is in the composition of 15% nutmeg shell ash at 4.5% asphalt content with a value of 954.21 kg and the lowest stability is in the composition of 100% nutmeg shell ash with a value of 699.26 kg at 5.5% asphalt content. It can be analyzed that the substitution of a mixture of nutmeg shell ash (ACP) that is too high can reduce the strength value of the asphalt concrete so that the strength of the asphalt concrete becomes weak and stiff and easy for cracks and damage to occur on the road so that the substitution of asphalt with nutmeg shell ash filler must start from the smallest composition so that the durability of asphalt strength is maximized in holding traffic loads." ;
+        nif:beginIndex            "8856"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "12803"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/9ed37608> ;
+        dct:section_number        "" ;
+        dct:source                "" ;
+        dct:title                 "Asphalt Content Determination" ;
+        qont:LabelUnit            [ a       qont:Label ;
+                                    <dfki:ScientificDocumentSection>
+                                            "introduction"
+                                  ] ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "section" .
+
+<http://scilake-project.eu/res/9ed37608/location/Universitas_Iskandar_Muda>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/9ed37608> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:locationName  "Universitas Iskandar Muda" .
+
+<http://scilake-project.eu/res/9ed37608#offset_8145_8286>
+        a                         nif:OffsetBasedString , <dfki:ScientificDocumentPart> ;
+        nif:anchorOf              "The results of examining the properties of asphalt on pen 60/70 asphalt which is guided by the regulations from Highways are shown in Table 2" ;
+        nif:beginIndex            "8145"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "8286"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/9ed37608> ;
+        dct:section_number        "" ;
+        dct:source                "" ;
+        dct:title                 "The results of the properties of asphalt pen 60/70" ;
+        qont:LabelUnit            [ a       qont:Label ;
+                                    <dfki:ScientificDocumentSection>
+                                            "introduction"
+                                  ] ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "section" .
+
+<http://scilake-project.eu/res/9ed37608#offset_5046_7941>
+        a                         <dfki:ScientificDocumentPart> , nif:OffsetBasedString ;
+        nif:anchorOf              "The method used in this research was a laboratory experimental method. The research was conducted at the Laboratory of the Faculty of Engineering, Iskandar Muda University with a total number of 72 test objects and the size of the cylindrical test objects with a diameter of 10.16 cm and 6.35 cm in height and the weight of the test objects was 1200 grams/test object. The materials used in this research were coarse aggregate, fine aggregate, cement, nutmeg shell ash (ACP) and asphalt. The cement used was Portland cement type I. The aggregate used consisted of coarse aggregate and fine aggregate originating from Indrapuri where the fine aggregate used passed a 4.75 mm sieve which was retained by 0.075 mm. The coarse aggregate used is retained by a 4.75 sieve, the asphalt used is pen 60/70 asphalt produced by PT. Pertamina. Nutmeg shell ash (ACP) is obtained from the remaining combustion of nutmeg shells which has been burned at ± 180º Celsius so that the organic content is lost and then crushed using a crusher/mortar and nutmeg shells which have been powdered in a sieve with ASTM standard sieve passing sieve number 200. The equipment used in this research is a marshall machine, a press equipped with a proving ring (testing ring) with a capacity of 22.2 kN (5000 lbf) and a flow meter. Proving ring is used to measure the value of stability and flowmeter to measure plastic melting or flow [19]. The sequence of research work on the compressive strength of asphalt in the laboratory is as follows: 1. Examination of the physical properties of coarse aggregate and fine aggregate and the physical properties of asphalt must comply with the requirements determined by the Highways. 2. Planning the mix composition for the asphalt layer where the gradation size must be evenly distributed starting from the smallest to the largest sieve. 3. Test specimens with variations in asphalt content to determine the initial optimum asphalt content (KAO) value for the wear layer mixture with a total of 15 specimen; 4. fter obtaining KAO, the test specimens were made with 3 types of asphalt content, namely minimum KAO, optimum KAO and maximum KAO with nutmeg shell ash (ACP) filler substitution with substitution percentages of 0%, 15%, 25%, 50%, 75 %, and 100%. 5. After the test results were obtained with and without nutmeg shell ash substitution, then one of the best variations was chosen to be tested again in the durability test of 12 specimen within 30 minutes and 24 hours. The asphalt compressive strength test was carried out for 24 hours based on the Bina Marga method, the test was carried out by applying a load to the specimen using the marshall test. The load is given slowly and then the stability and flow/melting values are read [20]. The data obtained from the test was evaluated by means of a simple statistic taken from the readings on the dial of the Marshall test." ;
+        nif:beginIndex            "5046"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "7941"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/9ed37608> ;
+        dct:section_number        "2." ;
+        dct:source                "" ;
+        dct:title                 "RESEARCH METHODS" ;
+        qont:LabelUnit            [ a       qont:Label ;
+                                    <dfki:ScientificDocumentSection>
+                                            "introduction"
+                                  ] ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "section" .
+
+<http://scilake-project.eu/res/9ed37608/author/293fd62a>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/56c2fb2c> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "Muhammad" ;
+        scilake:lastname      "Iqbal" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/9ed37608/affiliation/aff1>
+        a                           scilake:ScientificAffiliation ;
+        nif:referenceContext        <http://qurator-projekt.de/res/> ;
+        dct:source                  "" ;
+        qont:metadata               []  ;
+        scilake:affCountry          "Indonesia" ;
+        scilake:affFailAffiliation  false ;
+        scilake:affKey              "aff1" ;
+        scilake:affPostCode         "24301" ;
+        scilake:affRawAffiliationString
+                "\n\t\t\t\t\t\t\t\tDepartment of Civil Engineering\n\t\t\t\t\t\t\t\tFaculty of Engineering\n\t\t\t\t\t\t\t\tPoliteknik Negeri Lhokseumawe\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t24301\n\t\t\t\t\t\t\t\t\tIndonesia\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t" ;
+        scilake:has_department      <http://scilake-project.eu/res/9ed37608/location/Department_of_Civil_Engineering> , <http://scilake-project.eu/res/9ed37608/location/Faculty_of_Engineering> ;
+        scilake:has_institution     <http://scilake-project.eu/res/9ed37608/location/Politeknik_Negeri_Lhokseumawe> .
+
+<http://scilake-project.eu/res/9ed37608#offset_0_85>
+        a                         <dfki:ScientificDocumentPart> , nif:OffsetBasedString ;
+        nif:anchorOf              "Utilization of Nutmeg Shell Ash a Filler Substitution In The AC-WC Laston Mixed Layer" ;
+        nif:beginIndex            "0"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "85"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/9ed37608> ;
+        dct:section_number        "" ;
+        dct:source                "" ;
+        dct:title                 "Utilization of Nutmeg Shell Ash a Filler Substitution In The AC-WC Laston Mixed Layer" ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "title" .
+
+<http://scilake-project.eu/res/9ed37608#offset_7942_8144>
+        a                         nif:OffsetBasedString , <dfki:ScientificDocumentPart> ;
+        nif:anchorOf              "The results of examining the properties of the aggregates for coarse aggregate and fine aggregate guided by the regulations of the 2010 Highways are shown in Table 1 below: Penyerapan air (%) 0,495 0,70" ;
+        nif:beginIndex            "7942"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "8144"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/9ed37608> ;
+        dct:section_number        "3." ;
+        dct:source                "" ;
+        dct:title                 "RESULT AND DISCUSSION" ;
+        qont:LabelUnit            [ a       qont:Label ;
+                                    <dfki:ScientificDocumentSection>
+                                            "introduction"
+                                  ] ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "section" .
+
+<http://scilake-project.eu/res/9ed37608/location/Faculty_of_Engineering>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/9ed37608> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        qont:metadata         []  ;
+        scilake:locationName  "Faculty of Engineering" .
+
+<http://scilake-project.eu/res/9ed37608/affiliation/aff0>
+        a                           scilake:ScientificAffiliation ;
+        nif:referenceContext        <http://qurator-projekt.de/res/> ;
+        dct:source                  "" ;
+        qont:metadata               []  ;
+        scilake:affCountry          "Indonesia" ;
+        scilake:affFailAffiliation  false ;
+        scilake:affKey              "aff0" ;
+        scilake:affPostCode         "23234" ;
+        scilake:affRawAffiliationString
+                "\n\t\t\t\t\t\t\t\tDepartment of Civil Engineering\n\t\t\t\t\t\t\t\tFaculty of Engineering\n\t\t\t\t\t\t\t\tUniversitas Iskandar Muda\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t23234\n\t\t\t\t\t\t\t\t\tBanda Aceh\n\t\t\t\t\t\t\t\t\tIndonesia\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t" ;
+        scilake:affSettlement       "Banda Aceh" ;
+        scilake:has_department      <http://scilake-project.eu/res/9ed37608/location/Faculty_of_Engineering> , <http://scilake-project.eu/res/9ed37608/location/Department_of_Civil_Engineering> ;
+        scilake:has_institution     <http://scilake-project.eu/res/9ed37608/location/Universitas_Iskandar_Muda> .
+
+<http://scilake-project.eu/res/9ed37608#offset_8287_8855>
+        a                         <dfki:ScientificDocumentPart> , nif:OffsetBasedString ;
+        nif:anchorOf              "The results of the inspection of the aggregate gradation are carried out to adjust the aggregate gradation so that it is distributed to all sieve sizes because the Asphalt concrete wearing course uses dense/continuous gradations which are guided by the regulations of the Highways as shown in Table 3 below. Based on Figure 1, it shows that the composition of the planned gradation mixture for the test object can be used for the manufacture of the test object because it has met the top level and underlevel of the aggregate gradation set by the Highways regulations." ;
+        nif:beginIndex            "8287"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "8855"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/9ed37608> ;
+        dct:section_number        "" ;
+        dct:source                "" ;
+        dct:title                 "The Result of the sieve analisys aggregate test" ;
+        qont:LabelUnit            [ a       qont:Label ;
+                                    <dfki:ScientificDocumentSection>
+                                            "introduction"
+                                  ] ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "section" .
+
+<http://scilake-project.eu/res/9ed37608/author/9df3e5a2>
+        a                        scilake:ScientificAuthor ;
+        nif:referenceContext     <http://scilake-project.eu/res/93b0e908> ;
+        dct:source               "" ;
+        qont:metadata            []  ;
+        scilake:corresp          false ;
+        scilake:firstname        "Herri" ;
+        scilake:has_affiliation  <http://scilake-project.eu/res/9ed37608/affiliation/aff1> ;
+        scilake:lastname         "Mahyar" ;
+        scilake:valid            false .
+
+<http://scilake-project.eu/res/9ed37608/author/59650af9>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/ae324e24> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "M" ;
+        scilake:lastname      "Putra" ;
+        scilake:middlename    "Izwan" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/9ed37608/author/70c39979>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/06318ce8> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "Khairil" ;
+        scilake:lastname      "Andika" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/9ed37608/author/5e56ddfb>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/827f168e> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:email         "febrina@unida-aceh.ac.id" ;
+        scilake:firstname     "Dian" ;
+        scilake:lastname      "Febrina" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/9ed37608>
+        a                    nif:Context , scilake:ScientificDocument , nif:OffsetBasedString ;
+        nif:beginIndex       "0"^^xsd:nonNegativeInteger ;
+        nif:endIndex         "13167"^^xsd:nonNegativeInteger ;
+        nif:isString         "Utilization of Nutmeg Shell Ash a Filler Substitution In The AC-WC Laston Mixed Layer Most of the road pavement construction used in Indonesia is flexible pavement where the material consists of coarse aggregate, fine aggregate, filler and asphalt. Currently, the fillers that are often used are rock ash, portland cement and lime. However, the filler used from these materials is relatively expensive, so there is a need for new innovations by using alternative materials that are more economical by utilizing community production waste materials in the form of nutmeg shell ash (ACP) produced from the process of burning nutmeg shells as filler. This research was conducted to determine the compressive strength of asphalt against the substitution of nutmeg shell ash (ACP) in the asphalt mixture as a partial replacement for cement with a percentage of 0%, 15%, 25%, 50%, 75%, and 100% with the number of objects The planned tests in this researchs were 75 specimen weighting 1.200 grams/specimen. The results showed that the best composition for substitution of nutmeg shell ash (ACP) and portland cement (PC) at a composition of 15% ACP and 85% PC from the results of the study obtained a stability value of 929.04 kg and Bina Marga specifications ≥ 800 kg Asphalt concrete layer (laston) is a road pavement construction layer consisting of coarse aggregate, fine aggregate, filler and asphalt [1,2]. Currently, the fillers that are often used are rock ash, portland cement and lime, but the fillers used from these materials are relatively expensive, so there is a need for new innovations using alternative materials that are more economical by utilizing community production waste materials for raw materials [3][4][5]. As a substitute for filler, one of them is the utilization of waste in a nutmeg factory which produces waste in the form of nutmeg shells where Aceh Province is the largest nutmeg producing area to be precise in Beutong Peulumat Village, Labuhan Haji Timur District, South Aceh Regency with a nutmeg plantation area reaching 14,971 Ha and a total production of 5,567 tons per year and Nutmeg shell waste produced annually reaches 556.7 tons per year [6,7]. Therefore, to reduce community production waste and environmental pollution, nutmeg shells are used as filler substitutes in asphalt mixtures [8,9] In addition, nutmeg shell ash can be used as a filler because it contains pozzolanic chemical compounds which function as cavity filling materials in the mixture. The main element found in nutmeg shell ash is silica (SiO2), which is 40.03% which is expected to be able to increase the quality of the asphalt mixture and the specific gravity of nutmeg shells is obtained at 0.9968 gr/cm3 [10]. The use of waste materials that contain silica (SiO2) as a substitute for part of the cement in the mixture can increase the strength/stability of asphalt and is able to provide a strong bond between aggregates and fill in the voids between aggregates [11,12]. Nutmeg is a type of spice that is widely used in the food and pharmaceutical industries. Nutmeg fruit consists of flesh, membrane, shell and seeds. The seeds and membranes are used as a spice, while the nutmeg pulp is processed into products such as preserves, syrups and jellies. So far, nutmeg shells have not been used properly and thrown away so that they become waste that causes environmental pollution, therefore to reduce this waste it is used as filler [13,14].  ISSN: 1978-1520 .. x, July 201x : first_page -end_page Nutmeg shell is one of the materials with a high cellulose content of 21.34%, in addition to cellulose nutmeg shell also contains hemicellulose levels of around 46.82%, where in nutmeg shells there are levels of cellulose and hemicellulose which when added to the asphalt mixture these compounds will fill in the voids in the aggregate so that it can provide additional strength between particles and inhibit water from entering the material and can produce a stronger mixture [15,16]. Asphalt mix design requires an initial planning asphalt content value before the optimum asphalt content (KAO) is obtained. This initial asphalt content or estimated asphalt content is the middle/ideal asphalt content (a%) which will later be varied into 5 variations of initial planning asphalt content can be determined using a formula or equation one, which is known as the design asphalt content (Pb) from the following equation [17]: Pb = 0,035 (%CA) + 0,045(%FA) + 0,18 (%Filler) + K Asphalt compressive strength (stability) depends on the physical properties and chemical constituents of the mixture. The higher the strength of the mixture, the higher the quality of the asphalt in receiving traffic loads and permanent deformation (decreased shape on the highway) [18]. Based on equation two asphalt compressive strength (stability) is calculated using Equation as follows: S = p x q x r (2) Information: S = Asphalt compressive strength/stability (Kg) p = Equipment calibration q = Marshall Quoentient r = Correction of the test object The method used in this research was a laboratory experimental method. The research was conducted at the Laboratory of the Faculty of Engineering, Iskandar Muda University with a total number of 72 test objects and the size of the cylindrical test objects with a diameter of 10.16 cm and 6.35 cm in height and the weight of the test objects was 1200 grams/test object. The materials used in this research were coarse aggregate, fine aggregate, cement, nutmeg shell ash (ACP) and asphalt. The cement used was Portland cement type I. The aggregate used consisted of coarse aggregate and fine aggregate originating from Indrapuri where the fine aggregate used passed a 4.75 mm sieve which was retained by 0.075 mm. The coarse aggregate used is retained by a 4.75 sieve, the asphalt used is pen 60/70 asphalt produced by PT. Pertamina. Nutmeg shell ash (ACP) is obtained from the remaining combustion of nutmeg shells which has been burned at ± 180º Celsius so that the organic content is lost and then crushed using a crusher/mortar and nutmeg shells which have been powdered in a sieve with ASTM standard sieve passing sieve number 200. The equipment used in this research is a marshall machine, a press equipped with a proving ring (testing ring) with a capacity of 22.2 kN (5000 lbf) and a flow meter. Proving ring is used to measure the value of stability and flowmeter to measure plastic melting or flow [19]. The sequence of research work on the compressive strength of asphalt in the laboratory is as follows: 1. Examination of the physical properties of coarse aggregate and fine aggregate and the physical properties of asphalt must comply with the requirements determined by the Highways. 2. Planning the mix composition for the asphalt layer where the gradation size must be evenly distributed starting from the smallest to the largest sieve. 3. Test specimens with variations in asphalt content to determine the initial optimum asphalt content (KAO) value for the wear layer mixture with a total of 15 specimen; 4. fter obtaining KAO, the test specimens were made with 3 types of asphalt content, namely minimum KAO, optimum KAO and maximum KAO with nutmeg shell ash (ACP) filler substitution with substitution percentages of 0%, 15%, 25%, 50%, 75 %, and 100%. 5. After the test results were obtained with and without nutmeg shell ash substitution, then one of the best variations was chosen to be tested again in the durability test of 12 specimen within 30 minutes and 24 hours. The asphalt compressive strength test was carried out for 24 hours based on the Bina Marga method, the test was carried out by applying a load to the specimen using the marshall test. The load is given slowly and then the stability and flow/melting values are read [20]. The data obtained from the test was evaluated by means of a simple statistic taken from the readings on the dial of the Marshall test. The results of examining the properties of the aggregates for coarse aggregate and fine aggregate guided by the regulations of the 2010 Highways are shown in Table 1 below: Penyerapan air (%) 0,495 0,70 The results of examining the properties of asphalt on pen 60/70 asphalt which is guided by the regulations from Highways are shown in Table 2 The results of the inspection of the aggregate gradation are carried out to adjust the aggregate gradation so that it is distributed to all sieve sizes because the Asphalt concrete wearing course uses dense/continuous gradations which are guided by the regulations of the Highways as shown in Table 3 below. Based on Figure 1, it shows that the composition of the planned gradation mixture for the test object can be used for the manufacture of the test object because it has met the top level and underlevel of the aggregate gradation set by the Highways regulations. Based on the equation in number one to calculate the asphalt content value, based on the planning gradation, the content value for each fraction is: Ca = 31,6%, Fa = 63,1%, Filler = 5.3% and the constant taken is 0.5. Then the middle asphalt content is: Pb = 0,035 (%CA) + 0,045 (%FA) + 0,18 (%Filler) + Konstanta = 0,035 (31,6%) + 0,045 (63,1%) + 0,18 (5,3%) + 0,5 = 5,0 Asphalt compressive strength (stability) testing using the Marshall test produces the following data: Based on Table 4, the void in mix (Void in Mix/VIM) value shows that the addition of filler variations causes the VIM value to increase. The test results show that the VIM value that still meets the requirements of Bina Marga 2010 revision 4 is a variation of 15% nutmeg shell ash and 25% nutmeg shell ash. The Void Mineral Aggregate (VMA) value indicates that the more nutmeg shell ash filler variations in the mixture, the VMA value increases. This is due to the specific gravity of nutmeg shell ash filler being lighter than Portland cement filler, so that the amount of filler in the mixture increases, causing the bitumen that should bind between aggregates to be absorbed by the nutmeg shell ash filler, making the voids larger. The highest VMA value was in the composition of 50% nutmeg shell ash, namely 17.84%, while the lowest value was in the composition of 15% nutmeg shell ash, namely 14.52%. Cavities filled with asphalt (Void Filled by Asphalt/VFA) show that the VFA value decreases with increasing variation of nutmeg shell ash filler in the asphalt mixture. This is because the amount of nutmeg shell ash filler in the mixture is too much so that the asphalt that should cover the aggregate decreases. The highest VFA value was in the composition of 15% nutmeg shell ash, namely 84.21%, while the lowest VFA value was in the composition of 100%, namely 55.99%. While the value of flow/melting of the test object shows that the value of flow tends to decrease along with the increase in the composition of the nutmeg shell ash filler in the mixture. This decrease is  ISSN: 1978-1520 .. x, July 201x : first_page -end_page due to the fact that the mixture is stiffer and the pavement cracks more easily. The highest flow value was at 4.50% asphalt content at 15% nutmeg shell ash composition, namely 4.60 mm and the lowest value at 5.50% asphalt content at 25% nutmeg shell ash composition, namely 2.03 mm. And the marshall quotient (MQ) value increased with increasing asphalt content in the mixture. The highest Marshall Quotient (MQ) value occurred in the 25% nutmeg shell ash composition with 5.50% asphalt content, namely 406.02 Kg/mm and while the lowest value occurred in the 15% nutmeg shell ash composition with 4.50% asphalt content, namely 206.85 Kg/mm. Marshall compressive strength (stability) data on asphalt concrete based on these graph of the effect of nutmeg shell ash filler substitution and Portland cement is as follows: Based on Figure 2. it shows that the increasing composition of nutmeg shell ash substitution (ACP) has decreased this is because the specific gravity of the nutmeg shell ash filler is lighter than portland cement so that the bitumen that should cover the aggregate covers more of the nutmeg shell ash filler. The highest stability value is in the composition of 15% nutmeg shell ash at 4.5% asphalt content with a value of 954.21 kg and the lowest stability is in the composition of 100% nutmeg shell ash with a value of 699.26 kg at 5.5% asphalt content. It can be analyzed that the substitution of a mixture of nutmeg shell ash (ACP) that is too high can reduce the strength value of the asphalt concrete so that the strength of the asphalt concrete becomes weak and stiff and easy for cracks and damage to occur on the road so that the substitution of asphalt with nutmeg shell ash filler must start from the smallest composition so that the durability of asphalt strength is maximized in holding traffic loads. From the results of research using laboratory experimental methods, it can be concluded that the best composition results for substitution of Nutmeg Shell ash (ACP) and portland cement (PC) on a composition of 15% nutmeg shell ash and 85% portland cement from the results of the study obtained a stability value of 929.04 kg and fulfilled the Bina Marga ≥ 800 kg." ;
+        qont:metadata        [ dct:language  "en" ] ;
+        scilake:has_authors  <http://scilake-project.eu/res/9ed37608/author/ea07d610> , <http://scilake-project.eu/res/9ed37608/author/70c39979> , <http://scilake-project.eu/res/9ed37608/author/7338cf08> , <http://scilake-project.eu/res/9ed37608/author/5e56ddfb> , <http://scilake-project.eu/res/9ed37608/author/293fd62a> , <http://scilake-project.eu/res/9ed37608/author/9df3e5a2> , <http://scilake-project.eu/res/9ed37608/author/59650af9> ;
+        scilake:has_part     <http://scilake-project.eu/res/9ed37608#offset_8287_8855> , <http://scilake-project.eu/res/9ed37608#offset_86_1261> , <http://scilake-project.eu/res/9ed37608#offset_12804_13167> , <http://scilake-project.eu/res/9ed37608#offset_7942_8144> , <http://scilake-project.eu/res/9ed37608#offset_5046_7941> , <http://scilake-project.eu/res/9ed37608#offset_1262_5045> , <http://scilake-project.eu/res/9ed37608#offset_8145_8286> , <http://scilake-project.eu/res/9ed37608#offset_0_85> , <http://scilake-project.eu/res/9ed37608#offset_8856_12803> .
+
+<http://scilake-project.eu/res/9ed37608#offset_86_1261>
+        a                         nif:OffsetBasedString , <dfki:ScientificDocumentPart> ;
+        nif:anchorOf              "Most of the road pavement construction used in Indonesia is flexible pavement where the material consists of coarse aggregate, fine aggregate, filler and asphalt. Currently, the fillers that are often used are rock ash, portland cement and lime. However, the filler used from these materials is relatively expensive, so there is a need for new innovations by using alternative materials that are more economical by utilizing community production waste materials in the form of nutmeg shell ash (ACP) produced from the process of burning nutmeg shells as filler. This research was conducted to determine the compressive strength of asphalt against the substitution of nutmeg shell ash (ACP) in the asphalt mixture as a partial replacement for cement with a percentage of 0%, 15%, 25%, 50%, 75%, and 100% with the number of objects The planned tests in this researchs were 75 specimen weighting 1.200 grams/specimen. The results showed that the best composition for substitution of nutmeg shell ash (ACP) and portland cement (PC) at a composition of 15% ACP and 85% PC from the results of the study obtained a stability value of 929.04 kg and Bina Marga specifications ≥ 800 kg" ;
+        nif:beginIndex            "86"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "1261"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/9ed37608> ;
+        dct:section_number        "" ;
+        dct:source                "" ;
+        dct:title                 "Most of the road pavement construction used in Indonesia is flexible pavement where the material consists of coarse aggregate, fine aggregate, filler and asphalt. Currently, the fillers that are often used are rock ash, portland cement and lime. However, the filler used from these materials is relatively expensive, so there is a need for new innovations by using alternative materials that are more economical by utilizing community production waste materials in the form of nutmeg shell ash (ACP) produced from the process of burning nutmeg shells as filler. This research was conducted to determine the compressive strength of asphalt against the substitution of nutmeg shell ash (ACP) in the asphalt mixture as a partial replacement for cement with a percentage of 0%, 15%, 25%, 50%, 75%, and 100% with the number of objects The planned tests in this researchs were 75 specimen weighting 1.200 grams/specimen. The results showed that the best composition for substitution of nutmeg shell ash (ACP) and portland cement (PC) at a composition of 15% ACP and 85% PC from the results of the study obtained a stability value of 929.04 kg and Bina Marga specifications ≥ 800 kg" ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "abstract" .
+
+<http://scilake-project.eu/res/9ed37608#offset_12804_13167>
+        a                         nif:OffsetBasedString , <dfki:ScientificDocumentPart> ;
+        nif:anchorOf              "From the results of research using laboratory experimental methods, it can be concluded that the best composition results for substitution of Nutmeg Shell ash (ACP) and portland cement (PC) on a composition of 15% nutmeg shell ash and 85% portland cement from the results of the study obtained a stability value of 929.04 kg and fulfilled the Bina Marga ≥ 800 kg." ;
+        nif:beginIndex            "12804"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "13167"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/9ed37608> ;
+        dct:section_number        "4." ;
+        dct:source                "" ;
+        dct:title                 "CONCLUSION" ;
+        qont:LabelUnit            [ a       qont:Label ;
+                                    <dfki:ScientificDocumentSection>
+                                            "conclusion"
+                                  ] ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "section" .
+
+<http://scilake-project.eu/res/9ed37608/author/7338cf08>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/19707f60> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:lastname      "Kurniasari" ;
+        scilake:valid         false .
