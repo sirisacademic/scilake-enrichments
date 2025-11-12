@@ -139,7 +139,7 @@ class EntityLinker:
     def __init__(
         self,
         user_agent: str = "siris_geotag_linker",
-        cache_maxsize: int = 5000,
+        cache_maxsize: int = 100000,
         cache_ttl: Optional[float] = None,  # seconds
         importance_threshold: float = 0.0,
         language: str = "en",
@@ -307,7 +307,7 @@ class GeoTagLinker:
 
 if __name__ == "__main__":
     import argparse
-    from src.utils.logger import setup_logger  # adjust import to your utils if needed
+    from src.utils.logger import setup_logger
 
     parser = argparse.ArgumentParser(description="Geotag entity linker using OSM Nominatim.")
     parser.add_argument("--input_dir", required=True, help="Directory with geotagging JSONL outputs")
@@ -319,7 +319,14 @@ if __name__ == "__main__":
 
     linker = GeoTagLinker(logger=log)
 
-    jsonl_files = [os.path.join(args.input_dir, f) for f in os.listdir(args.input_dir) if f.endswith(".jsonl")]
+    jsonl_files = [
+        os.path.join(args.input_dir, f)
+        for f in os.listdir(args.input_dir)
+        if f.endswith(".jsonl") and not f.endswith("_linked.jsonl")
+    ]
+
+    log.info(f"🔎 Found {len(jsonl_files)} geotagging files to process.")
+
     for path in jsonl_files:
         out_path = os.path.join(
             args.output_dir,
@@ -330,12 +337,6 @@ if __name__ == "__main__":
             log.info(f"⏭️ Skipping already linked file: {os.path.basename(out_path)}")
             continue
 
-        linker.process_file(path, out_path)
-
-    log.info(f"🔎 Found {len(jsonl_files)} geotagging files to process.")
-
-    for path in jsonl_files:
-        out_path = os.path.join(args.output_dir, os.path.basename(path).replace(".jsonl", "_linked.jsonl"))
         linker.process_file(path, out_path)
 
     log.info("🎉 All geotag files processed successfully.")

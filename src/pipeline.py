@@ -663,6 +663,7 @@ def run_affiliations(domain, input_dir, output_dir, resume=True, file_batch_size
         for root, _, files in os.walk(input_dir)
         for f in files if f.endswith(".ttl")
     ]
+
     logger.info(f"Found {len(all_files)} TTL files")
 
     seen_affiliations = set(processed.keys())
