@@ -159,6 +159,9 @@ def run_ner(domain, input_dir, output_dir, resume=True, file_batch_size=100, deb
             
             df_gazetteer = pd.DataFrame(gazetteer_entities) if gazetteer_entities else pd.DataFrame()
 
+        else:
+            df_gazetteer = pd.DataFrame()
+
         # Run NER once for all sections in batch
         try:
             df_entities = predict_sections_multimodel(
@@ -783,8 +786,7 @@ def main():
             output_dir=os.path.join(args.output, "ner"),
             resume=args.resume,
             file_batch_size=args.batch_size,
-            debug=args.debug,
-            device=device, 
+            debug=args.debug, 
         )
     elif args.step == "geotagging":
         run_geotagging(

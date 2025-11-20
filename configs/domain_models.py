@@ -100,13 +100,23 @@ DOMAIN_MODELS = {
     "cancer": {
         "models": [
             {
-                "name": "SIRIS-Lab/SciLake-Biomed-roberta-large",
-                "type": "roberta",
-                "threshold": 0.8,
+                "name": "SIRIS-Lab/AIObioEnts-core-pubmedbert-full",
+                "type": "aioner",
+                "threshold": 0.5,
             },
+            {
+                "name": "SIRIS-Lab/AIObioEnts-core-biolink-base",
+                "type": "aioner",
+                "threshold": 0.5,
+            },
+            {
+                "name": "SIRIS-Lab/AIObioEnts-core-biolink-large",
+                "type": "aioner",
+                "threshold": 0.5,
+            }
         ],
         "labels": {
-            "roberta": [
+            "aioner": [
                 "Gene",
                 "Disease",
                 "CellLine",
