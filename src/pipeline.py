@@ -1,7 +1,9 @@
-import argparse
+﻿import argparse
 import os
 import pandas as pd
 import traceback
+import resource
+
 from tqdm import tqdm
 
 from src.utils.logger import setup_logger
@@ -10,6 +12,22 @@ from src.nif_reader import parse_nif_file, apply_acronym_expansion
 from src.ner_runner import predict_sections_multimodel
 from src.gazetteer_linker import GazetteerLinker
 from configs.domain_models import DOMAIN_MODELS
+
+def log_memory_usage(logger, label=""):
+    """Log current memory usage (Linux only)"""
+    try:
+        # Memory in MB
+        mem_mb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
+        logger.info(f"📊 Memory {label}: {mem_mb:.2f} MB")
+        
+        # GPU memory if available
+        if torch.cuda.is_available():
+            for i in range(torch.cuda.device_count()):
+                allocated = torch.cuda.memory_allocated(i) / (1024**2)
+                reserved = torch.cuda.memory_reserved(i) / (1024**2)
+                logger.info(f"   GPU {i}: {allocated:.2f} MB allocated, {reserved:.2f} MB reserved")
+    except Exception as e:
+        logger.debug(f"Could not log memory: {e}")
 
 def log_cache_stats(cache: dict, logger):
     """Log cache statistics"""
@@ -52,7 +70,7 @@ def _overlaps_with_gazetteer(ner_ent, gaz_ents):
             return True
     return False
 
-def run_ner(domain, input_dir, output_dir, resume=True, file_batch_size=100, debug=False):
+def run_ner(domain, input_dir, output_dir, resume=False, file_batch_size=100, debug=False, gazetter_only=False):
     """
     Run NER enrichment by batching multiple papers together.
     For each batch:
@@ -69,12 +87,17 @@ def run_ner(domain, input_dir, output_dir, resume=True, file_batch_size=100, deb
     logger = setup_logger(log_dir, name=f"{domain}_ner", debug=debug)
 
     checkpoint_file = os.path.join(checkpoint_dir, "processed.json")
-    processed = load_json(checkpoint_file, default={})
 
     logger.info(f"✅ Starting NER for domain={domain}")
     logger.info(f"Input dir: {input_dir}")
     logger.info(f"Output dir: {output_dir}")
-    logger.info(f"Resuming from checkpoint: {len(processed)} files already done")
+    
+    if resume:
+        processed = load_json(checkpoint_file, default={})
+        logger.info(f"Resuming from checkpoint: {len(processed)} files already done")
+    else:
+        processed = {}
+        logger.info(f"Processing all files (no files processed or resume=False)")
 
     # --- find input files ---
     all_files = [
@@ -90,9 +113,15 @@ def run_ner(domain, input_dir, output_dir, resume=True, file_batch_size=100, deb
     gazetteer = None
     domain_conf = DOMAIN_MODELS.get(domain)
     if domain_conf.get('gazetteer', {}).get('enabled'):
-        gaz_path = domain_conf['gazetteer']['taxonomy_path']
-        gazetteer = GazetteerLinker(gaz_path)
-        logger.info(f"✅ Gazetteer loaded from {gaz_path}")
+        gaz_conf = domain_conf['gazetteer']
+        gazetteer = GazetteerLinker(
+            taxonomy_path=gaz_conf['taxonomy_path'],
+            taxonomy_source=gaz_conf.get('taxonomy_source'),
+            model_name=gaz_conf.get('model_name'),
+            default_type=gaz_conf.get('default_type'),
+            domain=domain
+        )
+        logger.info(f"✅ Gazetteer loaded: {gazetteer.model_name} from {gaz_conf['taxonomy_path']}")
 
     # --- batch iteration ---
     for start in range(0, total, file_batch_size):
@@ -158,26 +187,29 @@ def run_ner(domain, input_dir, output_dir, resume=True, file_batch_size=100, deb
             
             df_gazetteer = pd.DataFrame(gazetteer_entities) if gazetteer_entities else pd.DataFrame()
 
-        # Run NER once for all sections in batch
-        try:
-            df_entities = predict_sections_multimodel(
-                df_all,
-                domain=domain,
-                text_col="section_content_expanded",
-                id_col="section_id",
-                stride=100,
-                batch_size=8,
-                logger=logger,
-            )
-        except Exception as e:
-            tb = traceback.format_exc()
-            logger.error(f"🔥 NER failed on batch: {e}")
-            logger.debug(tb)
-            continue
+        if gazetter_only:
+            df_entities = df_gazetteer
+        else:
+            # Run NER once for all sections in batch
+            try:
+                df_entities = predict_sections_multimodel(
+                    df_all,
+                    domain=domain,
+                    text_col="section_content_expanded",
+                    id_col="section_id",
+                    stride=100,
+                    batch_size=8,
+                    logger=logger,
+                )
+            except Exception as e:
+                tb = traceback.format_exc()
+                logger.error(f"🔥 NER failed on batch: {e}")
+                logger.debug(tb)
+                continue
 
-        # Merge gazetteer + NER results
-        if not df_gazetteer.empty:
-            df_entities = merge_gazetteer_and_ner(df_gazetteer, df_entities, logger)
+            # Merge gazetteer + NER results
+            if not df_gazetteer.empty:
+                df_entities = merge_gazetteer_and_ner(df_gazetteer, df_entities, logger)
 
         # Group entities per paper and save
         section_dict = {}
@@ -232,7 +264,7 @@ def run_el(
     reranker_top_k: int = 5,
     reranker_fallbacks: bool = True,
     reranker_thinking: bool = False,
-    resume: bool = True,
+    resume: bool = False,
     debug: bool = False
 ):
     """
@@ -287,8 +319,13 @@ def run_el(
 
     # Load checkpoint
     checkpoint_file = os.path.join(checkpoint_dir, "processed.json")
-    processed = load_json(checkpoint_file, default={})
-    logger.info(f"📦 Checkpoint loaded: {len(processed)} files already processed")
+    
+    if resume:
+        processed = load_json(checkpoint_file, default={})
+        logger.info(f"📦 Checkpoint loaded: {len(processed)} files already processed")
+    else:
+        processed = {}
+        logger.info(f"Processing all files (no files processed or resume=False)")
     
     # Load cache
     cache_file = os.path.join(el_output_dir, "cache/linking_cache.json")
@@ -375,7 +412,11 @@ def run_el(
     # Process each file
     for ner_file in tqdm(remaining, desc="Linking entities"):
         try:
+            logger.info(f"🗃️  Processing file {files_processed + 1}/{len(remaining)}: {os.path.basename(ner_file)}")
+            #log_memory_usage(logger, f"before file {files_processed + 1}")
+        
             # Load NER entities
+            #logger.info(f"  Loading NER output {ner_file}")
             df_ner = pd.read_json(ner_file, lines=True)
             
             # Load corresponding expanded text
@@ -386,8 +427,33 @@ def run_el(
                 logger.warning(f"⚠️  No expanded file for {ner_file}")
                 processed[ner_file] = {"status": "no_expanded"}
                 continue
+
+            # DEBUG !!!
+            #logger.info(f"  Loading expanded file {expanded_file}")
+            #log_memory_usage(logger, "before CSV load")
+                
+            try:
+                # Check file size first
+                file_size = os.path.getsize(expanded_file)
+                logger.info(f"  File size: {file_size / (1024*1024):.2f} MB")
             
-            df_expanded = pd.read_csv(expanded_file)
+                df_expanded = pd.read_csv(
+                    expanded_file,
+                    engine='python',
+                    on_bad_lines='warn',
+                    encoding='utf-8',
+                    dtype=str
+                )
+                logger.info(f"  ✓ Loaded {len(df_expanded)} sections successfully")
+                #log_memory_usage(logger, "after CSV load")
+                
+            except Exception as csv_error:
+                logger.error(f"❌ Failed to load CSV: {csv_error}")
+                import traceback
+                logger.error(traceback.format_exc())
+                processed[ner_file] = {"status": "csv_load_error", "error": str(csv_error)[:200]}
+                save_json(processed, checkpoint_file)
+                continue
             
             # Create section_id -> text mapping
             text_map = dict(zip(
@@ -410,6 +476,8 @@ def run_el(
                     continue
                 
                 # Link entities with taxonomy source
+                # DEBUG !!!
+                #logger.info(f"  Linking section {section_id}")
                 enriched_entities, cache = linker.link_entities_in_section(
                     section_text, 
                     entities, 
@@ -451,7 +519,8 @@ def run_el(
             
             # Save checkpoint and cache
             save_json(processed, checkpoint_file)
-            
+
+            log_memory_usage(logger, f"after file {files_processed + 1}")
             files_processed += 1
             
             # Save cache every 100 files
@@ -492,7 +561,7 @@ def main():
     parser.add_argument("--domain", required=True, help="Domain name (ccam, energy, etc.)")
     parser.add_argument("--input", help="Path to input NIF directory (for NER step)")
     parser.add_argument("--output", required=True, help="Path to output directory")
-    parser.add_argument("--step", default="all", help="ner | el | all")
+    parser.add_argument("--step", default="all", help="gaz | ner | el | all")
     
     # Entity Linking arguments
     parser.add_argument("--threshold", type=float, default=0.7, help="EL similarity threshold")
@@ -526,7 +595,21 @@ def main():
 
     args = parser.parse_args()
 
-    if args.step == "ner":
+    if args.step == "gaz":
+        if not args.input:
+            print("❌ Error: --input required for NER step")
+            return
+        run_ner(
+            domain=args.domain,
+            input_dir=args.input,
+            output_dir=os.path.join(args.output, "ner"),
+            resume=args.resume,
+            file_batch_size=args.batch_size,
+            debug=args.debug,
+            gazetter_only=True
+        )
+
+    elif args.step == "ner":
         if not args.input:
             print("❌ Error: --input required for NER step")
             return

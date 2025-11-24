@@ -212,6 +212,7 @@ data/
 pipeline_comparison_results/
 tmp/
 test/
+taxonomies/
 
 # LibreOffice / OpenOffice lock files
 .~lock.*#

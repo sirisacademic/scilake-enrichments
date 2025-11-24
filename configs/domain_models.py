@@ -8,11 +8,19 @@ Each domain defines:
 
 DOMAIN_MODELS = {
     "neuro": {
+        "gazetteer": {
+            "enabled": True,
+            "taxonomy_path": "taxonomies/neuro/Neuroscience_Combined.tsv",
+            "taxonomy_source": "OPENMINDS-UBERON",
+            "model_name": "Neuroscience-Gazetteer",
+            "default_type": "UBERONParcellation"
+        },
         "models": [
             {
                 "name": "SIRIS-Lab/SciLake-Neuroscience-GLiNER-large",
                 "type": "gliner",
-                "threshold": 0.99,
+                #"threshold": 0.99,
+                "threshold": 0.95,
             },
         ],
         "labels": {
@@ -29,20 +37,13 @@ DOMAIN_MODELS = {
             "others": "openMINDS controlled terms",
         },
     },
-
     "ccam": {
         "models": [
             {
                 "name": "SIRIS-Lab/SciLake-CCAM-roberta-large-all",
                 "type": "roberta",
                 "threshold": 0.7,
-            },
-            {
-                "name": "SIRIS-Lab/SciLake-CCAM-GLiNER-large-all",
-                "type": "gliner",
-                "threshold": 0.6,
-                "for": "scenarioType",  # secondary model focused on scenarioType
-            },
+            }
         ],
         "labels": {
             "roberta": [
@@ -54,7 +55,6 @@ DOMAIN_MODELS = {
                 "levelOfAutomation",
                 "sensorType",
             ],
-            "gliner": ["ScenarioType"],
         },
         "kb": {
             "default": "Project-specific CCAM vocabulary (pilot sheet)",
@@ -64,7 +64,10 @@ DOMAIN_MODELS = {
     "energy": {
         "gazetteer": {
             "enabled": True,
-            "taxonomy_path": "taxonomies/energy/IRENA.tsv"
+            "taxonomy_path": "taxonomies/energy/IRENA.tsv",
+            "taxonomy_source": "IRENA",
+            "model_name": "IRENA-Gazetteer",
+            "default_type": "EnergyType"
         },
         "models": [
             {
@@ -82,6 +85,13 @@ DOMAIN_MODELS = {
     },
     
     "maritime": {
+        "gazetteer": {
+            "enabled": True,
+            "taxonomy_path": "taxonomies/maritime/VesselTypes.tsv",
+            "taxonomy_source": "Maritime-Ontology",
+            "model_name": "Maritime-Gazetteer",
+            "default_type": "vesselType"
+        },
         "models": [
             {
                 "name": "SIRIS-Lab/SciLake-Maritime-roberta-base",
@@ -90,13 +100,14 @@ DOMAIN_MODELS = {
             },
         ],
         "labels": {
-            "roberta": ["VesselType"],
+            "roberta": ["vesselType"],
         },
         "kb": {
             "default": "Maritime ontology provided by partners",
         },
     },
 
+    # !!!!!!!!!! UPDATE !!!!!!!!!!!!!
     "cancer": {
         "models": [
             {
