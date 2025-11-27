@@ -406,7 +406,7 @@ def predict_entities_batch(
 
     labels_dict: Dict[str, List[str]] = domain_conf.get("labels", {})
 
-    if model_type == "gliner":
+    if "gliner" in model_type:
         # Use domain label list if provided (your config uses per-domain)
         labels = labels_dict.get(domain, []) or labels_dict.get("gliner", [])
 
@@ -464,7 +464,7 @@ def predict_entities_batch(
                     }
                 )
 
-    elif model_type == "roberta":
+    elif "roberta" in model_type:
         preds_batch = model(texts, batch_size=len(texts))
         # Defensive: ensure list length and structure
         preds_batch = preds_batch if isinstance(preds_batch, list) else []

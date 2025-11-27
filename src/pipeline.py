@@ -2,6 +2,8 @@ import argparse
 import os
 import pandas as pd
 import traceback
+import resource
+
 from tqdm import tqdm
 import torch
 
@@ -11,6 +13,24 @@ from src.nif_reader import parse_nif_file, apply_acronym_expansion
 from src.ner_runner import predict_sections_multimodel
 from src.gazetteer_linker import GazetteerLinker
 from configs.domain_models import DOMAIN_MODELS
+
+
+def log_memory_usage(logger, label=""):
+    """Log current memory usage (Linux only)"""
+    try:
+        # Memory in MB
+        mem_mb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
+        logger.info(f"📊 Memory {label}: {mem_mb:.2f} MB")
+        
+        # GPU memory if available
+        if torch.cuda.is_available():
+            for i in range(torch.cuda.device_count()):
+                allocated = torch.cuda.memory_allocated(i) / (1024**2)
+                reserved = torch.cuda.memory_reserved(i) / (1024**2)
+                logger.info(f"   GPU {i}: {allocated:.2f} MB allocated, {reserved:.2f} MB reserved")
+    except Exception as e:
+        logger.debug(f"Could not log memory: {e}")
+
 
 def log_cache_stats(cache: dict, logger):
     """Log cache statistics"""
@@ -22,6 +42,7 @@ def log_cache_stats(cache: dict, logger):
     linked = total - rejected
     
     logger.info(f"📊 Cache stats: {total} total, {linked} linked ({100*linked/total:.1f}%), {rejected} rejected ({100*rejected/total:.1f}%)")
+
 
 def merge_gazetteer_and_ner(df_gaz, df_ner, logger):
     """Merge gazetteer and NER entities, removing overlaps."""
@@ -44,6 +65,7 @@ def merge_gazetteer_and_ner(df_gaz, df_ner, logger):
     
     return pd.DataFrame(merged)
 
+
 def _overlaps_with_gazetteer(ner_ent, gaz_ents):
     """Check if NER entity overlaps with any gazetteer entity."""
     ner_start, ner_end = ner_ent['start'], ner_ent['end']
@@ -53,12 +75,38 @@ def _overlaps_with_gazetteer(ner_ent, gaz_ents):
             return True
     return False
 
-def run_ner(domain, input_dir, output_dir, resume=True, file_batch_size=100, debug=False):
+
+def get_expanded_csv_path(ttl_path: str, expanded_dir: str) -> str:
+    """Get the path to the expanded sections CSV for a given TTL file."""
+    base_name = os.path.basename(ttl_path).replace(".ttl", "_sections.csv")
+    return os.path.join(expanded_dir, base_name)
+
+
+def load_expanded_sections(csv_path: str, logger=None) -> pd.DataFrame:
+    """Load pre-expanded sections from CSV file."""
+    try:
+        df = pd.read_csv(
+            csv_path,
+            engine='python',
+            on_bad_lines='warn',
+            encoding='utf-8',
+            dtype=str
+        )
+        if logger:
+            logger.debug(f"📂 Loaded {len(df)} pre-expanded sections from {os.path.basename(csv_path)}")
+        return df
+    except Exception as e:
+        if logger:
+            logger.error(f"❌ Failed to load expanded sections from {csv_path}: {e}")
+        return None
+
+
+def run_ner(domain, input_dir, output_dir, resume=False, file_batch_size=100, debug=False, gazetter_only=False):
     """
     Run NER enrichment by batching multiple papers together.
     For each batch:
-     - Parse all .ttl files
-     - Expand acronyms
+     - Parse all .ttl files (or load pre-expanded sections if available)
+     - Expand acronyms (skip if already expanded)
      - Concatenate all sections
      - Run NER across all sections at once
      - Split results back per paper
@@ -70,12 +118,22 @@ def run_ner(domain, input_dir, output_dir, resume=True, file_batch_size=100, deb
     logger = setup_logger(log_dir, name=f"{domain}_ner", debug=debug)
 
     checkpoint_file = os.path.join(checkpoint_dir, "processed.json")
-    processed = load_json(checkpoint_file, default={})
+    
+    # Directory for expanded sections (separate from NER checkpoint)
+    expanded_dir = os.path.join(output_dir, "../sections")
+    os.makedirs(expanded_dir, exist_ok=True)
 
     logger.info(f"✅ Starting NER for domain={domain}")
     logger.info(f"Input dir: {input_dir}")
     logger.info(f"Output dir: {output_dir}")
-    logger.info(f"Resuming from checkpoint: {len(processed)} files already done")
+    logger.info(f"Expanded sections dir: {expanded_dir}")
+    
+    if resume:
+        processed = load_json(checkpoint_file, default={})
+        logger.info(f"Resuming from checkpoint: {len(processed)} files already done")
+    else:
+        processed = {}
+        logger.info(f"Processing all files (no files processed or resume=False)")
 
     # --- find input files ---
     all_files = [
@@ -86,14 +144,33 @@ def run_ner(domain, input_dir, output_dir, resume=True, file_batch_size=100, deb
     remaining_files = [f for f in all_files if f not in processed]
     total = len(remaining_files)
     logger.info(f"Found {len(all_files)} files ({total} pending)")
+    
+    # Check how many already have expanded sections
+    files_with_expanded = sum(
+        1 for f in remaining_files 
+        if os.path.exists(get_expanded_csv_path(f, expanded_dir))
+    )
+    if files_with_expanded > 0:
+        logger.info(f"📂 {files_with_expanded}/{total} pending files already have expanded sections (will skip expansion)")
 
     # Initialize gazetteer if enabled
     gazetteer = None
     domain_conf = DOMAIN_MODELS.get(domain)
     if domain_conf.get('gazetteer', {}).get('enabled'):
-        gaz_path = domain_conf['gazetteer']['taxonomy_path']
-        gazetteer = GazetteerLinker(gaz_path)
-        logger.info(f"✅ Gazetteer loaded from {gaz_path}")
+        gaz_conf = domain_conf['gazetteer']
+        gazetteer = GazetteerLinker(
+            taxonomy_path=gaz_conf['taxonomy_path'],
+            taxonomy_source=gaz_conf.get('taxonomy_source'),
+            model_name=gaz_conf.get('model_name'),
+            default_type=gaz_conf.get('default_type'),
+            domain=domain,
+            min_term_length=gaz_conf.get('min_term_length', 2),
+            blocked_terms=gaz_conf.get('blocked_terms'),
+            logger=logger
+        )
+        logger.info(f"✅ Gazetteer loaded: {gazetteer.model_name} from {gaz_conf['taxonomy_path']}")
+        if gaz_conf.get('blocked_terms'):
+            logger.info(f"   Blocked terms: {len(gaz_conf['blocked_terms'])} terms")
 
     # --- batch iteration ---
     for start in range(0, total, file_batch_size):
@@ -103,13 +180,41 @@ def run_ner(domain, input_dir, output_dir, resume=True, file_batch_size=100, deb
 
         all_sections = []
         paper_map = {}  # section_id → paper_path
+        
+        # Counters for logging
+        files_expanded_from_cache = 0
+        files_newly_expanded = 0
+        files_empty = 0
+        files_error = 0
 
         # Parse all papers in the batch
         for path in tqdm(batch_files, desc=f"Batch {start // file_batch_size + 1}"):
             try:
+                # Check if expanded sections already exist
+                expanded_csv_path = get_expanded_csv_path(path, expanded_dir)
+                
+                if os.path.exists(expanded_csv_path):
+                    # Load pre-expanded sections
+                    df = load_expanded_sections(expanded_csv_path, logger=logger)
+                    if df is not None and not df.empty:
+                        df["paper_path"] = path
+                        
+                        # Keep mapping to rebuild per-paper outputs later
+                        for sid in df["section_id"].tolist():
+                            paper_map[sid] = path
+                        
+                        all_sections.append(df)
+                        files_expanded_from_cache += 1
+                        continue
+                    else:
+                        # CSV exists but is empty or failed to load - re-expand
+                        logger.warning(f"⚠️ Pre-expanded CSV empty or invalid for {path}, re-expanding...")
+                
+                # Parse and expand (no pre-expanded sections available)
                 records = parse_nif_file(path, logger=logger)
                 if not records:
                     processed[path] = {"status": "empty"}
+                    files_empty += 1
                     continue
 
                 df = pd.DataFrame(records)
@@ -121,9 +226,22 @@ def run_ner(domain, input_dir, output_dir, resume=True, file_batch_size=100, deb
                     paper_map[sid] = path
 
                 all_sections.append(df)
+                files_newly_expanded += 1
+                
+                # Save expanded sections for this file (for future runs)
+                df.to_csv(expanded_csv_path, index=False)
+                
             except Exception as e:
                 logger.error(f"⚠️ Error parsing {path}: {e}")
                 processed[path] = {"status": f"parse_error: {e}"}
+                files_error += 1
+
+        # Log expansion statistics for this batch
+        logger.info(f"📊 Batch expansion stats: "
+                    f"{files_expanded_from_cache} from cache, "
+                    f"{files_newly_expanded} newly expanded, "
+                    f"{files_empty} empty, "
+                    f"{files_error} errors")
 
         if not all_sections:
             logger.warning("⚠️ No sections to process in this batch.")
@@ -132,16 +250,15 @@ def run_ner(domain, input_dir, output_dir, resume=True, file_batch_size=100, deb
         df_all = pd.concat(all_sections, ignore_index=True)
         logger.info(f"📊 Combined batch: {len(df_all)} sections total")
         
-        # Save expanded sections per input file for debugging
-        expanded_dir = os.path.join(output_dir, "../sections")
-        os.makedirs(expanded_dir, exist_ok=True)
+        # Save any newly expanded sections that weren't saved yet
+        # (This handles the case where sections were loaded from cache)
         for path, group in df_all.groupby("paper_path"):
-            base_name = os.path.basename(path).replace(".ttl", "_sections.csv")
-            csv_path = os.path.join(expanded_dir, base_name)
-            group.to_csv(csv_path, index=False)
-        logger.info(f"Saved expanded sections to {expanded_dir}/")
+            expanded_csv_path = get_expanded_csv_path(path, expanded_dir)
+            if not os.path.exists(expanded_csv_path):
+                group.to_csv(expanded_csv_path, index=False)
 
-        # Run gazeteer
+        # Run gazetteer
+        df_gazetteer = pd.DataFrame()  # Initialize empty DataFrame (FIX for UnboundLocalError)
         if gazetteer:
             logger.info("🔍 Running gazetteer-based entity extraction...")
             gazetteer_entities = []
@@ -159,26 +276,29 @@ def run_ner(domain, input_dir, output_dir, resume=True, file_batch_size=100, deb
             
             df_gazetteer = pd.DataFrame(gazetteer_entities) if gazetteer_entities else pd.DataFrame()
 
-        # Run NER once for all sections in batch
-        try:
-            df_entities = predict_sections_multimodel(
-                df_all,
-                domain=domain,
-                text_col="section_content_expanded",
-                id_col="section_id",
-                stride=100,
-                batch_size=8,
-                logger=logger,
-            )
-        except Exception as e:
-            tb = traceback.format_exc()
-            logger.error(f"🔥 NER failed on batch: {e}")
-            logger.debug(tb)
-            continue
+        if gazetter_only:
+            df_entities = df_gazetteer
+        else:
+            # Run NER once for all sections in batch
+            try:
+                df_entities = predict_sections_multimodel(
+                    df_all,
+                    domain=domain,
+                    text_col="section_content_expanded",
+                    id_col="section_id",
+                    stride=100,
+                    batch_size=8,
+                    logger=logger,
+                )
+            except Exception as e:
+                tb = traceback.format_exc()
+                logger.error(f"🔥 NER failed on batch: {e}")
+                logger.debug(tb)
+                continue
 
-        # Merge gazetteer + NER results
-        if not df_gazetteer.empty:
-            df_entities = merge_gazetteer_and_ner(df_gazetteer, df_entities, logger)
+            # Merge gazetteer + NER results (FIX: check gazetteer exists)
+            if gazetteer and not df_gazetteer.empty:
+                df_entities = merge_gazetteer_and_ner(df_gazetteer, df_entities, logger)
 
         # Group entities per paper and save
         section_dict = {}
@@ -215,6 +335,7 @@ def run_ner(domain, input_dir, output_dir, resume=True, file_batch_size=100, deb
 
     logger.info("🎉 All batches processed successfully.")
 
+
 def run_el(
     domain: str,
     ner_output_dir: str,
@@ -233,7 +354,7 @@ def run_el(
     reranker_top_k: int = 5,
     reranker_fallbacks: bool = True,
     reranker_thinking: bool = False,
-    resume: bool = True,
+    resume: bool = False,
     debug: bool = False
 ):
     """
@@ -288,11 +409,18 @@ def run_el(
 
     # Load checkpoint
     checkpoint_file = os.path.join(checkpoint_dir, "processed.json")
-    processed = load_json(checkpoint_file, default={})
-    logger.info(f"📦 Checkpoint loaded: {len(processed)} files already processed")
+    
+    if resume:
+        processed = load_json(checkpoint_file, default={})
+        logger.info(f"📦 Checkpoint loaded: {len(processed)} files already processed")
+    else:
+        processed = {}
+        logger.info(f"Processing all files (no files processed or resume=False)")
     
     # Load cache
-    cache_file = os.path.join(el_output_dir, "cache/linking_cache.json")
+    cache_dir = os.path.join(el_output_dir, "cache")
+    os.makedirs(cache_dir, exist_ok=True)
+    cache_file = os.path.join(cache_dir, "linking_cache.json")
     cache = load_json(cache_file, default={})
     logger.info(f"💾 Cache loaded: {len(cache)} entries")
 
@@ -304,7 +432,7 @@ def run_el(
         logger.info(f"  Embedding model: {model_name}")
         logger.info(f"  LLM model: {reranker_llm}")
         logger.info(f"  Top-k candidates: {reranker_top_k}")
-        logger.info(f"  Context for retrieval: {use_context_for_retrieval}")  # NEW
+        logger.info(f"  Context for retrieval: {use_context_for_retrieval}")
         logger.info(f"  Top-level fallbacks: {reranker_fallbacks}")
         logger.info(f"  Thinking mode: {reranker_thinking}")
         
@@ -317,7 +445,7 @@ def run_el(
             context_window=context_window,
             max_contexts=max_contexts,
             use_sentence_context=use_sentence_context,
-            use_context_for_retrieval=use_context_for_retrieval,  # NEW
+            use_context_for_retrieval=use_context_for_retrieval,
             top_k_candidates=reranker_top_k,
             add_top_level_fallbacks=reranker_fallbacks,
             enable_thinking=reranker_thinking,
@@ -376,6 +504,8 @@ def run_el(
     # Process each file
     for ner_file in tqdm(remaining, desc="Linking entities"):
         try:
+            logger.info(f"🗃️  Processing file {files_processed + 1}/{len(remaining)}: {os.path.basename(ner_file)}")
+        
             # Load NER entities
             df_ner = pd.read_json(ner_file, lines=True)
             
@@ -387,8 +517,27 @@ def run_el(
                 logger.warning(f"⚠️  No expanded file for {ner_file}")
                 processed[ner_file] = {"status": "no_expanded"}
                 continue
+                
+            try:
+                # Check file size first
+                file_size = os.path.getsize(expanded_file)
+                logger.info(f"  File size: {file_size / (1024*1024):.2f} MB")
             
-            df_expanded = pd.read_csv(expanded_file)
+                df_expanded = pd.read_csv(
+                    expanded_file,
+                    engine='python',
+                    on_bad_lines='warn',
+                    encoding='utf-8',
+                    dtype=str
+                )
+                logger.info(f"  ✓ Loaded {len(df_expanded)} sections successfully")
+                
+            except Exception as csv_error:
+                logger.error(f"❌ Failed to load CSV: {csv_error}")
+                logger.error(traceback.format_exc())
+                processed[ner_file] = {"status": "csv_load_error", "error": str(csv_error)[:200]}
+                save_json(processed, checkpoint_file)
+                continue
             
             # Create section_id -> text mapping
             text_map = dict(zip(
@@ -452,7 +601,8 @@ def run_el(
             
             # Save checkpoint and cache
             save_json(processed, checkpoint_file)
-            
+
+            log_memory_usage(logger, f"after file {files_processed + 1}")
             files_processed += 1
             
             # Save cache every 100 files
@@ -467,7 +617,6 @@ def run_el(
             
         except Exception as e:
             logger.error(f"❌ Error processing {ner_file}: {e}")
-            import traceback
             logger.debug(traceback.format_exc())
             processed[ner_file] = {"status": f"error: {e}"}
             continue
@@ -488,7 +637,8 @@ def run_el(
     if total_ents > 0:
         logger.info(f"   Overall linking rate: {100*total_links/total_ents:.1f}%")
 
-def run_geotagging(domain, input_dir, output_dir, resume=True, file_batch_size=100, device = "cpu"):
+
+def run_geotagging(domain, input_dir, output_dir, resume=True, file_batch_size=100, device="cpu"):
     """
     Run Geotagging pipeline (GeoNER + Role Classification).
     For each batch:
@@ -499,7 +649,6 @@ def run_geotagging(domain, input_dir, output_dir, resume=True, file_batch_size=1
       - Run Role Classification on detected mentions
       - Save enriched entities with ROLE per section
     """
-    import traceback
     from src.geotagging_runner import run_geotagging_batch
 
     # --- Setup directories ---
@@ -617,6 +766,7 @@ def run_geotagging(domain, input_dir, output_dir, resume=True, file_batch_size=1
 
     logger.info("🎉 All Geotagging batches processed successfully.")
 
+
 def run_affiliations(domain, input_dir, output_dir, resume=True, file_batch_size=500, device="cuda"):
     """
     Extract, clean, and enrich affiliations from NIF .ttl files using AffilGood.
@@ -625,10 +775,7 @@ def run_affiliations(domain, input_dir, output_dir, resume=True, file_batch_size
     """
     from rdflib import Graph
     import re
-    import pandas as pd
-    from tqdm import tqdm
     from src.affilgood_runner import run_affilgood_batch
-    from src.utils.io_utils import load_json, save_json, append_jsonl
     from affilgood.affilgood import AffilGood  # assuming installed
 
     # --- Setup output and logging ---
@@ -731,12 +878,13 @@ def run_affiliations(domain, input_dir, output_dir, resume=True, file_batch_size
 
     logger.info("🎉 Finished extracting and enriching all affiliations with AffilGood.")
 
+
 def main():
     parser = argparse.ArgumentParser(description="SciLake NER & Entity Linking Pipeline")
     parser.add_argument("--domain", required=True, help="Domain name (ccam, energy, etc.)")
     parser.add_argument("--input", help="Path to input NIF directory (for NER step)")
     parser.add_argument("--output", required=True, help="Path to output directory")
-    parser.add_argument("--step", default="all", help="ner | el | all")
+    parser.add_argument("--step", default="all", help="gaz | ner | el | geotagging | affiliations | all")
     
     # Entity Linking arguments
     parser.add_argument("--threshold", type=float, default=0.7, help="EL similarity threshold")
@@ -753,7 +901,7 @@ def main():
     parser.add_argument("--linker_type", default="auto", 
                        help="Linker type: auto | semantic | instruct | reranker")
     
-    # NEW: Reranker-specific arguments
+    # Reranker-specific arguments
     parser.add_argument("--reranker_llm", default="Qwen/Qwen3-1.7B", 
                        help="LLM model for reranker linker")
     parser.add_argument("--reranker_top_k", type=int, default=5, 
@@ -773,7 +921,21 @@ def main():
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"💻 Device set to: {device}")
 
-    if args.step == "ner":
+    if args.step == "gaz":
+        if not args.input:
+            print("❌ Error: --input required for gazetteer step")
+            return
+        run_ner(
+            domain=args.domain,
+            input_dir=args.input,
+            output_dir=os.path.join(args.output, "ner"),
+            resume=args.resume,
+            file_batch_size=args.batch_size,
+            debug=args.debug,
+            gazetter_only=True
+        )
+
+    elif args.step == "ner":
         if not args.input:
             print("❌ Error: --input required for NER step")
             return
@@ -784,9 +946,12 @@ def main():
             resume=args.resume,
             file_batch_size=args.batch_size,
             debug=args.debug,
-            device=device, 
         )
+        
     elif args.step == "geotagging":
+        if not args.input:
+            print("❌ Error: --input required for geotagging step")
+            return
         run_geotagging(
             domain=args.domain,
             input_dir=args.input,
@@ -795,13 +960,18 @@ def main():
             file_batch_size=args.batch_size,
             device=device,  
         )
+        
     elif args.step == "affiliations":
+        if not args.input:
+            print("❌ Error: --input required for affiliations step")
+            return
         run_affiliations(
             domain=args.domain,
             input_dir=args.input,
             output_dir=os.path.join(args.output, "affiliations"),
             resume=args.resume,
             file_batch_size=args.batch_size,
+            device=device,
         )
 
     elif args.step == "el":
@@ -865,7 +1035,8 @@ def main():
         )
     
     else:
-        print(f"❌ Unknown step: {args.step}. Use: ner | el | all")
+        print(f"❌ Unknown step: {args.step}. Use: gaz | ner | el | geotagging | affiliations | all")
+
 
 if __name__ == "__main__":
     main()

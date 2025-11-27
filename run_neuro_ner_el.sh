@@ -1,10 +1,14 @@
 #!/bin/bash
 export PYTHONPATH="$(dirname "$0"):$PYTHONPATH"
 
+# !!! Run with --resume to resume from previous run !!!
+
 python src/pipeline.py \
-    --domain energy \
-    --input data/energy-all-ft \
-    --output outputs/energy-all-ft \
+    --domain neuro \
+    --taxonomy taxonomies/neuro/Neuroscience_Combined.tsv \
+    --taxonomy_source OPENMINDS-UBERON \
+    --input data/neuro-all-ft \
+    --output outputs/neuro-all-ft \
     --linker_type reranker \
     --el_model_name intfloat/multilingual-e5-large-instruct \
     --threshold 0.70 \
@@ -12,5 +16,6 @@ python src/pipeline.py \
     --max_contexts 5 \
     --reranker_llm Qwen/Qwen3-1.7B \
     --reranker_top_k 7 \
-    --reranker_fallbacks
+    --reranker_fallbacks \
+    --resume
 

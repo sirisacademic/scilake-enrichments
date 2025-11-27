@@ -74,7 +74,20 @@ class SemanticLinker:
         
         embeddings = []
         metadata = []
-        
+
+        # Aliases
+        aliases_cols = ["synonyms", "wikidata_aliases"]
+        # Keep only the columns that actually exist in df
+        existing = [c for c in aliases_cols if c in df.columns]
+        # Create "aliases" by joining existing columns
+        df["aliases"] = (
+            df[existing]
+            .fillna("")                      # replace NaN with empty string
+            .apply(lambda row: " | ".join(
+                [v for v in row if v]        # keep only non-empty values
+            ), axis=1)
+        )
+
         for _, row in df.iterrows():
             # Primary concept
             concept = row['concept']
@@ -85,7 +98,7 @@ class SemanticLinker:
             
             # Collect alias embeddings
             alias_embeddings = [concept_emb]  # Start with the concept embedding
-            aliases = row.get('wikidata_aliases')
+            aliases = row.get('aliases')
             if pd.notna(aliases) and isinstance(aliases, str):
                 for alias in aliases.split(' | '):
                     alias = alias.strip()
