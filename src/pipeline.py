@@ -5,6 +5,7 @@ import traceback
 import resource
 
 from tqdm import tqdm
+import torch
 
 from src.utils.logger import setup_logger
 from src.utils.io_utils import load_json, save_json, append_jsonl
@@ -12,6 +13,7 @@ from src.nif_reader import parse_nif_file, apply_acronym_expansion
 from src.ner_runner import predict_sections_multimodel
 from src.gazetteer_linker import GazetteerLinker
 from configs.domain_models import DOMAIN_MODELS
+
 
 def log_memory_usage(logger, label=""):
     """Log current memory usage (Linux only)"""
@@ -21,7 +23,6 @@ def log_memory_usage(logger, label=""):
         logger.info(f"📊 Memory {label}: {mem_mb:.2f} MB")
         
         # GPU memory if available
-        import torch
         if torch.cuda.is_available():
             for i in range(torch.cuda.device_count()):
                 allocated = torch.cuda.memory_allocated(i) / (1024**2)
@@ -29,6 +30,7 @@ def log_memory_usage(logger, label=""):
                 logger.info(f"   GPU {i}: {allocated:.2f} MB allocated, {reserved:.2f} MB reserved")
     except Exception as e:
         logger.debug(f"Could not log memory: {e}")
+
 
 def log_cache_stats(cache: dict, logger):
     """Log cache statistics"""
@@ -40,6 +42,7 @@ def log_cache_stats(cache: dict, logger):
     linked = total - rejected
     
     logger.info(f"📊 Cache stats: {total} total, {linked} linked ({100*linked/total:.1f}%), {rejected} rejected ({100*rejected/total:.1f}%)")
+
 
 def merge_gazetteer_and_ner(df_gaz, df_ner, logger):
     """Merge gazetteer and NER entities, removing overlaps."""
@@ -61,6 +64,7 @@ def merge_gazetteer_and_ner(df_gaz, df_ner, logger):
         merged.append({'section_id': section_id, 'entities': combined})
     
     return pd.DataFrame(merged)
+
 
 def _overlaps_with_gazetteer(ner_ent, gaz_ents):
     """Check if NER entity overlaps with any gazetteer entity."""
@@ -330,6 +334,7 @@ def run_ner(domain, input_dir, output_dir, resume=False, file_batch_size=100, de
         logger.info(f"✅ Batch complete — total processed so far: {len(processed)} files.")
 
     logger.info("🎉 All batches processed successfully.")
+
 
 def run_el(
     domain: str,
@@ -632,12 +637,254 @@ def run_el(
     if total_ents > 0:
         logger.info(f"   Overall linking rate: {100*total_links/total_ents:.1f}%")
 
+
+def run_geotagging(domain, input_dir, output_dir, resume=True, file_batch_size=100, device="cpu"):
+    """
+    Run Geotagging pipeline (GeoNER + Role Classification).
+    For each batch:
+      - Parse all .ttl files
+      - Expand acronyms
+      - Concatenate all sections
+      - Run GeoNER across all sections at once (batched inside the transformer)
+      - Run Role Classification on detected mentions
+      - Save enriched entities with ROLE per section
+    """
+    from src.geotagging_runner import run_geotagging_batch
+
+    # --- Setup directories ---
+    os.makedirs(output_dir, exist_ok=True)
+    checkpoint_dir = os.path.join(output_dir, "checkpoints")
+    os.makedirs(checkpoint_dir, exist_ok=True)
+    log_dir = os.path.join(output_dir, "logs")
+    logger = setup_logger(log_dir, name=f"{domain}_geotagging")
+
+    # --- Load checkpoint ---
+    checkpoint_file = os.path.join(checkpoint_dir, "processed.json")
+    processed = load_json(checkpoint_file, default={})
+
+    logger.info(f"🌍 Starting Geotagging for domain={domain}")
+    logger.info(f"Input dir: {input_dir}")
+    logger.info(f"Output dir: {output_dir}")
+    logger.info(f"Resuming from checkpoint: {len(processed)} files already done")
+
+    # --- Find .ttl input files ---
+    all_files = [
+        os.path.join(root, f)
+        for root, _, files in os.walk(input_dir)
+        for f in files if f.endswith(".ttl")
+    ]
+    remaining_files = [f for f in all_files if f not in processed]
+    total = len(remaining_files)
+    logger.info(f"Found {len(all_files)} files ({total} pending)")
+
+    # --- Process in file batches ---
+    for start in range(0, total, file_batch_size):
+        batch_files = remaining_files[start:start + file_batch_size]
+        batch_idx = start // file_batch_size + 1
+        logger.info(f"\n🧩 Processing batch {batch_idx} ({len(batch_files)} files)...")
+
+        all_sections = []
+        paper_map = {}
+
+        # 1️⃣ Parse NIF and expand acronyms
+        for path in tqdm(batch_files, desc=f"Batch {batch_idx}"):
+            try:
+                records = parse_nif_file(path, logger=logger)
+                if not records:
+                    processed[path] = {"status": "empty"}
+                    continue
+
+                df = pd.DataFrame(records)
+                df = apply_acronym_expansion(df, logger=logger)
+                df["paper_path"] = path
+
+                for sid in df["section_id"].tolist():
+                    paper_map[sid] = path
+
+                all_sections.append(df)
+            except Exception as e:
+                logger.error(f"⚠️ Error parsing {path}: {e}")
+                processed[path] = {"status": f"parse_error: {e}"}
+
+        if not all_sections:
+            logger.warning("⚠️ No sections to process in this batch.")
+            continue
+
+        # 2️⃣ Combine all sections for this batch
+        df_all = pd.concat(all_sections, ignore_index=True)
+        logger.info(f"📊 Combined batch: {len(df_all)} sections total")
+
+        # 3️⃣ Run Geotagging (GeoNER + Role classification)
+        try:
+            df_geo = run_geotagging_batch(
+                df_all,
+                logger=logger,
+                text_col="section_content_expanded",
+                id_col="section_id",
+                batch_size=8,  # batch size for transformers pipeline
+                device=device,
+            )
+        except Exception as e:
+            tb = traceback.format_exc()
+            logger.error(f"🔥 Geotagging failed on batch {batch_idx}: {e}")
+            logger.debug(tb)
+            continue
+
+        # 4️⃣ Group entities per paper and save
+        if df_geo.empty:
+            logger.warning("⚪ No entities found in this batch.")
+            continue
+
+        section_dict = dict(zip(df_geo["section_id"], df_geo["entities"]))
+        logger.info("🧩 Grouping Geotagging results per paper...")
+
+        for paper_path, group_df in df_all.groupby("paper_path"):
+            section_ids = group_df["section_id"].tolist()
+            entities_subset = {
+                sid: section_dict.get(sid, [])
+                for sid in section_ids
+                if section_dict.get(sid)
+            }
+
+            if not entities_subset:
+                logger.info(f"⚪ No entities found for {paper_path} — skipping JSONL write.")
+                processed[paper_path] = {"status": "no_entities"}
+                continue
+
+            base_name = os.path.basename(paper_path).replace(".ttl", ".jsonl")
+            out_path = os.path.join(output_dir, base_name)
+
+            for sid, ents in entities_subset.items():
+                append_jsonl({"section_id": sid, "entities": ents}, out_path)
+
+            processed[paper_path] = {"status": "done"}
+            logger.info(f"✔️ Written {len(entities_subset)} sections for {paper_path}")
+
+        # 5️⃣ Save checkpoint
+        save_json(processed, checkpoint_file)
+        logger.info(f"✅ Batch {batch_idx} complete — total processed so far: {len(processed)} files.")
+
+    logger.info("🎉 All Geotagging batches processed successfully.")
+
+
+def run_affiliations(domain, input_dir, output_dir, resume=True, file_batch_size=500, device="cuda"):
+    """
+    Extract, clean, and enrich affiliations from NIF .ttl files using AffilGood.
+    Combines raw extraction + AffilGood processing in one step.
+    Supports resume via checkpoint (avoids reprocessing the same affiliations).
+    """
+    from rdflib import Graph
+    import re
+    from src.affilgood_runner import run_affilgood_batch
+    from affilgood.affilgood import AffilGood  # assuming installed
+
+    # --- Setup output and logging ---
+    os.makedirs(output_dir, exist_ok=True)
+    checkpoint_dir = os.path.join(output_dir, "checkpoints")
+    os.makedirs(checkpoint_dir, exist_ok=True)
+    log_dir = os.path.join(output_dir, "logs")
+    logger = setup_logger(log_dir, name=f"{domain}_affilgood_combined")
+
+    # --- Load checkpoint ---
+    checkpoint_file = os.path.join(checkpoint_dir, "processed.json")
+    processed = load_json(checkpoint_file, default={})
+    logger.info(f"📒 Loaded checkpoint: {len(processed)} affiliations already processed")
+
+    # --- Initialize AffilGood model ---
+    logger.info(f"🏗️ Initializing AffilGood (device={device})...")
+    affil_good = AffilGood(
+        span_separator='',
+        span_model_path='SIRIS-Lab/affilgood-span-multilingual',
+        ner_model_path='SIRIS-Lab/affilgood-NER-multilingual',
+        entity_linkers=['Whoosh'],
+        return_scores=True,
+        metadata_normalization=True,
+        verbose=False,
+        device=device,
+    )
+    logger.info("✅ AffilGood model initialized successfully.")
+
+    # --- Find all .ttl input files ---
+    all_files = [
+        os.path.join(root, f)
+        for root, _, files in os.walk(input_dir)
+        for f in files if f.endswith(".ttl")
+    ]
+
+    logger.info(f"Found {len(all_files)} TTL files")
+
+    seen_affiliations = set(processed.keys())
+
+    # --- Process files ---
+    for path in tqdm(all_files, desc="Extracting + processing affiliations"):
+        try:
+            g = Graph()
+            g.parse(path, format="turtle")
+
+            affiliations = []
+            for subj, pred, obj in g.triples((None, None, None)):
+                if "affRawAffiliationString" in str(pred):
+                    aff = str(obj)
+                    # 🧹 Clean text
+                    aff = re.sub(r"[\n\t]+", ", ", aff)
+                    aff = re.sub(r"\s*,\s*", ", ", aff)
+                    aff = re.sub(r"\s{2,}", " ", aff)
+                    aff = aff.strip(" ,;")
+
+                    aff_id = str(subj)
+                    # Skip duplicates if resume mode
+                    if resume and aff_id in seen_affiliations:
+                        continue
+
+                    affiliations.append({
+                        "affiliation_id": aff_id,
+                        "raw_affiliation": aff,
+                        "source_file": os.path.basename(path),
+                    })
+                    seen_affiliations.add(aff_id)
+
+            if not affiliations:
+                logger.info(f"⚪ {os.path.basename(path)} — no new affiliations found")
+                continue
+
+            logger.info(f"📄 {os.path.basename(path)} — {len(affiliations)} new affiliations found")
+
+            # Convert to DataFrame for batch processing
+            df = pd.DataFrame(affiliations)
+            base_name = os.path.basename(path).replace(".ttl", "_affilgood.jsonl")
+            out_path = os.path.join(output_dir, base_name)
+
+            # 🔥 Run AffilGood enrichment
+            results = run_affilgood_batch(
+                df_batch=df,
+                affilgood=affil_good,
+                logger=logger,
+                batch_size=file_batch_size,
+                output_path=out_path,
+            )
+
+            # Update checkpoint
+            for r in results:
+                processed[r["affiliation_id"]] = {
+                    "status": "done",
+                    "source_file": r["raw_affiliation"],
+                }
+
+            save_json(processed, checkpoint_file)
+            logger.info(f"💾 Saved checkpoint ({len(processed)} total processed)")
+
+        except Exception as e:
+            logger.error(f"⚠️ Error processing {path}: {e}")
+
+    logger.info("🎉 Finished extracting and enriching all affiliations with AffilGood.")
+
+
 def main():
     parser = argparse.ArgumentParser(description="SciLake NER & Entity Linking Pipeline")
     parser.add_argument("--domain", required=True, help="Domain name (ccam, energy, etc.)")
     parser.add_argument("--input", help="Path to input NIF directory (for NER step)")
     parser.add_argument("--output", required=True, help="Path to output directory")
-    parser.add_argument("--step", default="all", help="gaz | ner | el | all")
+    parser.add_argument("--step", default="all", help="gaz | ner | el | geotagging | affiliations | all")
     
     # Entity Linking arguments
     parser.add_argument("--threshold", type=float, default=0.7, help="EL similarity threshold")
@@ -671,9 +918,12 @@ def main():
 
     args = parser.parse_args()
 
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    print(f"💻 Device set to: {device}")
+
     if args.step == "gaz":
         if not args.input:
-            print("❌ Error: --input required for NER step")
+            print("❌ Error: --input required for gazetteer step")
             return
         run_ner(
             domain=args.domain,
@@ -697,7 +947,33 @@ def main():
             file_batch_size=args.batch_size,
             debug=args.debug,
         )
-    
+        
+    elif args.step == "geotagging":
+        if not args.input:
+            print("❌ Error: --input required for geotagging step")
+            return
+        run_geotagging(
+            domain=args.domain,
+            input_dir=args.input,
+            output_dir=os.path.join(args.output, "geotagging-ner"),
+            resume=args.resume,
+            file_batch_size=args.batch_size,
+            device=device,  
+        )
+        
+    elif args.step == "affiliations":
+        if not args.input:
+            print("❌ Error: --input required for affiliations step")
+            return
+        run_affiliations(
+            domain=args.domain,
+            input_dir=args.input,
+            output_dir=os.path.join(args.output, "affiliations"),
+            resume=args.resume,
+            file_batch_size=args.batch_size,
+            device=device,
+        )
+
     elif args.step == "el":
         run_el(
             domain=args.domain,
@@ -759,7 +1035,8 @@ def main():
         )
     
     else:
-        print(f"❌ Unknown step: {args.step}. Use: ner | el | all")
+        print(f"❌ Unknown step: {args.step}. Use: gaz | ner | el | geotagging | affiliations | all")
+
 
 if __name__ == "__main__":
     main()

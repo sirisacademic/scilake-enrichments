@@ -1,0 +1,861 @@
+@prefix lkg-res: <http://lkg.lynx-project.eu/res/> .
+@prefix eli:   <http://data.europa.eu/eli/ontology#> .
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix itsrdf: <http://www.w3.org/2005/11/its/rdf#> .
+@prefix lkg:   <http://lkg.lynx-project.eu/def/> .
+@prefix skos:  <http://www.w3.org/2004/02/skos/core#> .
+@prefix nif:   <http://persistence.uni-leipzig.org/nlp2rdf/ontologies/nif-core#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dbo:   <http://dbpedia.org/ontology/> .
+@prefix qont:  <http://qurator-projekt.de/ontology/> .
+@prefix nif-ann: <http://persistence.uni-leipzig.org/nlp2rdf/ontologies/nif-annotation#> .
+@prefix dct:   <http://purl.org/dc/terms/> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix dbr:   <http://dbpedia.org/resource/> .
+@prefix sci-res: <http://scilake-projekt.eu/res/> .
+@prefix foaf:  <http://xmlns.com/foaf/0.1/> .
+@prefix scilake: <http://scilake-projekt.eu/ontology/> .
+
+<http://scilake-project.eu/res/20e61e05/author/f71dd1db>
+        a                        scilake:ScientificAuthor ;
+        nif:referenceContext     <http://scilake-project.eu/res/154835b4> ;
+        dct:source               "" ;
+        qont:metadata            []  ;
+        scilake:corresp          false ;
+        scilake:has_affiliation  <http://scilake-project.eu/res/20e61e05/affiliation/> ;
+        scilake:valid            false .
+
+<http://scilake-project.eu/res/20e61e05/author/5fa58ff4>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/91ba4da2> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "Ricardo" ;
+        scilake:lastname      "Yarza" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05/location/_10_School_of_Physics,_The_University_of_Melbourne,_>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/20e61e05> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:locationName  " 10 School of Physics, The University of Melbourne, " .
+
+<http://scilake-project.eu/res/20e61e05/author/69139d31>
+        a                        scilake:ScientificAuthor ;
+        nif:referenceContext     <http://scilake-project.eu/res/a684d310> ;
+        dct:source               "" ;
+        qont:metadata            []  ;
+        scilake:corresp          false ;
+        scilake:has_affiliation  <http://scilake-project.eu/res/20e61e05/affiliation/> ;
+        scilake:valid            false .
+
+<http://scilake-project.eu/res/20e61e05/location/_14_Gemini_Observatory,_NSF's_NOIRLab,_>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/20e61e05> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:locationName  " 14 Gemini Observatory, NSF's NOIRLab, " .
+
+<http://scilake-project.eu/res/20e61e05/author/04043928>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/18ca388d> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "Raffaella" ;
+        scilake:lastname      "Margutti" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05/author/ec7a59af>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/8f41b4fe> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "Kenneth" ;
+        scilake:lastname      "Chambers" ;
+        scilake:middlename    "C" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05/location/_8_David_A._Dunlap_Department_of_Astronomy_and_Astrophysics,_University_of_Toronto,_>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/20e61e05> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:locationName  " 8 David A. Dunlap Department of Astronomy and Astrophysics, University of Toronto, " .
+
+<http://scilake-project.eu/res/20e61e05/author/c77b5610>
+        a                        scilake:ScientificAuthor ;
+        nif:referenceContext     <http://scilake-project.eu/res/4466a4da> ;
+        dct:source               "" ;
+        qont:metadata            []  ;
+        scilake:corresp          false ;
+        scilake:has_affiliation  <http://scilake-project.eu/res/20e61e05/affiliation/> ;
+        scilake:valid            false .
+
+<http://scilake-project.eu/res/20e61e05/author/c21a0a70>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/532c7083> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "Richard" ;
+        scilake:lastname      "Wainscoat" ;
+        scilake:middlename    "J" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05/author/0ddcff2e>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/e59bbfc2> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "Armin" ;
+        scilake:lastname      "Rest" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05/author/433cade7>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/4a9306df> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "Adaeze" ;
+        scilake:lastname      "Ibik" ;
+        scilake:middlename    "L" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05/author/e5f2d920>
+        a                        scilake:ScientificAuthor ;
+        nif:referenceContext     <http://scilake-project.eu/res/0a1d29cc> ;
+        dct:source               "" ;
+        qont:metadata            []  ;
+        scilake:corresp          false ;
+        scilake:has_affiliation  <http://scilake-project.eu/res/20e61e05/affiliation/> ;
+        scilake:valid            false .
+
+<http://scilake-project.eu/res/20e61e05/author/a4ef1b13>
+        a                        scilake:ScientificAuthor ;
+        nif:referenceContext     <http://scilake-project.eu/res/d1ba7ad2> ;
+        dct:source               "" ;
+        qont:metadata            []  ;
+        scilake:corresp          false ;
+        scilake:has_affiliation  <http://scilake-project.eu/res/20e61e05/affiliation/> ;
+        scilake:valid            false .
+
+<http://scilake-project.eu/res/20e61e05>
+        a                    nif:Context , nif:OffsetBasedString , scilake:ScientificDocument ;
+        nif:beginIndex       "0"^^xsd:nonNegativeInteger ;
+        nif:endIndex         "56490"^^xsd:nonNegativeInteger ;
+        nif:isString         "SN 2023ixf in Messier 101 The Twilight Years of the Progenitor as Seen by Pan-STARRS The nearby type II supernova, SN 2023ixf in M101 exhibits signatures of early time interaction with circumstellar material in the first week postexplosion. This material may be the consequence of prior mass loss suffered by the progenitor, which possibly manifested in the form of a detectable presupernova outburst. We present an analysis of long-baseline preexplosion photometric data in the g, w, r, i, z, and y filters from Pan-STARRS as part of the Young Supernova Experiment, spanning ∼5000 days. We find no significant detections in the Pan-STARRS preexplosion light curves. We train a multilayer perceptron neural network to classify presupernova outbursts. We find no evidence of eruptive presupernova activity to a limiting absolute magnitude of −7 mag. The limiting magnitudes from the full set of gwrizy (average absolute magnitude ≈ −8 mag) data are consistent with previous preexplosion studies. We use deep photometry from the literature to constrain the progenitor of SN 2023ixf, finding that these data are consistent with a dusty red supergiant progenitor with luminosity  L L log ( ) ≈ 5.12 and temperature ≈ 3950 K, corresponding to a mass of 14-20 M e . Core-collapse supernovae (CCSNe) are the explosive deaths of massive stars (with M *  8 M e ; Woosley et al. 2002). Hydrogen-rich CCSNe, classified as Type II SNe (SNe II) comprise ∼70% of the observed CCSN population (e.g., Li et al. 2011;Aleo et al. 2023;Tinyanont et al. 2024). SNe II make up the vast majority (Van Dyk 2017) of preexplosion progenitor detections via serendipitous imaging, e.g., SN 2003gd (Hendry et al. 2005), SN 2013ej (Fraser et al. 2013), SN 2017aew (Kilpatrick & Foley 2018), and SN 2022acko (Van Dyk et al. 2023). All of the observed progenitors of \"normal\" SNe II (i.e., types IIP/L) have been red supergiants (RSGs) with masses that do not exceed ∼20 M e (Smartt et al. 2009;Beasor et al. 2020). The remarkably proximate SN 2023ixf (α = 14:03:38.56, δ = +54:18:41.97, J2000) was discovered on 2023 May 19 by Itagaki (2023). The host of SN 2023ixf is M101 (also known as NGC 5457 or the Pinwheel galaxy), is at a distance of only 6.9 Mpc (as measured via Cepheids; Riess et al. 2022). A classification spectrum from SPRAT on the Liverpool Telescope revealed SN 2023ixf as a SN II (Perley et al. 2023). The discovery of SN 2023ixf led to a sustained spectroscopic and photometric follow-up effort (e.g., Berger et al. 2023;Bostroem et al. 2023;Jacobson-Galán et al. 2023;Sgro et al. 2023;Smith et al. 2023). To date, these multiwavelength follow-up observations and archival data examination have revealed detections of a dusty RSG progenitor and signatures of interaction with circumstellar material (e.g., Berger et al. 2023;Bostroem et al. 2023;Grefenstette et al. 2023;Guetta et al. 2023;Hiramatsu et al. 2023;Jacobson-Galán et al. 2023;Jencson et al. 2023;Kilpatrick et al. 2023;Koenig 2023;Kong 2023;Li et al. 2023;Neustadt et al. 2024;Niu et al. 2023;Panjkov et al. 2023;Pledger & Shara 2023;Qin et al. 2023;Sarmah 2023;Singh Teja et al. 2023;Smith et al. 2023;Soraisam et al. 2023;Van Dyk et al. 2023;Vasylyev et al. 2023;Xiang et al. 2024;Yamanaka et al. 2023;Zhang et al. 2023). SNe II exhibiting interaction signatures, attributed to interaction with a confined, dense, slow and preexisting circumstellar medium (CSM) are somewhat common. Around 30% of SNe II show these flash-ionization features in addition to steep rises to peak, indicative of shock breakout out of a dense CSM (Förster et al. 2018;Bruch et al. 2021). Similar early time interaction is seen in SN 2023ixf (Berger et al. 2023;Bostroem et al. 2023;Chandra et al. 2023;Grefenstette et al. 2023;Jacobson-Galán et al. 2023;Kong 2023;Mereminskiy et al. 2023;Panjkov et al. 2023;Smith et al. 2023). The presence of flash-ionization features in CCSNe suggests enhanced mass-loss rates in addition to supergiant winds in the final years of the life of their progenitors. While supergiant winds with a steady mass-loss rate  M ∼10 −6 M e yr −1 are common in RSGs, these steady state mass-loss rates are too low to account for the mass stripping which leads to flash-ionization features (e.g., Beasor et al. 2020). Furthermore, if supergiant winds are the primary mass-loss route for RSGs, one would expect an environmental metallicity dependence which is not seen for RSGs in M31 (see McDonald et al. 2022). It is possible that enhanced mass-loss modes such as \"superwinds\" or outbursts driven by gravity waves with mass-loss rates up to ∼10 −2 M e yr −1 may help strip mass off of a RSG progenitor (Wu & Fuller 2021;Davies et al. 2022;Jacobson-Galán et al. 2022). While pre-SN mass loss may be indirectly probed with follow-up spectroscopic observations (e.g., via low-velocity emission lines in spectra; Gal-Yam et al. 2014), outburst-like pre-SN activity may be directly observable. Models of pre-SN outbursts have predicted observable signatures lasting a few to hundreds of days with peak absolute magnitudes M R ∼ −8.5 to −10 mag (Davies et al. 2022;Tsuna et al. 2023). While pre-SN mass loss is common in Type IIn supernovae (SNe IIn) and \"regular\" SNe II (as inferred from light-curve shapes, spectral features such as flash ionization, and X-ray observations; e.g., Ofek et al. 2014;Förster et al. 2018;Bruch et al. 2021;Strotjohann et al. 2021;Panjkov et al. 2023), the luminous SN II, SN 2020tlf stands out as an example of a SN II which had a bright, detectable preexplosion outburst. Jacobson-Galán et al. (2022) found that SN 2020tlf exhibited preexplosion activity that persisted from 130 days prior the terminal explosion; subsequent flash-ionization features were observed. Jacobson-Galán et al. (2022) found that the progenitor of SN 2020tlf had a mass-loss rate ∼ 10 −2 M e yr −1 , which those authors suggest may be consistent with nuclear flashes (e.g., Woosley & Heger 2015) or gravity-wave-driven outbursts (potentially creating as much as 1 M e of ejected material, contributing to the CSM; Quataert & Shiode 2012;Wu & Fuller 2021). Early time photometric and spectroscopic observations of SN 2023ixf suggest that there was mass loss prior to the terminal SN explosion. The RSG models utilized by Jacobson-Galán et al. (2023) suggest that the progenitor underwent a superwind mass-loss phase, with a mass-loss rate ∼ 10 −2 M e yr −1 for 3-6 yr prior to the explosion. This mass loss created a confined CSM with a density of 10 −12 g cm −3 at a radius of 10 14 cm, with the radial extent of the CSM being 0.5-1.0 × 10 15 cm. Hosseinzadeh et al. (2023) presented an analysis of the early time light curve of SN 2023ixf, finding that prediscovery, the light curve deviates from a power law or shock-cooling models, suggesting that this could be explained by precursor activity. Grefenstette et al. (2023) report hard X-ray spectral observations of SN 2023ixf from NuSTAR consistent with a confined CSM with a radial extent < 10 15 cm and a progenitor mass-loss rate ∼3 × 10 −4 M e yr −1 . Panjkov et al. (2023) found that the Neil Gehrels Swift Observatory (Swift) did not detect soft X-ray emission from SN 2023ixf until ∼3 days postexplosion and concluded that the mass-loss rate of the progenitor was 5 × 10 −4 M e yr −1 with a CSM radius ∼ 4 × 10 15 cm and also that the CSM was asymmetric. Furthermore, using the Sub-Millimeter Array, Berger et al. (2023) placed constraints on the CSM extent ∼2 × 10 15 cm and a pre-SN mass-loss rate ∼ 10 −2 M e yr −1 . Those authors also suggest that the CSM was inhomogeneous, possibly explaining the inconsistent mass-loss rate from X-ray observations. Due to the proximity of SN 2023ixf and the subsequent CSM interaction elucidated from early time observations, it is a prime target for investigations into pre-SN activity. Indeed, several studies have already explored preexplosion light curves for pre-SN outbursts. When considering preexplosion Spitzer data, Kilpatrick et al. (2023) noted that the progenitor was detected at 3.6 and 4.5 μm. These infrared (IR) detections spanned between MJD 53072-58781 and displayed variability with brightenings ∼10 μJy with a periodicity of around 1000 days. Kilpatrick et al. (2023) interpret this variability as being consistent with κ-mechanism oscillations (opacity-driven variability; Li & Gong 1994;Heger et al. 1997;Paxton et al. 2013). Jencson et al. (2023) also presented Spitzer photometry along with ground-based J-and K s -band data spanning 13 yr, up to 10 days before the SN explosion. These authors found that spectral energy distribution (SED) fits to the IR data suggest a luminous, dusty RSG progenitor with a luminosity of  L L log ( ) = 5.1 ± 0.2 and a temperature of 3500 1400 800 -+ K, and a mass-loss rate of 3 × 10 −4 -3 × 10 −3 M e yr −1 . Similarly, Soraisam et al. (2023) found, using both Spitzer and groundbased JHK data, a progenitor with  L L log ( ) = 5.27 ± 0.12 at T = 3200 K or  L L log ( ) = 5.37 ± 0.12 at T = 3500 K, corresponding to a progenitor mass of 20 ± 4 M e . These findings indicate that the progenitor of SN 2023ixf is fairly luminous compared to previously observed RSG SN progenitors, suggesting a massive RSG (e.g., Smartt 2015). Using archival Galaxy Evolution Explorer data, Flinner et al. (2023) explore the near-and far-ultraviolet activity of the progenitor of SN 2023ixf up to 20 yr prior to the explosion, finding no outbursts in the UV to limits of L NUV = 1000 L e and L FUV = 2000 L e . Dong et al. (2023) investigate the pre-SN photometry obtained with the Zwicky Transient Facility (ZTF), the Asteroid Terrestrial-impact Last Alert System (ATLAS), and DLT40. While these data did not reveal any outbursts, Dong et al. (2023) incorporated the pre-SN outburst models presented by Tsuna et al. (2023) in order to put constraints on pre-SN activity. Those authors found that a precursor event with peak M r = −9 would have had a duration of less than 100 days, while an outburst with M r = −8 must have had a duration of 200 days or less. They suggest that an outburst similar to the models of Tsuna et al. (2023) or what was seen prior to SN 2020tlf was not likely to have occurred in SN 2023ixf. Though SN 2023ixf may not have suffered large outburst-like events, the confined CSM (for example, see Panjkov et al. 2023, who found that the CSM was close to the progenitor) must have originated from some enhanced mass-loss mechanism. Furthermore, Neustadt et al. (2024) used archival data from the Large Binocular Telescope (LBT) spanning 5600-400 days prior to SN 2023ixf to search for optical variability. Those authors found that there was no R-band variability to the 10 3 L e level in the time frame of these data. Panjkov et al. (2023) explored optical and X-ray preexplosion data from ATLAS, ZTF, the All-Sky Automated Search for Supernovae, Swift, XMM-Newton, and Chandra, finding no preexplosion variability and constrain any optical pre-SN outburst to 7 × 10 4 L e and X-ray pre-SN outburst to a limit of∼6 × 10 36 erg s −1 . In this work, we present long-baseline preexplosion photometric data of SN 2023ixf spanning ∼5000 days to a few days before the SN from Pan-STARRS in the grizy bands and also multiyear stacks in the wizy bands. These data were obtained through the Young Supernova Experiment (YSE; Jones et al. 2021). We analyze these data in search of pre-SN outbursts whose presence may be indicated by the already observed CSM interaction and variability in the IR. In Section 2 we describe our methodology to search systematically for preexplosion detections within the Pan-STARRS data. In Section 3 we will discuss the findings from our long-baseline preexplosion limits and make comparisons to known pre-SN outbursts. We combine these results with consolidated data from the existing literature to model the progenitor SED in Section 4. In Section 5, we describe our method for using a pre-SN outburst model to train a multilayer perceptron classifier in order to search for pre-SN outbursts. We then use these models to constrain possible outburst properties. We repeat the SED analysis and neural net methodology to probe for possible variability of the progenitor prior to the SN explosion in Section 5.1. Finally, we analyze the host in Section 6 in terms of the spatial association of SN 2023ixf with star formation. We conclude in Section 7. We present preexplosion data for SN 2023ixf from Pan-STARRS (Chambers et al. 2016). Pan-STARRS is comprised of a duo of 1.8 m telescopes, PS1 and PS2, near the peak of Haleakala on the island of Maui. These data span from 2010 January 19 to 2023 May 12, comprised of the gwrizy filter set (Flewelling et al. 2020). In total, there are 313 PS1 pre-SN photometric observations over a 4851 day baseline. These have a typical depth of 20.4 mag averaged over all grizy filters. In the following, we present a custom pipeline used to measure the limiting magnitude of each individual exposure carefully. We measure the preexplosion photometry using Photpipe (Rest et al. 2005) to ensure highly accurate photometric measurements and to account for pixel-to-pixel correlations in the difference images and host galaxy noise at the SN location. Photpipe is a well-tested pipeline for measuring SN photometry and has been used to perform accurate measurements from Pan-STARRS in a number of previous studies (e.g., Rest et al. 2014;Foley et al. 2018;Jones et al. 2018;Scolnic et al. 2018;Jones et al. 2019). In brief, Photpipe takes as input Pan-STARRS images which have been reduced by an initial image processing pipeline. Our preprocessing pipeline resamples the images and astrometrically aligns them to match skycells in the Pan-STARRS 1 (PS1 hereafter) sky tessellation. Geometric distortion is then removed. We then measure image zero-points using DoPhot (Schechter et al. 1993) to measure the photometry of stars in the image and comparing to stars in the PS1 Data Release 2 catalog (Flewelling et al. 2020). Photpipe then convolves a template image from the PS1 3π survey (Chambers et al. 2017), with data taken between the years 2010 and 2014, using a kernel that consists of three superimposed Gaussian functions. This kernel is designed (and fit) to match the point-spread function (PSF) of the survey image. We then subtract the template from the science image using hotpants (Becker 2015). Finally, Photpipe uses DoPhot to measure fixed-position (i.e., forced) photometry of the SN at the weighted average of its location across all images. Further details regarding this procedure are given in Rest et al. (2014) and Jones et al. (2019). To account for underlying structure in the bright host galaxy of SN 2023ixf, which could cause larger than expected preexplosion photometric noise in the difference image (Kessler et al. 2015;Doctor et al. 2017;Jones et al. 2017), we forward model our full reduction pipeline. We simulate a noisy detection by estimating the signal-to-noise ratio that would be recovered from a source of a given flux assuming the following sources of uncertainty: (1) the Poisson noise at the SN location (i.e., the square root of the counts) and (2) Gaussian noise from the background (i.e., the standard deviation of flux values measured from random differenceimage apertures at coordinates with approximately the same underlying host galaxy surface brightness as exists at the SN location). The apertures used in our reduction pipeline must closely match the background noise statistics at the site of SN 2023ixf in order to obtain a more rigorous calculation of our detection limits. In order to select these apertures, a grid of 3″ apertures is placed over the host in images in each grizy filter. The aperture grid, (with 367 trial apertures) is placed over a 57″ × 57″ area (covering the host region in the images), with no overlap between apertures. An aperture is also placed over the location of SN 2023ixf (determined using the coordinates of SN 2023ixf from Kilpatrick et al. 2023). The distribution of the flux values within the aperture containing SN 2023ixf is measured and then compared with the flux distributions of the apertures in the grid. Apertures from the grid are then chosen for use in our source injection method. These apertures are selected using a given flux distribution similarity tolerance (here our tolerance was chosen such that at least 10 apertures are found in each image) on the distribution of parameters. More specifically, we select apertures based on the mean (within 25% of the standard deviation of the mean), standard deviation (within 10% of the standard deviation), the skew (within 10% of the skew), and kurtosis (within 10% of the kurtosis) of the distribution. The number of apertures differ per filter and these apertures largely follow the spiral arms of the host, similar to the location of SN 2023ixf. A summary of these data (including the number of apertures found in each image) found from PS1 is tabulated in Table 1. To search for pre-SN emission in all Pan-STARRS images, we perform an idealized fake source injection within each chosen aperture to estimate the recovery fraction (i.e., the fraction of apertures where the injected source is recovered at >3σ significance) as a function of the injected source flux. To find true pre-SN detections, we compared the derived limiting magnitude to photometric measurements from Photpipe at the SN location. We label a detection as real if the latter is brighter than the former. For each image, we estimate the limiting magnitude based on the flux (i.e., in analog-to-digital units given the zero-point calculated above) associated with an 80% recovery fraction in the chosen background apertures. We consider this 80% recovery fraction as a detection. At this recovery level, we do not generate false-positive detections that would be statistically expected in more standard photometric methodologies. To test the validity of any possible detections, we perform a more robust fake source injection routine in the science images, also using Photpipe, to estimate a new set of recovery curves for each epoch where there may be a possible detection. This procedure is slower and more computationally intensive than the procedure described above and uses the PSF shape determined by DoPhot (i.e., a seven parameter Gaussian as described in Schechter et al. 1993) to create artificial sources with a known flux and at the same aperture locations described above in the original science image. We then repeat the reduction process, including image subtraction with hotpants, in order to simulate the effect of convolution noise in the recovery of each source. Finally, we perform forced photometry at the source location to simulate the detection of sources whose sky locations are known a priori and create recovery curves as a function of the injected source flux. In order to obtain a statistically significant number of sources over a broad range of magnitudes, we repeat this process with the same image and aperture locations until we have forced photometry for 1500 sources from 17 to 24 mag. Here we also adopt the 80% recovery fraction as the limiting magnitude, which we then compare to the photometric measurement at the SN location. We present the Pan-STARRS long-baseline grizy light curves in Figure 1. Through our 4851 day preexplosion baseline, we find no detections at the 80% aperture recovery fraction in the g, r, i, z, or y bands. The median limits we found in each filter are 22.0 mag in the g band, 21.6 mag in the r band, 21.3 mag in the i band, 21.3 mag in the z and 20.1 in the y band; these correspond to absolute magnitudes of M g = −7.2 mag, M r = −7.6 mag, M i = −7.9 mag, M z = −7.9 mag, and M y = −9.1 mag. While these source injection limits are obtained using difference images, the templates used to make the difference images are ∼2-3 mag deeper than the individual epoch images at the same position so our measurements are sensitive to the depth of the single-epoch science images. This implies that the measurements from our difference images between the individual images and the template images are limited by the depth of the individual images. Therefore, the underlying progenitor flux in the template image is insignificant when measuring limits on outburst luminosity in difference images. The range of literature progenitor bolometric RSG luminosities is ∼10 4.39-5.52 L e , corresponding to absolute magnitudes ∼ −6.2 to −9.0 mag (Davies & Beasor 2020), with the most luminous known RSG being UY Scuti, with -Torres et al. 2013). Our limits are therefore mostly on the upper end of, or are brighter than, the range of the bolometric luminosities of observed RSG SN progenitors. We obtain multiyear stacks in the w, i, z, and y filters to probe for progenitor detections. These data were compiled using the data from the Pan-STARRS Survey for Transients, which itself uses wiz data from near-Earth object searches (Huber et al. 2015). As the w filter does not contain color information, it is not used by YSE. Rather, these data are from coincidental observations with YSE fields (and are therefore not included in the light-curve analysis). Forced photometry of these nondifference-imaged stacks reveal that there are no progenitor detections to limits (3σ limits) of 24.80 mag in the w band, 23.80 mag in the i band, 23.00 mag in the z band, and 20.03 mag in the y band, corresponding to absolute magnitudes of M w = −4.4 mag, M i = −5.4 mag, M z = −6.2 mag, and There is weak evidence of two possible detections in the i and y bands at MJD 59334.41 and 56864.25, −753.6 and −3223.8 days relative to explosion, respectively, at a less stringent 50% recovery limit; however, these are not detections at the 80% limit. As these epochs only meet a 50% recovery fraction, we inspect these epochs in more detail. The i-band detection is at an ∼2.4σ detection significance, while the yband detection is at an ∼2.2σ detection significance with these being single images. We present cutout images of these detections in Figure 1. There are no clear visible sources at the location of SN 2023ixf in the thumbnails, consistent with our low significance detections. Therefore we consider these as nondetections. For our 313 Pan-STARRS observations, one would expect ∼15 observations at the 2σ level and ∼1 observation at the 3σ level false-positive detections if using a more standard photometric method. Our source injection method produces no 2σ or 3σ detections at the 80% recovery fraction. Finally, we compare our long-baseline preexplosion light curve to previously identified precursor outburst events in other SNe. First, SN II 2020tlf had precursor outbursts that peaked at an absolute magnitude ∼ −11.5 mag (Jacobson-Galán et al. 2022). As shown in Figure 1, all of our PS1 limits are deeper than SN 2020tlf-like pre-SN outbursts, obtained with a similar method to this work. To compare to the SNe IIn pre-SN outbursts found in the literature, we select two SNe IIn which are examples of the upper and lower luminosity ranges of observed SN IIn precursor outbursts (e.g., Strotjohann et al. 2021). 18 At the fainter end there is SN 2011ht, where Fraser  Smith et al. 2010Smith et al. , 2014;;Foley et al. 2011;Mauerhan et al. 2013;Pastorello et al. 2013;Margutti et al. 2014;Pessi et al. 2023). Our limits and the progenitor detections of SN 2023ixf are dimmer than the outbursts seen in the RSG progenitor of SN 2020tlf by at least 2.5 mag and are much fainter than the possibly luminous blue variable (LBV)-like outbursts seen prior to some SNe IIn such as SN 2009ip. In addition to the pre-SN explosions associated with these SNe IIn, we can also compare to some SN impostors, many of which are also interpreted as eruptions of LBV-like progenitors. For example, SN 2000ch and AT 2016blu are both SN impostors with ongoing observed activity (Pastorello et al. 2010;Aghakhanloo et al. 2023aAghakhanloo et al. , 2023b)). SN 2000ch peaked at an absolute magnitude ∼ −12.8 mag and AT 2016blu peaked at ∼−13.6 mag (lying in between the pre-SN outburst in the SNe IIn range). To constrain the properties of the progenitor of SN 2023ixf, SEDs of the progenitor are presented by a number of authors (e.g., Jencson et al. 2023;Kilpatrick et al. 2023;Neustadt et al. 2024;Niu et al. 2023;Soraisam et al. 2023;Xiang et al. 2024). Detections in Spitzer channel 1 and channel 2, MMT J, Gemini/NIRI J, UKIRT JHK, and Hubble Space Telescope (HST) F814W and F675W are used here. As stated, pre-SN observations (particularly those from Spitzer) reveal a highly variable progenitor in the decade up to SN. We must account for scatter in the reported photometric measurements, and also variability in the IR data. As our mean estimate in each band, we take an average of these flux measurements over independent measurements and time. For the uncertainties on these measurements, we account for two contributions: the Spitzer, Gemini/NIRI, MMT/MMIRS, and Mayall/NEWFIRM data (all detections, originally presented in Jencson et al. 2023;Kilpatrick et al. 2023) are also shown. The Pan-STARRS limits are from our source injection method. For the Pan-STARRS data, the two instances of the source injection finding possible sources at the 50% recovery fraction limit (in the i and y bands) are marked as a circle and 80% recovery fraction limits are shown as a downward pointing triangle. These two sources, however, are detected at a signal-to-noise level < 3σ. Overplotted are also the peak absolute magnitude of pre-SN outbursts of three other transients, SN 2020tlf (a luminous SN II, bolometric peak luminosity; Jacobson-Galán et al. 2022), SN 2011ht (a SN IIn with a plateau light curve and whose z-band peak absolute magnitude is shown; Fraser et al. 2013), SN 2009ip (a well studied SN IIn with bright precursor eruptions, with its peak visual magnitude shown; Mauerhan et al. 2013), and SN 2000ch and AT 2016blu (SN impostors;Pastorello et al. 2010;Aghakhanloo et al. 2023aAghakhanloo et al. , 2023b)). Lower panel: PS1 cutouts of the epochs of the possible sub-3σ detections in the i and y bands, where both the science images (panels 1 and 3) and difference images (panels 2 and 4 are shown. The location of the transient is marked by a red circle. There is no visible detection in these images. systematic scatter in the reported measurements of the same observations, and intrinsic variability. In the latter case, we use the range of reported AB magnitudes as an estimate for the systematic uncertainty, where the error interval is the range of values per filter; in the case where epochs have multiple measurements, we add the average scatter per epochs in quadrature. 19We use the radiative transfer code DUSTY (Kochanek et al. 2012a) to constrain the progenitor properties. Following Kochanek et al. (2012b) and Kilpatrick et al. (2023), we use the Model Atmospheres with a Radiative and Convective Scheme (MARCS) grid of RSG spectra (e.g., Gustafsson et al. 1975Gustafsson et al. , 2008) ) as an internal heating source within an spherically symmetric shell of dust. We note that, while the immediate CSM showed signs of asymmetry, DUSTY assumes a spherically symmetric dust shell. MARCS provides a grid of 15 M e RSG spectra, with varying temperatures, surface gravities, and metallicities. Here, we explore solar metallicity models with g log 0 ( ) = and progenitor effective temperatures in the range 3300 and 4500 K. The MARCS models are then used as internal heating sources for the DUSTY models, allowing us to estimate the dust properties of the progenitor system. We specifically vary the optical depth of the dust (τ V ä 0, 10), the ratio of the outer to inner radii of the dust shell , and the inner temperature of the dust (T ä 10, 1000 K). We test carbonaceous and silicate dust models, as dust of both types is commonly seen. Finally, we fit for luminosities between  L L log ( ) = 3-6. We generate an interpolated grid of precomputed DUSTY + MARCS models and use the Bayesian nested sampling algorithm Dynesty (Speagle 2020) to constrain the progenitor properties. We additionally fit for an extra whitenoise term, σ 2 , to capture systematic uncertainties which may be underrepresented in our measurements, i.e., a parameter that represents the fractional underestimate of the uncertainties in log space. From the posterior distributions, we infer the following values for the progenitor luminosity with carbonbased dust (graphitic): a luminosity of . Our low value of σ suggests that we do not significantly underestimate the uncertainties. Silicate dust models were trialed and were not as good a fit to the data as the graphitic dust, with reduced χ 2 values of 1.8 for silicate dust and 0.6 for graphitic dust. (Silicate dust produces a luminosity of and a RSG temperature of 4066 326 308 -+ K.) Therefore, we only consider the graphitic dust models. These values are broadly consistent with previous studies on the progenitor of SN 2023ixf. Our luminosity is consistent with most other work within the uncertainties (Jencson et al. 2023;Neustadt et al. 2024;Niu et al. 2023;Qin et al. 2023;Soraisam et al. 2023;Van Dyk et al. 2023;Xiang et al. 2024), with Soraisam et al. (2023) finding the highest luminosity at  L L log ( ) = 5.27 ± 0.12 or  L L log ( ) = 5.37 ± 0.12 dependent on the temperature used in their fits. Our RSG temperature is on the higher end of the range from other studies, with Kilpatrick et al. (2023) finding the next hottest temperature at 3920 160 200 -+ K, but also our uncertainties are larger due to the scatter in the photometry. However, our temperature is consistent with a number of the studies within uncertainties (Jencson et al. 2023;Neustadt et al. 2024;Niu et al. 2023;Van Dyk et al. 2023). Our SED fits are presented in Figure 2. In addition to detections of the presumed progenitor, we also plot limits from the Pan-STARRS wizy multiyear stacks and limits from H band (MJD 56108) and J band (MJD 56107). These limits are consistent with our SED fits. We note that progenitor detections that are at single epochs are in HST F814W (MJD 52594) and F675W (MJD 51261). Our SED fits are consistent with most (but not all) of the previous literature (see the summary by Qin et al. 2023). Finally, we compare our SED fits to MESA Isochrones and Stellar Tracks (MIST) evolutionary models (Choi et al. 2016;Dotter 2016) assuming a nonrotating star and solar metallicity models (consistent with previous studies such as Kilpatrick et al. 2023). We consider models to be consistent if their final luminosity is consistent with our derived values. Assuming a graphitic dust model, we find that our progenitor properties are consistent with a 14-20 M e star (see Figure 3). This mass range is too high for the electron-capture scenario suggested by Xiang et al. (2024). In our SED, the largest scatter is in the H band from data presented by Soraisam et al. (2023) with an uncertainty ∼ 1 mag, which is due to the variability of the progenitor in the IR. Furthermore, the reported Spitzer data has a large scatter in both the 3.6 and 4.5 μm channels, with the range in the average brightness being 0.91 mag and 0.72 mag, respectively. Other methodological differences such as differences in the SED models have an effect on the calculated progenitor parameters. For example, Soraisam et al. (2023) use a RSG periodluminosity relation to obtain their high luminosities. Others phase average their data to account for variability (Jencson et al. 2023), while others assume no variability when creating inputs for their SEDs (Kilpatrick et al. 2023). Van Dyk et al. (2023) incorporated the variability in the IR using the range in the IR measurements and models of the J-band to V-band variability to estimate an uncertainty (Smith et al. 2002;Riebel et al. 2012). Niu et al. (2023) add a 0.5 mag uncertainty to their optical measurements to account for variability. Furthermore the dust models used differ, with some using carbon-based (graphitic) dust models (Kilpatrick et al. 2023;Niu et al. 2023) and others using silicate-based dust models (Jencson et al. 2023;Van Dyk et al. 2023). Our progenitor mass estimates, as expected, lie within the range of reported values (which shows substantial scatter). The range of reported progenitor masses includes the lowest end of the range for CCSN progenitors: Pledger & Shara (2023) report a progenitor mass of 8-10 M e , using isochrone fitting of HST preexplosion data. The SED analysis of Jencson et al. (2023), using the Grid of Red supergiant and Asymptotic Giant Branch ModelS (GRAMS; with silicate dust; Sargent et al. 2011;Srinivasan et al. 2011), suggests a RSG with mass 17 ± 4 M e , luminosity ) = 4.8-5.0. Generally, the differences in the reported values in the literature may be attributed to the variety of factors described above, such as differences in the photometric treatment of the archival imaging of the progenitor, different dust models, stellar evolution tracks, and SED fitting methods (e.g., fixing the effective temperature). We have incorporated the available photometric measurements from the literature to construct our SED, which is well sampled in wavelength space, albeit with our conservative uncertainty treatment accounting for both the IR variability and differences in the reported values from the literature. We summarize and compare these values with the literature in Figure 4. We search for preexplosion outbursts in the PS1 data using a multilayer perceptron classifier. Multilayer perceptrons are neural networks comprised of at least three layers (input, hidden, and output) with neurons that are fully connected and use a nonlinear activation function, such as a sigmoid. Multilayer perceptrons are commonly used as relatively lightweight and fast to train classifiers due to their utility in distinguishing between complex nonlinear data sets. We train  our classifier on model light curves which are constructed using injected outbursts following a pre-SN outburst model (described below). These light curves assume the same form as our preexplosion Pan-STARRS data in terms of filters and epochs. For each real observation, in some filter, there will be a model observation in the same filter, with each of the model light curves having 313 observations consistent with our data with an outburst injected at some time. Our pre-SN outburst model takes the form of a blackbody SED expanding from the initial progenitor radius at a constant velocity, v ej , whose luminosity assumes no driving central power source (e.g., recombination; Arnett 1980;Villar et al. 2017): where L 0 is the initial injected luminosity, t 0 is the time of eruption, and τ diff is the diffusion time that takes the form: where c is the speed of light, κ = 0.34 cm 2 g −1 is the opacity of H-rich material (fixed to typical H-rich material opacities), and β = 13.7 is a geometric constant related to the density profile of the ejecta (Arnett 1982). M ej (the ejecta mass) and R 0 (the progenitor radius) are free parameters of the model. We assume that the blackbody temperature self-consistently decreases until reaching 5000 K, at which point our photosphere begins to recede to maintain this temperature. Model realizations are shown in Figure 5. In this model, L 0 , R 0 , t 0 , v ej , and M ej are free parameters. In our training sets, we fix v ej to represent the measured wind velocity, as high-resolution spectroscopy indicates a wind velocity ∼ 50 km s −1 (Zhang et al. 2023). It should be noted that Smith et al. (2023) found higher velocities that may originate from winds that have been radiatively accelerated. Our four free parameters are therefore the input luminosity, the pre-SN outburst time, progenitor radius, and the ejecta mass. We uniformly sample from a range of parameter values. We generate 10 4 training set light curves, which are set at the distance of the host, M101 (6.9 Mpc), and dust extinction is added (with A V = 4.6 mag as per Kilpatrick et al. 2023) and with R V = 3.1 following the extinction law of Schlafly & Finkbeiner (2011). A summary of our parameter ranges is presented in Table 2. Training sets are generated such that the resultant simulated light curves have observations at identical epochs in identical filters as the real data in the long-baseline preexplosion Pan-STARRS grizy light curves. The uncertainties on these model observations are calculated by interpolating the uncertainties from flux uncertainty maps from our source injection method described in Section 2. In our model, we vary the input luminosity between 0 and 10 6 L e with the maximum being chosen as it is of the order of the outburst observed in SN 2020tlf (Jacobson-Galán et al. 2022). We vary the ejecta mass uniformly and randomly between 0.01 and 1.00 M e , typical of pre-SN outbursts in the time frame that the CSM around SN 2023ixf was formed (e.g., Smith 2014). The time of the injected eruption spans the time phase space of our preexplosion data. In terms of the progenitor star, the relevant free parameter in our pre-SN outburst model is the progenitor radius, which we sample between 1 and 1000 R e . When sampling these model light curves to generate our training light curves, we convolve these pre-SN outbursts with the filter response curves for each of our grizy filters in order to create a model observation. The filter response curves were obtained from the Spanish Virtual Observatory Filter Profile Service.20 Furthermore, we illustrate how increasing the injected luminosity or ejecta mass affects the outburst light curves in the bottom two panels of Figure 5. These example light curves show the same increments in luminosity and ejecta mass with arbitrarily chosen \"middle of the range\" parameters fixed. These include a progenitor radius of 500 R e , an injected luminosity of 1.0 × 10 6 L e , and an ejecta mass of 0.5 M e . We use a multilayer perceptron in order to detect pre-SN eruptions within our PS1 light curve with three layers and 12 neurons in the first layer, eight in the second, and one in the third, using a combination of the standard sigmoid and ReLU activation functions. We train 2,500 epochs using the standard adam optimizer (Kingma & Ba 2014). After training our neural network to classify the presence of a pre-SN eruption (with an accuracy ∼ 94%), we then used the trained neural network to determine if such an eruption is present in the long-baseline preexplosion grizy Pan-STARRS light curves. Our neural net classifies these preexplosion data as being consistent with there being no detectable pre-SN outbursts in this 4851 day range. Given this nondetection, we place limits on the possible eruption models ruled out from our observations. We generate a test set ∼10,000 eruptive light curves of various luminosities and ejecta masses and test the detection efficiency of our classifier. These parameters are increased incrementally (between 0-10 6 L e and 0.01-1.00 M e ). This is shown in Figure 5. With our parameter range, we can put a constraint on the injected luminosity of a preexplosion outburst of <5 × 10 4 L e , which corresponds to an absolute magnitude ∼ −7.0 mag; see Figure 5. This constraint on the outburst luminosity is within the luminosity range of RSGs (Davies & Beasor 2020). Furthermore, this constraint corresponds to an apparent magnitude ∼ 22 mag, deeper than most of our upper limits. We additionally note that our model can be understood as a lower limit-if another power source contributed to the eruptions (e.g., recombination), we would expect brighter and longer-duration transients for a given set of parameters. Other investigations into pre-SN outbursts in SN 2023ixf also have not found evidence for any detectable signatures (Flinner et al. 2023;Neustadt et al. 2024;Panjkov et al. 2023), although to varying limits. Our outburst constraints and photometric limits are comparable to those found by Dong et al. (2023), who derive an upper limit to the ejecta mass of 0.015 M e based on the models of Tsuna et al. (2023; compared to our ejecta mass limit of <0.3 M e ) for a hydrodynamical model that had peak M r ; −8 mag. When compared to SN 2020tlf, any SN 2023ixf pre-SN outburst would be fainter than the activity seen prior to SN 2020tlf. On average, our limits are fainter than the pre-SN outburst of SN 2020tlf by ∼2.5 mag. Defining the duration of a model outburst as the amount of time the outburst is brighter than the detection limits, we find that the typical duration of a detectable outburst is similar, or shorter than, the gaps between the Pan-STARRS observations. The duration of an outburst at our upper luminosity and ejected mass limit is ∼100 days. This is shorter than the largest gap in the Pan-STARRS data ∼600 days and there are multiple large gaps of over 100 days in the preexplosion data set. A detectable outburst may therefore not be detected due to larger gaps in the photometric coverage. In Figure 5 we also show the luminosity that corresponds to the 80% cutoff for bump detection and the corresponding luminosity of our averaged Pan-STARRS limits.  . Detection efficiency curves from our neural network classifier. Using the test light curves described in Section 5, we can place constraints (defined as the limit at 80% detection efficiency). On the top row, dotted lines are also plotted representing the luminosity threshold for the 80% detection limit (black) and our averaged limits over the grizy filters (gray). On the top row, for comparison, in light blue is the double-long model from Tsuna et al. (2023) and in dark blue is their single-small model. Top left: example light curves for increasing injected luminosity. Top right: example light curves for increasing ejecta mass. For the example lightcurve plots, only luminosity or ejecta mass were varied with the other parameters fixed. The color map transitions from brown to orange for higher injected luminosity/ejecta mass. Bottom left: detection efficiency curve for increasing injected luminosity. Dotted lines are also plotted representing the luminosity threshold for the 80% detection limit (black) and our averaged limits over the grizy filters (gray). Bottom right: detection efficiency curve for increasing ejecta mass. Overplotted is our upper ejected mass limit for SN 2023ixf, which is similar to the mass-loss estimate for SN 2020tlf (gray dotted line) from Jacobson-Galán et al. (2020). 0.1-1.0 M e yr −1 in the 1-2 yr before the SN explosion using numerical light-curve models informed by early follow-up observations. Qin et al. (2023) used archival HST and Spitzer imaging to examine the progenitor of SN 2023ixf, finding a mass-loss rate ∼ 3.6 × 10 −4 M e yr −1 , concluding that this enhanced mass-loss rate (compared to RSG winds) was consistent with there being pulsational mass loss. Jencson et al. (2023) also conclude enhanced mass-loss rates deduced from their IR analysis of the progenitor of SN 2023ixf, finding that the mass-loss rate of the progenitor 3-19 yr prior to explosion was ∼3 × 10 −5 -3 × 10 −4 M e yr −1 . Using a periodluminosity relation with the IR variability of the progenitor of SN 2023ixf, Soraisam et al. (2023) found a mass-loss rate of 2-4 × 10 −4 M e yr −1 . In short, all mass-loss rate estimates seem consistent with our limit of 0.3 M e of ejected mass in an outburst forming the CSM. We repeat our eruption-search methodology utilizing the radiation hydrodynamic models of pre-SN outbursts in SNe II devised by Tsuna et al. (2023). We select the two extreme models in terms of luminosity: the \"double-large,\" corresponding to 3.6 M e of CSM and 1.4 × 10 47 erg in radiated energy and the \"single-small\" model, being the least energetic and corresponding to an ejected mass of 0.015 M e and a radiated energy of 2.0 × 10 45 erg. When using these models to construct a training set of light curves, our only free parameter is the time of explosion. Again, we create a training set of 10 4 model light curves and add appropriate extinction to these light curves (which was not considered in the initial modeling by Tsuna et al. 2023). The resultant classifier was then applied to our long-baseline preexplosion data. Our classifier, again, does not detect pre-SN eruptions consistent with this model. This is consistent with the analysis of Dong et al. (2023), who do not find any of the models of Tsuna et al. (2023) likely to be represented in their preexplosion data. The top row of Figure 5 also shows the single-small and double-long models (the least and most luminous of their hydrodynamical preexplosion outburst models, respectively) of Tsuna et al. (2023) for reference. With a peak at ∼−10.5 mag and duration of a few hundred days in the case of the double-long model, our Pan-STARRS observations would be sensitive to outbursts that follow this model. Numerous previous studies of the preexplosion activity of SN 2023ixf found that the progenitor was observably variable at IR wavelengths (see Jencson et al. 2023;Kilpatrick et al. 2023;Soraisam et al. 2023). Kilpatrick et al. (2023) suggested that the variability, with a period of around 1000 days seen in preexplosion Spitzer data, may be due to κ-mechanism pulsations seen in RSGs such as α Ori (Betelgeuse; see Li & Gong 1994;Heger et al. 1997), where a changing opacity drives variability. Apart from deep HST single-epoch images, in the optical bands, the progenitor is not detected. However, we may extend our methodology to place constraints on the variability of the progenitor in the optical. Similarly to our pre-SN outburst model, we construct a simple variability model, assuming sinusoidal variability, antiphased to the IR variability (i.e., assuming constant bolometric luminosity). This model has a fixed period of 1000 days and two free parameters, the amplitude of the variation and the baseline. Again, we train a multilayer perceptron with the same number of layers, number of neurons, and the same activation function as in Section 5. We randomly sample both the amplitude and baseline between 0 and 10 6 L e and create 10 4 test light curves (both with and without variability) with which we construct our training set. We then run the i-band Pan-STARRS preexplosion data through this model. We choose the i band as this has the most data and best temporal coverage, while also using one filter avoids making assumptions on color evolution. In the preexplosion data, we find no detectable variability in the i-band data. To place upper limits on the variability, we repeat the methodology used to constrain the pre-SN outbursts (see Figure 5). We vary the baseline and amplitude (separately) between 0 and 10 6 L e with each step having 10 3 test light curves generated. For each set of 10 3 light curves, the other unfixed parameter is varied randomly. Using the same 80% detection efficiency threshold, we find that these models are not sensitive to the baseline and the amplitude has an upper limit ∼ 4 × 10 4 L e . This limit is similar to the constraint from the pre-SN outburst models and is similar to the luminosity of RSG progenitors. This suggests that if our optical images were close to the depth of the progenitor, we would have observed variability. Moreover, we vary our SED models to infer the limits of variability in other bands (in a nonperiodic fashion). We use the RSG progenitor parameters derived from our SED analysis using the consolidated photometry presented in Section 4. First, we vary only the dust properties of the progenitor with the other parameters being fixed. We vary the optical depth due to the surrounding dust, τ, between 2 and 10. We then test a second scenario in which the progenitor properties (luminosity and temperature) are freely varied, with a fixed τ = 8.23 (the value from our SED fitting). In these two tests, we use the Spitzer observations to constrain the remaining free parameters, and we use Gaussian process interpolation to predict the Spitzer observed fluxes throughout the observed baseline. The peak of variability in each grizy filter found with each method and the limits from our photometry are shown in Figure 6. When the variability is accounted for by changing the progenitor parameters, the variability never peaks brighter than our limits. When the variability is assumed to be due to changes in the optical depth, in the optical, all but the z band have photometric limits brighter than the peak of the variability. This may suggest that our z-band photometric coverage did not catch a peak in the variability if it was detectable or that the variability may not be purely due to optical depth variations. Generally, we would not have been able to detect variability of the progenitor of SN 2023ixf in the framework of our assumptions with Pan-STARRS. Also shown in Figure 6 are the near-infrared bands, JHK. The progenitor of SN 2023ixf was detected in the near-infrared; however, these detections occur outside of the Spitzer baseline. Nevertheless, these observations are similar to the peaks of the variability in both scenarios, being dimmer than the peak of the variability when just the optical depth is varied and brighter than the case where the progenitor properties are free parameters. For variability in the IR, we also note that the fractional variability, defined as the range in flux measurements over the baseline (taken as the average flux), is approximately constant over all IR filters. The scatter in the flux measurements is presented in Figure 7. Systematically adding to the uncertainty of each measurement in quadrature (adding a fractional uncertainty of 0.0001 in each step) to represent intrinsic scatter allows us to probe possible variability. By calculating how much scatter is required to produced a reduced χ 2 = 1, compared with zero scatter, Δf ν = 0 μJy, we can estimate the intrinsic scatter. In the Pan-STARRS izy filters (the filters with the most flux measurements), typically 5% of the uncertainty is required to be added as intrinsic scatter. This may indicate some marginal variability in these data. However, we note that there may be underestimates in the uncertainties in this analysis and that the typical uncertainty of the flux measurements is larger than the the typical IR variability. The host, Messier 101 (M101), also known as NGC 5457, or the Pinwheel galaxy, is located at a redshift of 0.000804 (Perley et al. 2023) and is a face-on spiral galaxy (SABc; Buta 2019). As can be seen in Figure 8, SN 2023ixf is coincident with a spiral arm at an offset of 264″ (∼8.7 kpc) from the center of the nucleus of the host. SN 2023ixf is the fifth recorded SN in M101, the others being SN 1909A (Kowal & Sargent 1971), SN 1970G (Stienon & Wdowiak 1971), SN 1951H (Maza & van den Bergh 1976), and SN 2011fe (Nugent et al. 2011). In order to gauge the association of the location of SN 2023ixf with local star formation, we utilize the pixel statistics technique, which takes advantage of normalized cumulative ranking (NCR; see James & Anderson 2006;Ransome et al. 2022, for details on this method). This technique has been used to compare the environments of different SN classes with star formation as traced by Hα emission (James & Anderson 2006;Anderson et al. 2012;Habergham et al. 2014;Ransome et al. 2022). In short, NCR processing consists of sorting a continuum-subtracted image by pixel (flux) value, cumulatively summed, and normalized by the total (e.g., each pixel now has a value between 0 and 1). We show an \"NCR image\" of the local environment in the bottom left inset of Figure 8. This continuum-subtracted Hα image was downloaded from NED,21 where the original observations by Hoopes et al. (2001) were obtained with the Kitt Peak National Observatory Burrel Schmidt Telescope. After NCR processing, we find that the NCR value at the site of SN 2023ixf is 0.27 ± 0.08. This NCR value is almost identical to the average NCR value of SNe IIP presented by Anderson et al. (2012) of 0.26, who measured NCR values from observations of the hosts of 58 SNe IIP. Therefore the environment of SN 2023ixf in terms of association to star formation traced by Hα is unremarkable for SNe II. In this work, we have presented a long-baseline preexplosion light curve of the nearby SN II, SN 2023ixf in M101 as observed by Pan-STARRS. With limits from this photometry and stacked images and also measurements from the literature, we find a progenitor consistent with a RSG with mass 14-20 M e , in agreement with most previous works. Using neural net classifiers, we do not find evidence of outbursts that may have produced the confined CSM but were able to place limits on any possible outbursts. Our findings can be summarized as follows. 1. Using our source injection photometric methodology for obtaining preexplosion limits, we do not detect any preexplosion activity in the Pan-STARRS grizy filters. The average limits obtained are M g = −7.2 mag, M r = −7.8 mag, M i = −7.9 mag, M z = −7.9 mag, and M y = −9.2 mag. These limits are below the brightness of the pre-SN outburst seen in SN 2020tlf and much fainter than outbursts seen prior to SNe IIn with preexplosion outburst detections. Therefore, if the progenitor of SN 2023ixf suffered an outburst similar to previous observed events (with a duration of 100 days), Pan-STARRS would have been able to detect it, if the outburst did not occur during a gap in the data. 2. We train a multilayer perceptron using an expanding photosphere model and the model outlined in Tsuna et al. (2023) to identify outbursts in our Pan-STARRS light curves. We do not find evidence for these types of outbursts in our pre-SN data. 3. Using our multilayer perceptron classifier, we find that our outburst luminosity has an upper limit absolute magnitude ∼ −7.0 mag and an ejecta mass less than 0.3 M e . These constraints are consistent with measurements from the literature (Dong et al. 2023;Flinner et al. 2023;Hiramatsu et al. 2023;Jacobson-Galán et al. 2023  2024; Panjkov et al. 2023;Qin et al. 2023;Singh Teja et al. 2023;Soraisam et al. 2023). 4. Multiyear deep stacks in the wizy bands do not yield a progenitor detection to 3σ limits of w = 24.80 mag, i = 23.80 mag, z = 23.00 mag, and y = 20.03 mag. These are consistent our best-fit progenitor SED and shallower than the optical HST detections. 5. We train another multilayer perceptron to detect periodic variability, following the period discovered in Spitzer observations. We do not detect any pre-SN variability in the most sampled filter, i, using the neural network. We repeat the methodology used for the pre-SN outburst to place limits on variability, finding similar limits on the amplitude of the variation as we found with the pre-SN outburst model (<4 × 10 4 L e ). 6. We fit the SEDs using DUSTY + MARCS models to consolidated literature photometry of the progenitor with conservative uncertainty estimates to account for its variability at IR wavelengths. We use a carbon dust model (however, some authors such as Jencson et al. 2023 used silicate dust and get consistent results within the reported uncertainties) and find a progenitor mass range of 14-20 M e . This mass range is consistent with other reported values for SN 2023ixf from the literature and may indicate a RSG progenitor on the higher end of the observed mass range (Jencson et al. 2023;Neustadt et al. 2024;Niu et al. 2023;Qin et al. 2023;Soraisam et al. 2023;Van Dyk et al. 2023;Xiang et al. 2024). 7. By varying both the dust properties and progenitor temperature and luminosity and fitting the SEDs with varying progenitor properties, we find that optical variability consistent with Spitzer observations and our DUSTY models was not observable with Pan-STARRS. 8. Using the NCR pixel statistics method, we find that the host environment of SN 2023ixf, with an NCR value of 0.27 ± 0.08, is consistent with the average NCR value of the environments of SN IIP and indicative of an environment of moderate ongoing star formation. We would like to thank the anonymous referee for their thoughtful and helpful comments. We thank Daichi Tsuna for valuable discussion and providing their pre-SN outburst models. We also thank Sarah McDonald for helpful discussions. V.A.V. and C.L.R. acknowledge support from the Charles E. Kaufman Foundation through the New Investigator grant KA2022-129525. W.J.-G. is supported by the National Science" ;
+        qont:metadata        [ dct:language  "en" ] ;
+        scilake:has_authors  <http://scilake-project.eu/res/20e61e05/author/0ddcff2e> , <http://scilake-project.eu/res/20e61e05/author/1c02b224> , <http://scilake-project.eu/res/20e61e05/author/26c3ed85> , <http://scilake-project.eu/res/20e61e05/author/3b9bed38> , <http://scilake-project.eu/res/20e61e05/author/c128f93d> , <http://scilake-project.eu/res/20e61e05/author/63d016f4> , <http://scilake-project.eu/res/20e61e05/author/433cade7> , <http://scilake-project.eu/res/20e61e05/author/4fde7d11> , <http://scilake-project.eu/res/20e61e05/author/243034fc> , <http://scilake-project.eu/res/20e61e05/author/fb096fe3> , <http://scilake-project.eu/res/20e61e05/author/c607be95> , <http://scilake-project.eu/res/20e61e05/author/ca111b6a> , <http://scilake-project.eu/res/20e61e05/author/a4ef1b13> , <http://scilake-project.eu/res/20e61e05/author/46259fc1> , <http://scilake-project.eu/res/20e61e05/author/04043928> , <http://scilake-project.eu/res/20e61e05/author/3202aedb> , <http://scilake-project.eu/res/20e61e05/author/c77b5610> , <http://scilake-project.eu/res/20e61e05/author/2b955f74> , <http://scilake-project.eu/res/20e61e05/author/2eff7f3b> , <http://scilake-project.eu/res/20e61e05/author/69139d31> , <http://scilake-project.eu/res/20e61e05/author/345f0591> , <http://scilake-project.eu/res/20e61e05/author/07f55a64> , <http://scilake-project.eu/res/20e61e05/author/c21a0a70> , <http://scilake-project.eu/res/20e61e05/author/ad241258> , <http://scilake-project.eu/res/20e61e05/author/465246fe> , <http://scilake-project.eu/res/20e61e05/author/5fa58ff4> , <http://scilake-project.eu/res/20e61e05/author/656d7b33> , <http://scilake-project.eu/res/20e61e05/author/f71dd1db> , <http://scilake-project.eu/res/20e61e05/author/ef14c4fd> , <http://scilake-project.eu/res/20e61e05/author/4553cfbf> , <http://scilake-project.eu/res/20e61e05/author/4a98a12a> , <http://scilake-project.eu/res/20e61e05/author/68f99faf> , <http://scilake-project.eu/res/20e61e05/author/56c1144c> , <http://scilake-project.eu/res/20e61e05/author/e4cab6e2> , <http://scilake-project.eu/res/20e61e05/author/0bec9573> , <http://scilake-project.eu/res/20e61e05/author/601d9d9b> , <http://scilake-project.eu/res/20e61e05/author/60de63c3> , <http://scilake-project.eu/res/20e61e05/author/9f5614f9> , <http://scilake-project.eu/res/20e61e05/author/62a84342> , <http://scilake-project.eu/res/20e61e05/author/45d6871d> , <http://scilake-project.eu/res/20e61e05/author/3ca99b52> , <http://scilake-project.eu/res/20e61e05/author/4b54c64c> , <http://scilake-project.eu/res/20e61e05/author/a832ca72> , <http://scilake-project.eu/res/20e61e05/author/e23bee1c> , <http://scilake-project.eu/res/20e61e05/author/e5f2d920> , <http://scilake-project.eu/res/20e61e05/author/39f0d561> , <http://scilake-project.eu/res/20e61e05/author/f485be2a> , <http://scilake-project.eu/res/20e61e05/author/9dc9a5bd> , <http://scilake-project.eu/res/20e61e05/author/ec7a59af> , <http://scilake-project.eu/res/20e61e05/author/34168b2c> , <http://scilake-project.eu/res/20e61e05/author/64909915> ;
+        scilake:has_part     <http://scilake-project.eu/res/20e61e05#offset_0_84> , <http://scilake-project.eu/res/20e61e05#offset_44929_50361> , <http://scilake-project.eu/res/20e61e05#offset_50362_52265> , <http://scilake-project.eu/res/20e61e05#offset_24154_33489> , <http://scilake-project.eu/res/20e61e05#offset_19280_24153> , <http://scilake-project.eu/res/20e61e05#offset_13004_19279> , <http://scilake-project.eu/res/20e61e05#offset_52266_56086> , <http://scilake-project.eu/res/20e61e05#offset_12406_13003> , <http://scilake-project.eu/res/20e61e05#offset_1261_12405> , <http://scilake-project.eu/res/20e61e05#offset_56087_56490> , <http://scilake-project.eu/res/20e61e05#offset_33490_44928> , <http://scilake-project.eu/res/20e61e05#offset_85_1260> .
+
+<http://scilake-project.eu/res/20e61e05/author/3ca99b52>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/fedf0ce9> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "Christa" ;
+        scilake:lastname      "Gall" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05#offset_33490_44928>
+        a                         nif:OffsetBasedString , <dfki:ScientificDocumentPart> ;
+        nif:anchorOf              "We search for preexplosion outbursts in the PS1 data using a multilayer perceptron classifier. Multilayer perceptrons are neural networks comprised of at least three layers (input, hidden, and output) with neurons that are fully connected and use a nonlinear activation function, such as a sigmoid. Multilayer perceptrons are commonly used as relatively lightweight and fast to train classifiers due to their utility in distinguishing between complex nonlinear data sets. We train  our classifier on model light curves which are constructed using injected outbursts following a pre-SN outburst model (described below). These light curves assume the same form as our preexplosion Pan-STARRS data in terms of filters and epochs. For each real observation, in some filter, there will be a model observation in the same filter, with each of the model light curves having 313 observations consistent with our data with an outburst injected at some time. Our pre-SN outburst model takes the form of a blackbody SED expanding from the initial progenitor radius at a constant velocity, v ej , whose luminosity assumes no driving central power source (e.g., recombination; Arnett 1980;Villar et al. 2017): where L 0 is the initial injected luminosity, t 0 is the time of eruption, and τ diff is the diffusion time that takes the form: where c is the speed of light, κ = 0.34 cm 2 g −1 is the opacity of H-rich material (fixed to typical H-rich material opacities), and β = 13.7 is a geometric constant related to the density profile of the ejecta (Arnett 1982). M ej (the ejecta mass) and R 0 (the progenitor radius) are free parameters of the model. We assume that the blackbody temperature self-consistently decreases until reaching 5000 K, at which point our photosphere begins to recede to maintain this temperature. Model realizations are shown in Figure 5. In this model, L 0 , R 0 , t 0 , v ej , and M ej are free parameters. In our training sets, we fix v ej to represent the measured wind velocity, as high-resolution spectroscopy indicates a wind velocity ∼ 50 km s −1 (Zhang et al. 2023). It should be noted that Smith et al. (2023) found higher velocities that may originate from winds that have been radiatively accelerated. Our four free parameters are therefore the input luminosity, the pre-SN outburst time, progenitor radius, and the ejecta mass. We uniformly sample from a range of parameter values. We generate 10 4 training set light curves, which are set at the distance of the host, M101 (6.9 Mpc), and dust extinction is added (with A V = 4.6 mag as per Kilpatrick et al. 2023) and with R V = 3.1 following the extinction law of Schlafly & Finkbeiner (2011). A summary of our parameter ranges is presented in Table 2. Training sets are generated such that the resultant simulated light curves have observations at identical epochs in identical filters as the real data in the long-baseline preexplosion Pan-STARRS grizy light curves. The uncertainties on these model observations are calculated by interpolating the uncertainties from flux uncertainty maps from our source injection method described in Section 2. In our model, we vary the input luminosity between 0 and 10 6 L e with the maximum being chosen as it is of the order of the outburst observed in SN 2020tlf (Jacobson-Galán et al. 2022). We vary the ejecta mass uniformly and randomly between 0.01 and 1.00 M e , typical of pre-SN outbursts in the time frame that the CSM around SN 2023ixf was formed (e.g., Smith 2014). The time of the injected eruption spans the time phase space of our preexplosion data. In terms of the progenitor star, the relevant free parameter in our pre-SN outburst model is the progenitor radius, which we sample between 1 and 1000 R e . When sampling these model light curves to generate our training light curves, we convolve these pre-SN outbursts with the filter response curves for each of our grizy filters in order to create a model observation. The filter response curves were obtained from the Spanish Virtual Observatory Filter Profile Service.20 Furthermore, we illustrate how increasing the injected luminosity or ejecta mass affects the outburst light curves in the bottom two panels of Figure 5. These example light curves show the same increments in luminosity and ejecta mass with arbitrarily chosen \"middle of the range\" parameters fixed. These include a progenitor radius of 500 R e , an injected luminosity of 1.0 × 10 6 L e , and an ejecta mass of 0.5 M e . We use a multilayer perceptron in order to detect pre-SN eruptions within our PS1 light curve with three layers and 12 neurons in the first layer, eight in the second, and one in the third, using a combination of the standard sigmoid and ReLU activation functions. We train 2,500 epochs using the standard adam optimizer (Kingma & Ba 2014). After training our neural network to classify the presence of a pre-SN eruption (with an accuracy ∼ 94%), we then used the trained neural network to determine if such an eruption is present in the long-baseline preexplosion grizy Pan-STARRS light curves. Our neural net classifies these preexplosion data as being consistent with there being no detectable pre-SN outbursts in this 4851 day range. Given this nondetection, we place limits on the possible eruption models ruled out from our observations. We generate a test set ∼10,000 eruptive light curves of various luminosities and ejecta masses and test the detection efficiency of our classifier. These parameters are increased incrementally (between 0-10 6 L e and 0.01-1.00 M e ). This is shown in Figure 5. With our parameter range, we can put a constraint on the injected luminosity of a preexplosion outburst of <5 × 10 4 L e , which corresponds to an absolute magnitude ∼ −7.0 mag; see Figure 5. This constraint on the outburst luminosity is within the luminosity range of RSGs (Davies & Beasor 2020). Furthermore, this constraint corresponds to an apparent magnitude ∼ 22 mag, deeper than most of our upper limits. We additionally note that our model can be understood as a lower limit-if another power source contributed to the eruptions (e.g., recombination), we would expect brighter and longer-duration transients for a given set of parameters. Other investigations into pre-SN outbursts in SN 2023ixf also have not found evidence for any detectable signatures (Flinner et al. 2023;Neustadt et al. 2024;Panjkov et al. 2023), although to varying limits. Our outburst constraints and photometric limits are comparable to those found by Dong et al. (2023), who derive an upper limit to the ejecta mass of 0.015 M e based on the models of Tsuna et al. (2023; compared to our ejecta mass limit of <0.3 M e ) for a hydrodynamical model that had peak M r ; −8 mag. When compared to SN 2020tlf, any SN 2023ixf pre-SN outburst would be fainter than the activity seen prior to SN 2020tlf. On average, our limits are fainter than the pre-SN outburst of SN 2020tlf by ∼2.5 mag. Defining the duration of a model outburst as the amount of time the outburst is brighter than the detection limits, we find that the typical duration of a detectable outburst is similar, or shorter than, the gaps between the Pan-STARRS observations. The duration of an outburst at our upper luminosity and ejected mass limit is ∼100 days. This is shorter than the largest gap in the Pan-STARRS data ∼600 days and there are multiple large gaps of over 100 days in the preexplosion data set. A detectable outburst may therefore not be detected due to larger gaps in the photometric coverage. In Figure 5 we also show the luminosity that corresponds to the 80% cutoff for bump detection and the corresponding luminosity of our averaged Pan-STARRS limits.  . Detection efficiency curves from our neural network classifier. Using the test light curves described in Section 5, we can place constraints (defined as the limit at 80% detection efficiency). On the top row, dotted lines are also plotted representing the luminosity threshold for the 80% detection limit (black) and our averaged limits over the grizy filters (gray). On the top row, for comparison, in light blue is the double-long model from Tsuna et al. (2023) and in dark blue is their single-small model. Top left: example light curves for increasing injected luminosity. Top right: example light curves for increasing ejecta mass. For the example lightcurve plots, only luminosity or ejecta mass were varied with the other parameters fixed. The color map transitions from brown to orange for higher injected luminosity/ejecta mass. Bottom left: detection efficiency curve for increasing injected luminosity. Dotted lines are also plotted representing the luminosity threshold for the 80% detection limit (black) and our averaged limits over the grizy filters (gray). Bottom right: detection efficiency curve for increasing ejecta mass. Overplotted is our upper ejected mass limit for SN 2023ixf, which is similar to the mass-loss estimate for SN 2020tlf (gray dotted line) from Jacobson-Galán et al. (2020). 0.1-1.0 M e yr −1 in the 1-2 yr before the SN explosion using numerical light-curve models informed by early follow-up observations. Qin et al. (2023) used archival HST and Spitzer imaging to examine the progenitor of SN 2023ixf, finding a mass-loss rate ∼ 3.6 × 10 −4 M e yr −1 , concluding that this enhanced mass-loss rate (compared to RSG winds) was consistent with there being pulsational mass loss. Jencson et al. (2023) also conclude enhanced mass-loss rates deduced from their IR analysis of the progenitor of SN 2023ixf, finding that the mass-loss rate of the progenitor 3-19 yr prior to explosion was ∼3 × 10 −5 -3 × 10 −4 M e yr −1 . Using a periodluminosity relation with the IR variability of the progenitor of SN 2023ixf, Soraisam et al. (2023) found a mass-loss rate of 2-4 × 10 −4 M e yr −1 . In short, all mass-loss rate estimates seem consistent with our limit of 0.3 M e of ejected mass in an outburst forming the CSM. We repeat our eruption-search methodology utilizing the radiation hydrodynamic models of pre-SN outbursts in SNe II devised by Tsuna et al. (2023). We select the two extreme models in terms of luminosity: the \"double-large,\" corresponding to 3.6 M e of CSM and 1.4 × 10 47 erg in radiated energy and the \"single-small\" model, being the least energetic and corresponding to an ejected mass of 0.015 M e and a radiated energy of 2.0 × 10 45 erg. When using these models to construct a training set of light curves, our only free parameter is the time of explosion. Again, we create a training set of 10 4 model light curves and add appropriate extinction to these light curves (which was not considered in the initial modeling by Tsuna et al. 2023). The resultant classifier was then applied to our long-baseline preexplosion data. Our classifier, again, does not detect pre-SN eruptions consistent with this model. This is consistent with the analysis of Dong et al. (2023), who do not find any of the models of Tsuna et al. (2023) likely to be represented in their preexplosion data. The top row of Figure 5 also shows the single-small and double-long models (the least and most luminous of their hydrodynamical preexplosion outburst models, respectively) of Tsuna et al. (2023) for reference. With a peak at ∼−10.5 mag and duration of a few hundred days in the case of the double-long model, our Pan-STARRS observations would be sensitive to outbursts that follow this model." ;
+        nif:beginIndex            "33490"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "44928"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/20e61e05> ;
+        dct:section_number        "5." ;
+        dct:source                "" ;
+        dct:title                 "Searching for Presupernova Outbursts with a Neural Net Classifier" ;
+        qont:LabelUnit            [ a       qont:Label ;
+                                    <dfki:ScientificDocumentSection>
+                                            "introduction"
+                                  ] ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "section" .
+
+<http://scilake-project.eu/res/20e61e05#offset_19280_24153>
+        a                         <dfki:ScientificDocumentPart> , nif:OffsetBasedString ;
+        nif:anchorOf              "We present the Pan-STARRS long-baseline grizy light curves in Figure 1. Through our 4851 day preexplosion baseline, we find no detections at the 80% aperture recovery fraction in the g, r, i, z, or y bands. The median limits we found in each filter are 22.0 mag in the g band, 21.6 mag in the r band, 21.3 mag in the i band, 21.3 mag in the z and 20.1 in the y band; these correspond to absolute magnitudes of M g = −7.2 mag, M r = −7.6 mag, M i = −7.9 mag, M z = −7.9 mag, and M y = −9.1 mag. While these source injection limits are obtained using difference images, the templates used to make the difference images are ∼2-3 mag deeper than the individual epoch images at the same position so our measurements are sensitive to the depth of the single-epoch science images. This implies that the measurements from our difference images between the individual images and the template images are limited by the depth of the individual images. Therefore, the underlying progenitor flux in the template image is insignificant when measuring limits on outburst luminosity in difference images. The range of literature progenitor bolometric RSG luminosities is ∼10 4.39-5.52 L e , corresponding to absolute magnitudes ∼ −6.2 to −9.0 mag (Davies & Beasor 2020), with the most luminous known RSG being UY Scuti, with -Torres et al. 2013). Our limits are therefore mostly on the upper end of, or are brighter than, the range of the bolometric luminosities of observed RSG SN progenitors. We obtain multiyear stacks in the w, i, z, and y filters to probe for progenitor detections. These data were compiled using the data from the Pan-STARRS Survey for Transients, which itself uses wiz data from near-Earth object searches (Huber et al. 2015). As the w filter does not contain color information, it is not used by YSE. Rather, these data are from coincidental observations with YSE fields (and are therefore not included in the light-curve analysis). Forced photometry of these nondifference-imaged stacks reveal that there are no progenitor detections to limits (3σ limits) of 24.80 mag in the w band, 23.80 mag in the i band, 23.00 mag in the z band, and 20.03 mag in the y band, corresponding to absolute magnitudes of M w = −4.4 mag, M i = −5.4 mag, M z = −6.2 mag, and There is weak evidence of two possible detections in the i and y bands at MJD 59334.41 and 56864.25, −753.6 and −3223.8 days relative to explosion, respectively, at a less stringent 50% recovery limit; however, these are not detections at the 80% limit. As these epochs only meet a 50% recovery fraction, we inspect these epochs in more detail. The i-band detection is at an ∼2.4σ detection significance, while the yband detection is at an ∼2.2σ detection significance with these being single images. We present cutout images of these detections in Figure 1. There are no clear visible sources at the location of SN 2023ixf in the thumbnails, consistent with our low significance detections. Therefore we consider these as nondetections. For our 313 Pan-STARRS observations, one would expect ∼15 observations at the 2σ level and ∼1 observation at the 3σ level false-positive detections if using a more standard photometric method. Our source injection method produces no 2σ or 3σ detections at the 80% recovery fraction. Finally, we compare our long-baseline preexplosion light curve to previously identified precursor outburst events in other SNe. First, SN II 2020tlf had precursor outbursts that peaked at an absolute magnitude ∼ −11.5 mag (Jacobson-Galán et al. 2022). As shown in Figure 1, all of our PS1 limits are deeper than SN 2020tlf-like pre-SN outbursts, obtained with a similar method to this work. To compare to the SNe IIn pre-SN outbursts found in the literature, we select two SNe IIn which are examples of the upper and lower luminosity ranges of observed SN IIn precursor outbursts (e.g., Strotjohann et al. 2021). 18 At the fainter end there is SN 2011ht, where Fraser  Smith et al. 2010Smith et al. , 2014;;Foley et al. 2011;Mauerhan et al. 2013;Pastorello et al. 2013;Margutti et al. 2014;Pessi et al. 2023). Our limits and the progenitor detections of SN 2023ixf are dimmer than the outbursts seen in the RSG progenitor of SN 2020tlf by at least 2.5 mag and are much fainter than the possibly luminous blue variable (LBV)-like outbursts seen prior to some SNe IIn such as SN 2009ip. In addition to the pre-SN explosions associated with these SNe IIn, we can also compare to some SN impostors, many of which are also interpreted as eruptions of LBV-like progenitors. For example, SN 2000ch and AT 2016blu are both SN impostors with ongoing observed activity (Pastorello et al. 2010;Aghakhanloo et al. 2023aAghakhanloo et al. , 2023b)). SN 2000ch peaked at an absolute magnitude ∼ −12.8 mag and AT 2016blu peaked at ∼−13.6 mag (lying in between the pre-SN outburst in the SNe IIn range)." ;
+        nif:beginIndex            "19280"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "24153"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/20e61e05> ;
+        dct:section_number        "3." ;
+        dct:source                "" ;
+        dct:title                 "No Evidence of Preexplosion Activity in Pan-STARRS Data" ;
+        qont:LabelUnit            [ a       qont:Label ;
+                                    <dfki:ScientificDocumentSection>
+                                            "introduction"
+                                  ] ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "section" .
+
+<http://scilake-project.eu/res/20e61e05/location/_15_School_of_Mathematics_and_Physics,_The_University_of_Queensland,_>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/20e61e05> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:locationName  " 15 School of Mathematics and Physics, The University of Queensland, " .
+
+<http://scilake-project.eu/res/20e61e05/location/_2_Department_of_Astronomy_and_Astrophysics,_The_Pennsylvania_State_University,_>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/20e61e05> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:locationName  " 2 Department of Astronomy and Astrophysics, The Pennsylvania State University, " .
+
+<http://scilake-project.eu/res/20e61e05/author/34168b2c>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/acd03b24> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "Diego" ;
+        scilake:lastname      "Farias" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05/affiliation/>
+        a                           scilake:ScientificAffiliation ;
+        nif:referenceContext        <http://qurator-projekt.de/res/> ;
+        dct:source                  "" ;
+        qont:metadata               []  ;
+        qont:metadata               []  ;
+        qont:metadata               []  ;
+        qont:metadata               []  ;
+        qont:metadata               []  ;
+        qont:metadata               []  ;
+        qont:metadata               []  ;
+        qont:metadata               []  ;
+        qont:metadata               []  ;
+        qont:metadata               []  ;
+        qont:metadata               []  ;
+        qont:metadata               []  ;
+        qont:metadata               []  ;
+        qont:metadata               []  ;
+        qont:metadata               []  ;
+        qont:metadata               []  ;
+        qont:metadata               []  ;
+        scilake:affAddrLine         "60 Garden Street, Cambridge, MA 02138-1516, USA University Park, PA 16802, USA Berkeley, CA 94720, USA Evanston, IL 60208, USA Berkeley, CA 94720, USA Santa Cruz, CA 95064, USA Madingley Road, Cambridge CB3 0HA, UK 50 St. George Street, Toronto, Ontario M5S 3H4, Canada Stanford, CA, USA VIC 3010, Australia 2680 Woodlawn Drive, Honolulu, HI 96822, USA Baltimore, MD 21218, USA Jagtvej 128, 2200 Copenhagen, Denmark 670 N. A'ohoku Place, Hilo, HI 96720, USA QLD 4072, Australia Highfield, Southampton SO17 1BJ, UK Baltimore, MD 21218, USA" ;
+        scilake:affFailAffiliation  false ;
+        scilake:affKey              "" ;
+        scilake:affRawAffiliationString
+                "\n\t\t\t\t\t\t\t\t 6 Department of Astronomy and Astrophysics, University of California, \n\t\t\t\t\t\t\t" , "\n\t\t\t\t\t\t\t\t 3 Department of Astronomy, University of California, \n\t\t\t\t\t\t\t" , "\n\t\t\t\t\t\t\t\t 16 Department of Physics and Astronomy, University of Southampton, \n\t\t\t\t\t\t\t" , "\n\t\t\t\t\t\t\t\t 5 Department of Physics, University of California, \n\t\t\t\t\t\t\t" , "\n\t\t\t\t\t\t\t\t 12 Space Telescope Science Institute, \n\t\t\t\t\t\t\t" , "\n\t\t\t\t\t\t\t\t1 Center for Astrophysics | Harvard & Smithsonian, \n\t\t\t\t\t\t\t\t60 Garden Street, Cambridge, MA 02138-1516, USA University Park, PA 16802, USA Berkeley, CA 94720, USA Evanston, IL 60208, USA Berkeley, CA 94720, USA Santa Cruz, CA 95064, USA Madingley Road, Cambridge CB3 0HA, UK 50 St. George Street, Toronto, Ontario M5S 3H4, Canada Stanford, CA, USA VIC 3010, Australia 2680 Woodlawn Drive, Honolulu, HI 96822, USA Baltimore, MD 21218, USA Jagtvej 128, 2200 Copenhagen, Denmark 670 N. A'ohoku Place, Hilo, HI 96720, USA QLD 4072, Australia Highfield, Southampton SO17 1BJ, UK Baltimore, MD 21218, USA\n\t\t\t\t\t\t\t" , "\n\t\t\t\t\t\t\t\t 11 Institute for Astronomy, University of Hawaii, \n\t\t\t\t\t\t\t" , "\n\t\t\t\t\t\t\t\t 15 School of Mathematics and Physics, The University of Queensland, \n\t\t\t\t\t\t\t" , "\n\t\t\t\t\t\t\t\t 10 School of Physics, The University of Melbourne, \n\t\t\t\t\t\t\t" , "\n\t\t\t\t\t\t\t\t 4 Center for Interdisciplinary Exploration and Research in Astrophysics (CIERA) and Department of Physics and Astronomy, Northwestern University, \n\t\t\t\t\t\t\t" , "\n\t\t\t\t\t\t\t\t 2 Department of Astronomy and Astrophysics, The Pennsylvania State University, \n\t\t\t\t\t\t\t" , "\n\t\t\t\t\t\t\t\t 17 Department of Physics and Astronomy, The Johns Hopkins University,\n\t\t\t\t\t\t\t" , "\n\t\t\t\t\t\t\t\t 9 Physics Department, Stanford University, \n\t\t\t\t\t\t\t" , "\n\t\t\t\t\t\t\t\t 14 Gemini Observatory, NSF's NOIRLab, \n\t\t\t\t\t\t\t" , "\n\t\t\t\t\t\t\t\t 13 DARK, Niels Bohr Institute, University of Copenhagen, \n\t\t\t\t\t\t\t" , "\n\t\t\t\t\t\t\t\t 8 David A. Dunlap Department of Astronomy and Astrophysics, University of Toronto, \n\t\t\t\t\t\t\t" , "\n\t\t\t\t\t\t\t\t 7 Institute of Astronomy and Kavli Institute for Cosmology, \n\t\t\t\t\t\t\t" ;
+        scilake:has_laboratory      <http://scilake-project.eu/res/20e61e05/location/_6_Department_of_Astronomy_and_Astrophysics,_University_of_California,_> , <http://scilake-project.eu/res/20e61e05/location/_10_School_of_Physics,_The_University_of_Melbourne,_> , <http://scilake-project.eu/res/20e61e05/location/_11_Institute_for_Astronomy,_University_of_Hawaii,_> , <http://scilake-project.eu/res/20e61e05/location/_14_Gemini_Observatory,_NSF's_NOIRLab,_> , <http://scilake-project.eu/res/20e61e05/location/_15_School_of_Mathematics_and_Physics,_The_University_of_Queensland,_> , <http://scilake-project.eu/res/20e61e05/location/_8_David_A._Dunlap_Department_of_Astronomy_and_Astrophysics,_University_of_Toronto,_> , <http://scilake-project.eu/res/20e61e05/location/_2_Department_of_Astronomy_and_Astrophysics,_The_Pennsylvania_State_University,_> , <http://scilake-project.eu/res/20e61e05/location/_9_Physics_Department,_Stanford_University,_> , <http://scilake-project.eu/res/20e61e05/location/_4_Center_for_Interdisciplinary_Exploration_and_Research_in_Astrophysics_(CIERA)_and_Department_of_Physics_and_Astronomy,_Northwestern_University,_> , <http://scilake-project.eu/res/20e61e05/location/_17_Department_of_Physics_and_Astronomy,_The_Johns_Hopkins_University,> , <http://scilake-project.eu/res/20e61e05/location/_13_DARK,_Niels_Bohr_Institute,_University_of_Copenhagen,_> , <http://scilake-project.eu/res/20e61e05/location/_3_Department_of_Astronomy,_University_of_California,_> , <http://scilake-project.eu/res/20e61e05/location/_7_Institute_of_Astronomy_and_Kavli_Institute_for_Cosmology,_> , <http://scilake-project.eu/res/20e61e05/location/1_Center_for_Astrophysics_|_Harvard_&_Smithsonian,_> , <http://scilake-project.eu/res/20e61e05/location/_16_Department_of_Physics_and_Astronomy,_University_of_Southampton,_> , <http://scilake-project.eu/res/20e61e05/location/_5_Department_of_Physics,_University_of_California,_> , <http://scilake-project.eu/res/20e61e05/location/_12_Space_Telescope_Science_Institute,_> .
+
+<http://scilake-project.eu/res/20e61e05/author/39f0d561>
+        a                        scilake:ScientificAuthor ;
+        nif:referenceContext     <http://scilake-project.eu/res/558511dd> ;
+        dct:source               "" ;
+        qont:metadata            []  ;
+        scilake:corresp          false ;
+        scilake:has_affiliation  <http://scilake-project.eu/res/20e61e05/affiliation/> ;
+        scilake:valid            false .
+
+<http://scilake-project.eu/res/20e61e05/location/_12_Space_Telescope_Science_Institute,_>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/20e61e05> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:locationName  " 12 Space Telescope Science Institute, " .
+
+<http://scilake-project.eu/res/20e61e05/author/3b9bed38>
+        a                        scilake:ScientificAuthor ;
+        nif:referenceContext     <http://scilake-project.eu/res/a8c85275> ;
+        dct:source               "" ;
+        qont:metadata            []  ;
+        scilake:corresp          false ;
+        scilake:has_affiliation  <http://scilake-project.eu/res/20e61e05/affiliation/> ;
+        scilake:valid            false .
+
+<http://scilake-project.eu/res/20e61e05#offset_56087_56490>
+        a                         <dfki:ScientificDocumentPart> , nif:OffsetBasedString ;
+        nif:anchorOf              "We would like to thank the anonymous referee for their thoughtful and helpful comments. We thank Daichi Tsuna for valuable discussion and providing their pre-SN outburst models. We also thank Sarah McDonald for helpful discussions. V.A.V. and C.L.R. acknowledge support from the Charles E. Kaufman Foundation through the New Investigator grant KA2022-129525. W.J.-G. is supported by the National Science" ;
+        nif:beginIndex            "56087"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "56490"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/20e61e05> ;
+        dct:section_number        "" ;
+        dct:source                "" ;
+        dct:title                 "Acknowledgments" ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "acknowledgement" .
+
+<http://scilake-project.eu/res/20e61e05#offset_85_1260>
+        a                         nif:OffsetBasedString , <dfki:ScientificDocumentPart> ;
+        nif:anchorOf              "The nearby type II supernova, SN 2023ixf in M101 exhibits signatures of early time interaction with circumstellar material in the first week postexplosion. This material may be the consequence of prior mass loss suffered by the progenitor, which possibly manifested in the form of a detectable presupernova outburst. We present an analysis of long-baseline preexplosion photometric data in the g, w, r, i, z, and y filters from Pan-STARRS as part of the Young Supernova Experiment, spanning ∼5000 days. We find no significant detections in the Pan-STARRS preexplosion light curves. We train a multilayer perceptron neural network to classify presupernova outbursts. We find no evidence of eruptive presupernova activity to a limiting absolute magnitude of −7 mag. The limiting magnitudes from the full set of gwrizy (average absolute magnitude ≈ −8 mag) data are consistent with previous preexplosion studies. We use deep photometry from the literature to constrain the progenitor of SN 2023ixf, finding that these data are consistent with a dusty red supergiant progenitor with luminosity  L L log ( ) ≈ 5.12 and temperature ≈ 3950 K, corresponding to a mass of 14-20 M e ." ;
+        nif:beginIndex            "85"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "1260"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/20e61e05> ;
+        dct:section_number        "" ;
+        dct:source                "" ;
+        dct:title                 "The nearby type II supernova, SN 2023ixf in M101 exhibits signatures of early time interaction with circumstellar material in the first week postexplosion. This material may be the consequence of prior mass loss suffered by the progenitor, which possibly manifested in the form of a detectable presupernova outburst. We present an analysis of long-baseline preexplosion photometric data in the g, w, r, i, z, and y filters from Pan-STARRS as part of the Young Supernova Experiment, spanning ∼5000 days. We find no significant detections in the Pan-STARRS preexplosion light curves. We train a multilayer perceptron neural network to classify presupernova outbursts. We find no evidence of eruptive presupernova activity to a limiting absolute magnitude of −7 mag. The limiting magnitudes from the full set of gwrizy (average absolute magnitude ≈ −8 mag) data are consistent with previous preexplosion studies. We use deep photometry from the literature to constrain the progenitor of SN 2023ixf, finding that these data are consistent with a dusty red supergiant progenitor with luminosity  L L log ( ) ≈ 5.12 and temperature ≈ 3950 K, corresponding to a mass of 14-20 M e ." ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "abstract" .
+
+<http://scilake-project.eu/res/20e61e05/location/_3_Department_of_Astronomy,_University_of_California,_>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/20e61e05> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:locationName  " 3 Department of Astronomy, University of California, " .
+
+<http://scilake-project.eu/res/20e61e05/author/2b955f74>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/c5a9836f> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "V" ;
+        scilake:lastname      "Villar" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05/author/9f5614f9>
+        a                        scilake:ScientificAuthor ;
+        nif:referenceContext     <http://scilake-project.eu/res/fdcab4a4> ;
+        dct:source               "" ;
+        qont:metadata            []  ;
+        scilake:corresp          false ;
+        scilake:has_affiliation  <http://scilake-project.eu/res/20e61e05/affiliation/> ;
+        scilake:valid            false .
+
+<http://scilake-project.eu/res/20e61e05/location/_6_Department_of_Astronomy_and_Astrophysics,_University_of_California,_>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/20e61e05> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:locationName  " 6 Department of Astronomy and Astrophysics, University of California, " .
+
+<http://scilake-project.eu/res/20e61e05/author/a832ca72>
+        a                        scilake:ScientificAuthor ;
+        nif:referenceContext     <http://scilake-project.eu/res/c886544e> ;
+        dct:source               "" ;
+        qont:metadata            []  ;
+        scilake:corresp          false ;
+        scilake:has_affiliation  <http://scilake-project.eu/res/20e61e05/affiliation/> ;
+        scilake:valid            false .
+
+<http://scilake-project.eu/res/20e61e05#offset_52266_56086>
+        a                         nif:OffsetBasedString , <dfki:ScientificDocumentPart> ;
+        nif:anchorOf              "In this work, we have presented a long-baseline preexplosion light curve of the nearby SN II, SN 2023ixf in M101 as observed by Pan-STARRS. With limits from this photometry and stacked images and also measurements from the literature, we find a progenitor consistent with a RSG with mass 14-20 M e , in agreement with most previous works. Using neural net classifiers, we do not find evidence of outbursts that may have produced the confined CSM but were able to place limits on any possible outbursts. Our findings can be summarized as follows. 1. Using our source injection photometric methodology for obtaining preexplosion limits, we do not detect any preexplosion activity in the Pan-STARRS grizy filters. The average limits obtained are M g = −7.2 mag, M r = −7.8 mag, M i = −7.9 mag, M z = −7.9 mag, and M y = −9.2 mag. These limits are below the brightness of the pre-SN outburst seen in SN 2020tlf and much fainter than outbursts seen prior to SNe IIn with preexplosion outburst detections. Therefore, if the progenitor of SN 2023ixf suffered an outburst similar to previous observed events (with a duration of 100 days), Pan-STARRS would have been able to detect it, if the outburst did not occur during a gap in the data. 2. We train a multilayer perceptron using an expanding photosphere model and the model outlined in Tsuna et al. (2023) to identify outbursts in our Pan-STARRS light curves. We do not find evidence for these types of outbursts in our pre-SN data. 3. Using our multilayer perceptron classifier, we find that our outburst luminosity has an upper limit absolute magnitude ∼ −7.0 mag and an ejecta mass less than 0.3 M e . These constraints are consistent with measurements from the literature (Dong et al. 2023;Flinner et al. 2023;Hiramatsu et al. 2023;Jacobson-Galán et al. 2023  2024; Panjkov et al. 2023;Qin et al. 2023;Singh Teja et al. 2023;Soraisam et al. 2023). 4. Multiyear deep stacks in the wizy bands do not yield a progenitor detection to 3σ limits of w = 24.80 mag, i = 23.80 mag, z = 23.00 mag, and y = 20.03 mag. These are consistent our best-fit progenitor SED and shallower than the optical HST detections. 5. We train another multilayer perceptron to detect periodic variability, following the period discovered in Spitzer observations. We do not detect any pre-SN variability in the most sampled filter, i, using the neural network. We repeat the methodology used for the pre-SN outburst to place limits on variability, finding similar limits on the amplitude of the variation as we found with the pre-SN outburst model (<4 × 10 4 L e ). 6. We fit the SEDs using DUSTY + MARCS models to consolidated literature photometry of the progenitor with conservative uncertainty estimates to account for its variability at IR wavelengths. We use a carbon dust model (however, some authors such as Jencson et al. 2023 used silicate dust and get consistent results within the reported uncertainties) and find a progenitor mass range of 14-20 M e . This mass range is consistent with other reported values for SN 2023ixf from the literature and may indicate a RSG progenitor on the higher end of the observed mass range (Jencson et al. 2023;Neustadt et al. 2024;Niu et al. 2023;Qin et al. 2023;Soraisam et al. 2023;Van Dyk et al. 2023;Xiang et al. 2024). 7. By varying both the dust properties and progenitor temperature and luminosity and fitting the SEDs with varying progenitor properties, we find that optical variability consistent with Spitzer observations and our DUSTY models was not observable with Pan-STARRS. 8. Using the NCR pixel statistics method, we find that the host environment of SN 2023ixf, with an NCR value of 0.27 ± 0.08, is consistent with the average NCR value of the environments of SN IIP and indicative of an environment of moderate ongoing star formation." ;
+        nif:beginIndex            "52266"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "56086"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/20e61e05> ;
+        dct:section_number        "7." ;
+        dct:source                "" ;
+        dct:title                 "Conclusions and Summary" ;
+        qont:LabelUnit            [ a       qont:Label ;
+                                    <dfki:ScientificDocumentSection>
+                                            "introduction"
+                                  ] ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "section" .
+
+<http://scilake-project.eu/res/20e61e05#offset_0_84>
+        a                         <dfki:ScientificDocumentPart> , nif:OffsetBasedString ;
+        nif:anchorOf              "SN 2023ixf in Messier 101 The Twilight Years of the Progenitor as Seen by Pan-STARRS" ;
+        nif:beginIndex            "0"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "84"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/20e61e05> ;
+        dct:section_number        "" ;
+        dct:source                "" ;
+        dct:title                 "SN 2023ixf in Messier 101 The Twilight Years of the Progenitor as Seen by Pan-STARRS" ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "title" .
+
+<http://scilake-project.eu/res/20e61e05/location/_13_DARK,_Niels_Bohr_Institute,_University_of_Copenhagen,_>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/20e61e05> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:locationName  " 13 DARK, Niels Bohr Institute, University of Copenhagen, " .
+
+<http://scilake-project.eu/res/20e61e05/author/64909915>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/98ba8240> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "Sandra" ;
+        scilake:lastname      "Raimundo" ;
+        scilake:middlename    "I" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05/author/07f55a64>
+        a                        scilake:ScientificAuthor ;
+        nif:referenceContext     <http://scilake-project.eu/res/c5f664ac> ;
+        dct:source               "" ;
+        qont:metadata            []  ;
+        scilake:corresp          false ;
+        scilake:has_affiliation  <http://scilake-project.eu/res/20e61e05/affiliation/> ;
+        scilake:valid            false .
+
+<http://scilake-project.eu/res/20e61e05#offset_12406_13003>
+        a                         nif:OffsetBasedString , <dfki:ScientificDocumentPart> ;
+        nif:anchorOf              "We present preexplosion data for SN 2023ixf from Pan-STARRS (Chambers et al. 2016). Pan-STARRS is comprised of a duo of 1.8 m telescopes, PS1 and PS2, near the peak of Haleakala on the island of Maui. These data span from 2010 January 19 to 2023 May 12, comprised of the gwrizy filter set (Flewelling et al. 2020). In total, there are 313 PS1 pre-SN photometric observations over a 4851 day baseline. These have a typical depth of 20.4 mag averaged over all grizy filters. In the following, we present a custom pipeline used to measure the limiting magnitude of each individual exposure carefully." ;
+        nif:beginIndex            "12406"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "13003"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/20e61e05> ;
+        dct:section_number        "2." ;
+        dct:source                "" ;
+        dct:title                 "Photometry" ;
+        qont:LabelUnit            [ a       qont:Label ;
+                                    <dfki:ScientificDocumentSection>
+                                            "introduction"
+                                  ] ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "section" .
+
+<http://scilake-project.eu/res/20e61e05/author/601d9d9b>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/cd7dc565> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "Collin" ;
+        scilake:lastname      "Politsch" ;
+        scilake:middlename    "A" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05/author/c607be95>
+        a                        scilake:ScientificAuthor ;
+        nif:referenceContext     <http://scilake-project.eu/res/a799eb95> ;
+        dct:source               "" ;
+        qont:metadata            []  ;
+        scilake:corresp          false ;
+        scilake:has_affiliation  <http://scilake-project.eu/res/20e61e05/affiliation/> ;
+        scilake:valid            false .
+
+<http://scilake-project.eu/res/20e61e05/author/ef14c4fd>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/bf546d00> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "Charles" ;
+        scilake:lastname      "Kilpatrick" ;
+        scilake:middlename    "D" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05/author/465246fe>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/71f09368> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "Hua" ;
+        scilake:lastname      "Gao" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05/location/_16_Department_of_Physics_and_Astronomy,_University_of_Southampton,_>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/20e61e05> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:locationName  " 16 Department of Physics and Astronomy, University of Southampton, " .
+
+<http://scilake-project.eu/res/20e61e05/author/2eff7f3b>
+        a                        scilake:ScientificAuthor ;
+        nif:referenceContext     <http://scilake-project.eu/res/1e30358f> ;
+        dct:source               "" ;
+        qont:metadata            []  ;
+        scilake:corresp          false ;
+        scilake:has_affiliation  <http://scilake-project.eu/res/20e61e05/affiliation/> ;
+        scilake:valid            false .
+
+<http://scilake-project.eu/res/20e61e05/author/26c3ed85>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/d0e82f5b> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "Conor" ;
+        scilake:lastname      "Ransome" ;
+        scilake:middlename    "L ;" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05/author/e4cab6e2>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/c82f2b41> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "David" ;
+        scilake:lastname      "Coulter" ;
+        scilake:middlename    "A" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05#offset_44929_50361>
+        a                         <dfki:ScientificDocumentPart> , nif:OffsetBasedString ;
+        nif:anchorOf              "Numerous previous studies of the preexplosion activity of SN 2023ixf found that the progenitor was observably variable at IR wavelengths (see Jencson et al. 2023;Kilpatrick et al. 2023;Soraisam et al. 2023). Kilpatrick et al. (2023) suggested that the variability, with a period of around 1000 days seen in preexplosion Spitzer data, may be due to κ-mechanism pulsations seen in RSGs such as α Ori (Betelgeuse; see Li & Gong 1994;Heger et al. 1997), where a changing opacity drives variability. Apart from deep HST single-epoch images, in the optical bands, the progenitor is not detected. However, we may extend our methodology to place constraints on the variability of the progenitor in the optical. Similarly to our pre-SN outburst model, we construct a simple variability model, assuming sinusoidal variability, antiphased to the IR variability (i.e., assuming constant bolometric luminosity). This model has a fixed period of 1000 days and two free parameters, the amplitude of the variation and the baseline. Again, we train a multilayer perceptron with the same number of layers, number of neurons, and the same activation function as in Section 5. We randomly sample both the amplitude and baseline between 0 and 10 6 L e and create 10 4 test light curves (both with and without variability) with which we construct our training set. We then run the i-band Pan-STARRS preexplosion data through this model. We choose the i band as this has the most data and best temporal coverage, while also using one filter avoids making assumptions on color evolution. In the preexplosion data, we find no detectable variability in the i-band data. To place upper limits on the variability, we repeat the methodology used to constrain the pre-SN outbursts (see Figure 5). We vary the baseline and amplitude (separately) between 0 and 10 6 L e with each step having 10 3 test light curves generated. For each set of 10 3 light curves, the other unfixed parameter is varied randomly. Using the same 80% detection efficiency threshold, we find that these models are not sensitive to the baseline and the amplitude has an upper limit ∼ 4 × 10 4 L e . This limit is similar to the constraint from the pre-SN outburst models and is similar to the luminosity of RSG progenitors. This suggests that if our optical images were close to the depth of the progenitor, we would have observed variability. Moreover, we vary our SED models to infer the limits of variability in other bands (in a nonperiodic fashion). We use the RSG progenitor parameters derived from our SED analysis using the consolidated photometry presented in Section 4. First, we vary only the dust properties of the progenitor with the other parameters being fixed. We vary the optical depth due to the surrounding dust, τ, between 2 and 10. We then test a second scenario in which the progenitor properties (luminosity and temperature) are freely varied, with a fixed τ = 8.23 (the value from our SED fitting). In these two tests, we use the Spitzer observations to constrain the remaining free parameters, and we use Gaussian process interpolation to predict the Spitzer observed fluxes throughout the observed baseline. The peak of variability in each grizy filter found with each method and the limits from our photometry are shown in Figure 6. When the variability is accounted for by changing the progenitor parameters, the variability never peaks brighter than our limits. When the variability is assumed to be due to changes in the optical depth, in the optical, all but the z band have photometric limits brighter than the peak of the variability. This may suggest that our z-band photometric coverage did not catch a peak in the variability if it was detectable or that the variability may not be purely due to optical depth variations. Generally, we would not have been able to detect variability of the progenitor of SN 2023ixf in the framework of our assumptions with Pan-STARRS. Also shown in Figure 6 are the near-infrared bands, JHK. The progenitor of SN 2023ixf was detected in the near-infrared; however, these detections occur outside of the Spitzer baseline. Nevertheless, these observations are similar to the peaks of the variability in both scenarios, being dimmer than the peak of the variability when just the optical depth is varied and brighter than the case where the progenitor properties are free parameters. For variability in the IR, we also note that the fractional variability, defined as the range in flux measurements over the baseline (taken as the average flux), is approximately constant over all IR filters. The scatter in the flux measurements is presented in Figure 7. Systematically adding to the uncertainty of each measurement in quadrature (adding a fractional uncertainty of 0.0001 in each step) to represent intrinsic scatter allows us to probe possible variability. By calculating how much scatter is required to produced a reduced χ 2 = 1, compared with zero scatter, Δf ν = 0 μJy, we can estimate the intrinsic scatter. In the Pan-STARRS izy filters (the filters with the most flux measurements), typically 5% of the uncertainty is required to be added as intrinsic scatter. This may indicate some marginal variability in these data. However, we note that there may be underestimates in the uncertainties in this analysis and that the typical uncertainty of the flux measurements is larger than the the typical IR variability." ;
+        nif:beginIndex            "44929"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "50361"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/20e61e05> ;
+        dct:section_number        "5.1." ;
+        dct:source                "" ;
+        dct:title                 "Preexplosion Variability of the Progenitor" ;
+        qont:LabelUnit            [ a       qont:Label ;
+                                    <dfki:ScientificDocumentSection>
+                                            "introduction"
+                                  ] ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "section" .
+
+<http://scilake-project.eu/res/20e61e05/author/68f99faf>
+        a                        scilake:ScientificAuthor ;
+        nif:referenceContext     <http://scilake-project.eu/res/49c1e906> ;
+        dct:source               "" ;
+        qont:metadata            []  ;
+        scilake:corresp          false ;
+        scilake:has_affiliation  <http://scilake-project.eu/res/20e61e05/affiliation/> ;
+        scilake:valid            false .
+
+<http://scilake-project.eu/res/20e61e05/author/45d6871d>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/0fac1728> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "V" ;
+        scilake:lastname      "Ashley Villar" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05/author/60de63c3>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/9e807845> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "Nandita" ;
+        scilake:lastname      "Khetan" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05/author/63d016f4>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/f46f3af1> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:lastname      "Ashley" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05/location/_11_Institute_for_Astronomy,_University_of_Hawaii,_>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/20e61e05> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:locationName  " 11 Institute for Astronomy, University of Hawaii, " .
+
+<http://scilake-project.eu/res/20e61e05/author/c128f93d>
+        a                        scilake:ScientificAuthor ;
+        nif:referenceContext     <http://scilake-project.eu/res/360fefe6> ;
+        dct:source               "" ;
+        qont:metadata            []  ;
+        scilake:corresp          false ;
+        scilake:has_affiliation  <http://scilake-project.eu/res/20e61e05/affiliation/> ;
+        scilake:valid            false .
+
+<http://scilake-project.eu/res/20e61e05/location/_7_Institute_of_Astronomy_and_Kavli_Institute_for_Cosmology,_>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/20e61e05> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:locationName  " 7 Institute of Astronomy and Kavli Institute for Cosmology, " .
+
+<http://scilake-project.eu/res/20e61e05/author/f485be2a>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/08d7e5a2> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "Chien-Cheng" ;
+        scilake:lastname      "Lin" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05/author/46259fc1>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/f5c38d1e> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "Thomas" ;
+        scilake:lastname      "De Boer" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05/author/1c02b224>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/c7bd82a8> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:lastname      "Javier" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05/author/4a98a12a>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/ee4e0739> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "Christine" ;
+        scilake:lastname      "Ye" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05/author/ad241258>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/cb8d0f4b> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "Matthew" ;
+        scilake:lastname      "Grayling" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05/author/56c1144c>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/2f7d6b6f> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "S" ;
+        scilake:lastname      "Karthik Yadavalli" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05/author/345f0591>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/b6efc605> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "Anna" ;
+        scilake:lastname      "Tartaglia" ;
+        scilake:middlename    ";" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05/author/ca111b6a>
+        a                        scilake:ScientificAuthor ;
+        nif:referenceContext     <http://scilake-project.eu/res/28a7b19e> ;
+        dct:source               "" ;
+        qont:metadata            []  ;
+        scilake:corresp          false ;
+        scilake:has_affiliation  <http://scilake-project.eu/res/20e61e05/affiliation/> ;
+        scilake:valid            false .
+
+<http://scilake-project.eu/res/20e61e05/location/_17_Department_of_Physics_and_Astronomy,_The_Johns_Hopkins_University,>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/20e61e05> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:locationName  " 17 Department of Physics and Astronomy, The Johns Hopkins University," .
+
+<http://scilake-project.eu/res/20e61e05/author/4553cfbf>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/3c1c037e> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "Maria" ;
+        scilake:lastname      "Drout" ;
+        scilake:middlename    "R" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05#offset_24154_33489>
+        a                         <dfki:ScientificDocumentPart> , nif:OffsetBasedString ;
+        nif:anchorOf              "To constrain the properties of the progenitor of SN 2023ixf, SEDs of the progenitor are presented by a number of authors (e.g., Jencson et al. 2023;Kilpatrick et al. 2023;Neustadt et al. 2024;Niu et al. 2023;Soraisam et al. 2023;Xiang et al. 2024). Detections in Spitzer channel 1 and channel 2, MMT J, Gemini/NIRI J, UKIRT JHK, and Hubble Space Telescope (HST) F814W and F675W are used here. As stated, pre-SN observations (particularly those from Spitzer) reveal a highly variable progenitor in the decade up to SN. We must account for scatter in the reported photometric measurements, and also variability in the IR data. As our mean estimate in each band, we take an average of these flux measurements over independent measurements and time. For the uncertainties on these measurements, we account for two contributions: the Spitzer, Gemini/NIRI, MMT/MMIRS, and Mayall/NEWFIRM data (all detections, originally presented in Jencson et al. 2023;Kilpatrick et al. 2023) are also shown. The Pan-STARRS limits are from our source injection method. For the Pan-STARRS data, the two instances of the source injection finding possible sources at the 50% recovery fraction limit (in the i and y bands) are marked as a circle and 80% recovery fraction limits are shown as a downward pointing triangle. These two sources, however, are detected at a signal-to-noise level < 3σ. Overplotted are also the peak absolute magnitude of pre-SN outbursts of three other transients, SN 2020tlf (a luminous SN II, bolometric peak luminosity; Jacobson-Galán et al. 2022), SN 2011ht (a SN IIn with a plateau light curve and whose z-band peak absolute magnitude is shown; Fraser et al. 2013), SN 2009ip (a well studied SN IIn with bright precursor eruptions, with its peak visual magnitude shown; Mauerhan et al. 2013), and SN 2000ch and AT 2016blu (SN impostors;Pastorello et al. 2010;Aghakhanloo et al. 2023aAghakhanloo et al. , 2023b)). Lower panel: PS1 cutouts of the epochs of the possible sub-3σ detections in the i and y bands, where both the science images (panels 1 and 3) and difference images (panels 2 and 4 are shown. The location of the transient is marked by a red circle. There is no visible detection in these images. systematic scatter in the reported measurements of the same observations, and intrinsic variability. In the latter case, we use the range of reported AB magnitudes as an estimate for the systematic uncertainty, where the error interval is the range of values per filter; in the case where epochs have multiple measurements, we add the average scatter per epochs in quadrature. 19We use the radiative transfer code DUSTY (Kochanek et al. 2012a) to constrain the progenitor properties. Following Kochanek et al. (2012b) and Kilpatrick et al. (2023), we use the Model Atmospheres with a Radiative and Convective Scheme (MARCS) grid of RSG spectra (e.g., Gustafsson et al. 1975Gustafsson et al. , 2008) ) as an internal heating source within an spherically symmetric shell of dust. We note that, while the immediate CSM showed signs of asymmetry, DUSTY assumes a spherically symmetric dust shell. MARCS provides a grid of 15 M e RSG spectra, with varying temperatures, surface gravities, and metallicities. Here, we explore solar metallicity models with g log 0 ( ) = and progenitor effective temperatures in the range 3300 and 4500 K. The MARCS models are then used as internal heating sources for the DUSTY models, allowing us to estimate the dust properties of the progenitor system. We specifically vary the optical depth of the dust (τ V ä 0, 10), the ratio of the outer to inner radii of the dust shell , and the inner temperature of the dust (T ä 10, 1000 K). We test carbonaceous and silicate dust models, as dust of both types is commonly seen. Finally, we fit for luminosities between  L L log ( ) = 3-6. We generate an interpolated grid of precomputed DUSTY + MARCS models and use the Bayesian nested sampling algorithm Dynesty (Speagle 2020) to constrain the progenitor properties. We additionally fit for an extra whitenoise term, σ 2 , to capture systematic uncertainties which may be underrepresented in our measurements, i.e., a parameter that represents the fractional underestimate of the uncertainties in log space. From the posterior distributions, we infer the following values for the progenitor luminosity with carbonbased dust (graphitic): a luminosity of . Our low value of σ suggests that we do not significantly underestimate the uncertainties. Silicate dust models were trialed and were not as good a fit to the data as the graphitic dust, with reduced χ 2 values of 1.8 for silicate dust and 0.6 for graphitic dust. (Silicate dust produces a luminosity of and a RSG temperature of 4066 326 308 -+ K.) Therefore, we only consider the graphitic dust models. These values are broadly consistent with previous studies on the progenitor of SN 2023ixf. Our luminosity is consistent with most other work within the uncertainties (Jencson et al. 2023;Neustadt et al. 2024;Niu et al. 2023;Qin et al. 2023;Soraisam et al. 2023;Van Dyk et al. 2023;Xiang et al. 2024), with Soraisam et al. (2023) finding the highest luminosity at  L L log ( ) = 5.27 ± 0.12 or  L L log ( ) = 5.37 ± 0.12 dependent on the temperature used in their fits. Our RSG temperature is on the higher end of the range from other studies, with Kilpatrick et al. (2023) finding the next hottest temperature at 3920 160 200 -+ K, but also our uncertainties are larger due to the scatter in the photometry. However, our temperature is consistent with a number of the studies within uncertainties (Jencson et al. 2023;Neustadt et al. 2024;Niu et al. 2023;Van Dyk et al. 2023). Our SED fits are presented in Figure 2. In addition to detections of the presumed progenitor, we also plot limits from the Pan-STARRS wizy multiyear stacks and limits from H band (MJD 56108) and J band (MJD 56107). These limits are consistent with our SED fits. We note that progenitor detections that are at single epochs are in HST F814W (MJD 52594) and F675W (MJD 51261). Our SED fits are consistent with most (but not all) of the previous literature (see the summary by Qin et al. 2023). Finally, we compare our SED fits to MESA Isochrones and Stellar Tracks (MIST) evolutionary models (Choi et al. 2016;Dotter 2016) assuming a nonrotating star and solar metallicity models (consistent with previous studies such as Kilpatrick et al. 2023). We consider models to be consistent if their final luminosity is consistent with our derived values. Assuming a graphitic dust model, we find that our progenitor properties are consistent with a 14-20 M e star (see Figure 3). This mass range is too high for the electron-capture scenario suggested by Xiang et al. (2024). In our SED, the largest scatter is in the H band from data presented by Soraisam et al. (2023) with an uncertainty ∼ 1 mag, which is due to the variability of the progenitor in the IR. Furthermore, the reported Spitzer data has a large scatter in both the 3.6 and 4.5 μm channels, with the range in the average brightness being 0.91 mag and 0.72 mag, respectively. Other methodological differences such as differences in the SED models have an effect on the calculated progenitor parameters. For example, Soraisam et al. (2023) use a RSG periodluminosity relation to obtain their high luminosities. Others phase average their data to account for variability (Jencson et al. 2023), while others assume no variability when creating inputs for their SEDs (Kilpatrick et al. 2023). Van Dyk et al. (2023) incorporated the variability in the IR using the range in the IR measurements and models of the J-band to V-band variability to estimate an uncertainty (Smith et al. 2002;Riebel et al. 2012). Niu et al. (2023) add a 0.5 mag uncertainty to their optical measurements to account for variability. Furthermore the dust models used differ, with some using carbon-based (graphitic) dust models (Kilpatrick et al. 2023;Niu et al. 2023) and others using silicate-based dust models (Jencson et al. 2023;Van Dyk et al. 2023). Our progenitor mass estimates, as expected, lie within the range of reported values (which shows substantial scatter). The range of reported progenitor masses includes the lowest end of the range for CCSN progenitors: Pledger & Shara (2023) report a progenitor mass of 8-10 M e , using isochrone fitting of HST preexplosion data. The SED analysis of Jencson et al. (2023), using the Grid of Red supergiant and Asymptotic Giant Branch ModelS (GRAMS; with silicate dust; Sargent et al. 2011;Srinivasan et al. 2011), suggests a RSG with mass 17 ± 4 M e , luminosity ) = 4.8-5.0. Generally, the differences in the reported values in the literature may be attributed to the variety of factors described above, such as differences in the photometric treatment of the archival imaging of the progenitor, different dust models, stellar evolution tracks, and SED fitting methods (e.g., fixing the effective temperature). We have incorporated the available photometric measurements from the literature to construct our SED, which is well sampled in wavelength space, albeit with our conservative uncertainty treatment accounting for both the IR variability and differences in the reported values from the literature. We summarize and compare these values with the literature in Figure 4." ;
+        nif:beginIndex            "24154"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "33489"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/20e61e05> ;
+        dct:section_number        "4." ;
+        dct:source                "" ;
+        dct:title                 "Progenitor Analysis via Stacked Data" ;
+        qont:LabelUnit            [ a       qont:Label ;
+                                    <dfki:ScientificDocumentSection>
+                                            "introduction"
+                                  ] ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "section" .
+
+<http://scilake-project.eu/res/20e61e05/location/1_Center_for_Astrophysics_|_Harvard_&_Smithsonian,_>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/20e61e05> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:locationName  "1 Center for Astrophysics | Harvard & Smithsonian, " .
+
+<http://scilake-project.eu/res/20e61e05/location/_9_Physics_Department,_Stanford_University,_>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/20e61e05> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:locationName  " 9 Physics Department, Stanford University, " .
+
+<http://scilake-project.eu/res/20e61e05/author/fb096fe3>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/433643f1> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "Mark" ;
+        scilake:lastname      "Huber" ;
+        scilake:middlename    "E" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05/author/62a84342>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/99137529> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "Katie" ;
+        scilake:lastname      "Auchettl" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05/author/9dc9a5bd>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/d87946a1> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "Ryan" ;
+        scilake:lastname      "Foley" ;
+        scilake:middlename    "J" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05#offset_50362_52265>
+        a                         nif:OffsetBasedString , <dfki:ScientificDocumentPart> ;
+        nif:anchorOf              "The host, Messier 101 (M101), also known as NGC 5457, or the Pinwheel galaxy, is located at a redshift of 0.000804 (Perley et al. 2023) and is a face-on spiral galaxy (SABc; Buta 2019). As can be seen in Figure 8, SN 2023ixf is coincident with a spiral arm at an offset of 264″ (∼8.7 kpc) from the center of the nucleus of the host. SN 2023ixf is the fifth recorded SN in M101, the others being SN 1909A (Kowal & Sargent 1971), SN 1970G (Stienon & Wdowiak 1971), SN 1951H (Maza & van den Bergh 1976), and SN 2011fe (Nugent et al. 2011). In order to gauge the association of the location of SN 2023ixf with local star formation, we utilize the pixel statistics technique, which takes advantage of normalized cumulative ranking (NCR; see James & Anderson 2006;Ransome et al. 2022, for details on this method). This technique has been used to compare the environments of different SN classes with star formation as traced by Hα emission (James & Anderson 2006;Anderson et al. 2012;Habergham et al. 2014;Ransome et al. 2022). In short, NCR processing consists of sorting a continuum-subtracted image by pixel (flux) value, cumulatively summed, and normalized by the total (e.g., each pixel now has a value between 0 and 1). We show an \"NCR image\" of the local environment in the bottom left inset of Figure 8. This continuum-subtracted Hα image was downloaded from NED,21 where the original observations by Hoopes et al. (2001) were obtained with the Kitt Peak National Observatory Burrel Schmidt Telescope. After NCR processing, we find that the NCR value at the site of SN 2023ixf is 0.27 ± 0.08. This NCR value is almost identical to the average NCR value of SNe IIP presented by Anderson et al. (2012) of 0.26, who measured NCR values from observations of the hosts of 58 SNe IIP. Therefore the environment of SN 2023ixf in terms of association to star formation traced by Hα is unremarkable for SNe II." ;
+        nif:beginIndex            "50362"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "52265"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/20e61e05> ;
+        dct:section_number        "6." ;
+        dct:source                "" ;
+        dct:title                 "The Host, M101, The Pinwheel Galaxy" ;
+        qont:LabelUnit            [ a       qont:Label ;
+                                    <dfki:ScientificDocumentSection>
+                                            "introduction"
+                                  ] ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "section" .
+
+<http://scilake-project.eu/res/20e61e05/location/_4_Center_for_Interdisciplinary_Exploration_and_Research_in_Astrophysics_(CIERA)_and_Department_of_Physics_and_Astronomy,_Northwestern_University,_>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/20e61e05> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:locationName  " 4 Center for Interdisciplinary Exploration and Research in Astrophysics (CIERA) and Department of Physics and Astronomy, Northwestern University, " .
+
+<http://scilake-project.eu/res/20e61e05/author/243034fc>
+        a                        scilake:ScientificAuthor ;
+        nif:referenceContext     <http://scilake-project.eu/res/5eb78a77> ;
+        dct:source               "" ;
+        qont:metadata            []  ;
+        scilake:corresp          false ;
+        scilake:has_affiliation  <http://scilake-project.eu/res/20e61e05/affiliation/> ;
+        scilake:valid            false .
+
+<http://scilake-project.eu/res/20e61e05/author/0bec9573>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/f2f2107d> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "David" ;
+        scilake:lastname      "Jones" ;
+        scilake:middlename    "O" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05#offset_1261_12405>
+        a                         nif:OffsetBasedString , <dfki:ScientificDocumentPart> ;
+        nif:anchorOf              "Core-collapse supernovae (CCSNe) are the explosive deaths of massive stars (with M *  8 M e ; Woosley et al. 2002). Hydrogen-rich CCSNe, classified as Type II SNe (SNe II) comprise ∼70% of the observed CCSN population (e.g., Li et al. 2011;Aleo et al. 2023;Tinyanont et al. 2024). SNe II make up the vast majority (Van Dyk 2017) of preexplosion progenitor detections via serendipitous imaging, e.g., SN 2003gd (Hendry et al. 2005), SN 2013ej (Fraser et al. 2013), SN 2017aew (Kilpatrick & Foley 2018), and SN 2022acko (Van Dyk et al. 2023). All of the observed progenitors of \"normal\" SNe II (i.e., types IIP/L) have been red supergiants (RSGs) with masses that do not exceed ∼20 M e (Smartt et al. 2009;Beasor et al. 2020). The remarkably proximate SN 2023ixf (α = 14:03:38.56, δ = +54:18:41.97, J2000) was discovered on 2023 May 19 by Itagaki (2023). The host of SN 2023ixf is M101 (also known as NGC 5457 or the Pinwheel galaxy), is at a distance of only 6.9 Mpc (as measured via Cepheids; Riess et al. 2022). A classification spectrum from SPRAT on the Liverpool Telescope revealed SN 2023ixf as a SN II (Perley et al. 2023). The discovery of SN 2023ixf led to a sustained spectroscopic and photometric follow-up effort (e.g., Berger et al. 2023;Bostroem et al. 2023;Jacobson-Galán et al. 2023;Sgro et al. 2023;Smith et al. 2023). To date, these multiwavelength follow-up observations and archival data examination have revealed detections of a dusty RSG progenitor and signatures of interaction with circumstellar material (e.g., Berger et al. 2023;Bostroem et al. 2023;Grefenstette et al. 2023;Guetta et al. 2023;Hiramatsu et al. 2023;Jacobson-Galán et al. 2023;Jencson et al. 2023;Kilpatrick et al. 2023;Koenig 2023;Kong 2023;Li et al. 2023;Neustadt et al. 2024;Niu et al. 2023;Panjkov et al. 2023;Pledger & Shara 2023;Qin et al. 2023;Sarmah 2023;Singh Teja et al. 2023;Smith et al. 2023;Soraisam et al. 2023;Van Dyk et al. 2023;Vasylyev et al. 2023;Xiang et al. 2024;Yamanaka et al. 2023;Zhang et al. 2023). SNe II exhibiting interaction signatures, attributed to interaction with a confined, dense, slow and preexisting circumstellar medium (CSM) are somewhat common. Around 30% of SNe II show these flash-ionization features in addition to steep rises to peak, indicative of shock breakout out of a dense CSM (Förster et al. 2018;Bruch et al. 2021). Similar early time interaction is seen in SN 2023ixf (Berger et al. 2023;Bostroem et al. 2023;Chandra et al. 2023;Grefenstette et al. 2023;Jacobson-Galán et al. 2023;Kong 2023;Mereminskiy et al. 2023;Panjkov et al. 2023;Smith et al. 2023). The presence of flash-ionization features in CCSNe suggests enhanced mass-loss rates in addition to supergiant winds in the final years of the life of their progenitors. While supergiant winds with a steady mass-loss rate  M ∼10 −6 M e yr −1 are common in RSGs, these steady state mass-loss rates are too low to account for the mass stripping which leads to flash-ionization features (e.g., Beasor et al. 2020). Furthermore, if supergiant winds are the primary mass-loss route for RSGs, one would expect an environmental metallicity dependence which is not seen for RSGs in M31 (see McDonald et al. 2022). It is possible that enhanced mass-loss modes such as \"superwinds\" or outbursts driven by gravity waves with mass-loss rates up to ∼10 −2 M e yr −1 may help strip mass off of a RSG progenitor (Wu & Fuller 2021;Davies et al. 2022;Jacobson-Galán et al. 2022). While pre-SN mass loss may be indirectly probed with follow-up spectroscopic observations (e.g., via low-velocity emission lines in spectra; Gal-Yam et al. 2014), outburst-like pre-SN activity may be directly observable. Models of pre-SN outbursts have predicted observable signatures lasting a few to hundreds of days with peak absolute magnitudes M R ∼ −8.5 to −10 mag (Davies et al. 2022;Tsuna et al. 2023). While pre-SN mass loss is common in Type IIn supernovae (SNe IIn) and \"regular\" SNe II (as inferred from light-curve shapes, spectral features such as flash ionization, and X-ray observations; e.g., Ofek et al. 2014;Förster et al. 2018;Bruch et al. 2021;Strotjohann et al. 2021;Panjkov et al. 2023), the luminous SN II, SN 2020tlf stands out as an example of a SN II which had a bright, detectable preexplosion outburst. Jacobson-Galán et al. (2022) found that SN 2020tlf exhibited preexplosion activity that persisted from 130 days prior the terminal explosion; subsequent flash-ionization features were observed. Jacobson-Galán et al. (2022) found that the progenitor of SN 2020tlf had a mass-loss rate ∼ 10 −2 M e yr −1 , which those authors suggest may be consistent with nuclear flashes (e.g., Woosley & Heger 2015) or gravity-wave-driven outbursts (potentially creating as much as 1 M e of ejected material, contributing to the CSM; Quataert & Shiode 2012;Wu & Fuller 2021). Early time photometric and spectroscopic observations of SN 2023ixf suggest that there was mass loss prior to the terminal SN explosion. The RSG models utilized by Jacobson-Galán et al. (2023) suggest that the progenitor underwent a superwind mass-loss phase, with a mass-loss rate ∼ 10 −2 M e yr −1 for 3-6 yr prior to the explosion. This mass loss created a confined CSM with a density of 10 −12 g cm −3 at a radius of 10 14 cm, with the radial extent of the CSM being 0.5-1.0 × 10 15 cm. Hosseinzadeh et al. (2023) presented an analysis of the early time light curve of SN 2023ixf, finding that prediscovery, the light curve deviates from a power law or shock-cooling models, suggesting that this could be explained by precursor activity. Grefenstette et al. (2023) report hard X-ray spectral observations of SN 2023ixf from NuSTAR consistent with a confined CSM with a radial extent < 10 15 cm and a progenitor mass-loss rate ∼3 × 10 −4 M e yr −1 . Panjkov et al. (2023) found that the Neil Gehrels Swift Observatory (Swift) did not detect soft X-ray emission from SN 2023ixf until ∼3 days postexplosion and concluded that the mass-loss rate of the progenitor was 5 × 10 −4 M e yr −1 with a CSM radius ∼ 4 × 10 15 cm and also that the CSM was asymmetric. Furthermore, using the Sub-Millimeter Array, Berger et al. (2023) placed constraints on the CSM extent ∼2 × 10 15 cm and a pre-SN mass-loss rate ∼ 10 −2 M e yr −1 . Those authors also suggest that the CSM was inhomogeneous, possibly explaining the inconsistent mass-loss rate from X-ray observations. Due to the proximity of SN 2023ixf and the subsequent CSM interaction elucidated from early time observations, it is a prime target for investigations into pre-SN activity. Indeed, several studies have already explored preexplosion light curves for pre-SN outbursts. When considering preexplosion Spitzer data, Kilpatrick et al. (2023) noted that the progenitor was detected at 3.6 and 4.5 μm. These infrared (IR) detections spanned between MJD 53072-58781 and displayed variability with brightenings ∼10 μJy with a periodicity of around 1000 days. Kilpatrick et al. (2023) interpret this variability as being consistent with κ-mechanism oscillations (opacity-driven variability; Li & Gong 1994;Heger et al. 1997;Paxton et al. 2013). Jencson et al. (2023) also presented Spitzer photometry along with ground-based J-and K s -band data spanning 13 yr, up to 10 days before the SN explosion. These authors found that spectral energy distribution (SED) fits to the IR data suggest a luminous, dusty RSG progenitor with a luminosity of  L L log ( ) = 5.1 ± 0.2 and a temperature of 3500 1400 800 -+ K, and a mass-loss rate of 3 × 10 −4 -3 × 10 −3 M e yr −1 . Similarly, Soraisam et al. (2023) found, using both Spitzer and groundbased JHK data, a progenitor with  L L log ( ) = 5.27 ± 0.12 at T = 3200 K or  L L log ( ) = 5.37 ± 0.12 at T = 3500 K, corresponding to a progenitor mass of 20 ± 4 M e . These findings indicate that the progenitor of SN 2023ixf is fairly luminous compared to previously observed RSG SN progenitors, suggesting a massive RSG (e.g., Smartt 2015). Using archival Galaxy Evolution Explorer data, Flinner et al. (2023) explore the near-and far-ultraviolet activity of the progenitor of SN 2023ixf up to 20 yr prior to the explosion, finding no outbursts in the UV to limits of L NUV = 1000 L e and L FUV = 2000 L e . Dong et al. (2023) investigate the pre-SN photometry obtained with the Zwicky Transient Facility (ZTF), the Asteroid Terrestrial-impact Last Alert System (ATLAS), and DLT40. While these data did not reveal any outbursts, Dong et al. (2023) incorporated the pre-SN outburst models presented by Tsuna et al. (2023) in order to put constraints on pre-SN activity. Those authors found that a precursor event with peak M r = −9 would have had a duration of less than 100 days, while an outburst with M r = −8 must have had a duration of 200 days or less. They suggest that an outburst similar to the models of Tsuna et al. (2023) or what was seen prior to SN 2020tlf was not likely to have occurred in SN 2023ixf. Though SN 2023ixf may not have suffered large outburst-like events, the confined CSM (for example, see Panjkov et al. 2023, who found that the CSM was close to the progenitor) must have originated from some enhanced mass-loss mechanism. Furthermore, Neustadt et al. (2024) used archival data from the Large Binocular Telescope (LBT) spanning 5600-400 days prior to SN 2023ixf to search for optical variability. Those authors found that there was no R-band variability to the 10 3 L e level in the time frame of these data. Panjkov et al. (2023) explored optical and X-ray preexplosion data from ATLAS, ZTF, the All-Sky Automated Search for Supernovae, Swift, XMM-Newton, and Chandra, finding no preexplosion variability and constrain any optical pre-SN outburst to 7 × 10 4 L e and X-ray pre-SN outburst to a limit of∼6 × 10 36 erg s −1 . In this work, we present long-baseline preexplosion photometric data of SN 2023ixf spanning ∼5000 days to a few days before the SN from Pan-STARRS in the grizy bands and also multiyear stacks in the wizy bands. These data were obtained through the Young Supernova Experiment (YSE; Jones et al. 2021). We analyze these data in search of pre-SN outbursts whose presence may be indicated by the already observed CSM interaction and variability in the IR. In Section 2 we describe our methodology to search systematically for preexplosion detections within the Pan-STARRS data. In Section 3 we will discuss the findings from our long-baseline preexplosion limits and make comparisons to known pre-SN outbursts. We combine these results with consolidated data from the existing literature to model the progenitor SED in Section 4. In Section 5, we describe our method for using a pre-SN outburst model to train a multilayer perceptron classifier in order to search for pre-SN outbursts. We then use these models to constrain possible outburst properties. We repeat the SED analysis and neural net methodology to probe for possible variability of the progenitor prior to the SN explosion in Section 5.1. Finally, we analyze the host in Section 6 in terms of the spatial association of SN 2023ixf with star formation. We conclude in Section 7." ;
+        nif:beginIndex            "1261"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "12405"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/20e61e05> ;
+        dct:section_number        "1." ;
+        dct:source                "" ;
+        dct:title                 "Introduction" ;
+        qont:LabelUnit            [ a       qont:Label ;
+                                    <dfki:ScientificDocumentSection>
+                                            "introduction"
+                                  ] ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "section" .
+
+<http://scilake-project.eu/res/20e61e05#offset_13004_19279>
+        a                         <dfki:ScientificDocumentPart> , nif:OffsetBasedString ;
+        nif:anchorOf              "We measure the preexplosion photometry using Photpipe (Rest et al. 2005) to ensure highly accurate photometric measurements and to account for pixel-to-pixel correlations in the difference images and host galaxy noise at the SN location. Photpipe is a well-tested pipeline for measuring SN photometry and has been used to perform accurate measurements from Pan-STARRS in a number of previous studies (e.g., Rest et al. 2014;Foley et al. 2018;Jones et al. 2018;Scolnic et al. 2018;Jones et al. 2019). In brief, Photpipe takes as input Pan-STARRS images which have been reduced by an initial image processing pipeline. Our preprocessing pipeline resamples the images and astrometrically aligns them to match skycells in the Pan-STARRS 1 (PS1 hereafter) sky tessellation. Geometric distortion is then removed. We then measure image zero-points using DoPhot (Schechter et al. 1993) to measure the photometry of stars in the image and comparing to stars in the PS1 Data Release 2 catalog (Flewelling et al. 2020). Photpipe then convolves a template image from the PS1 3π survey (Chambers et al. 2017), with data taken between the years 2010 and 2014, using a kernel that consists of three superimposed Gaussian functions. This kernel is designed (and fit) to match the point-spread function (PSF) of the survey image. We then subtract the template from the science image using hotpants (Becker 2015). Finally, Photpipe uses DoPhot to measure fixed-position (i.e., forced) photometry of the SN at the weighted average of its location across all images. Further details regarding this procedure are given in Rest et al. (2014) and Jones et al. (2019). To account for underlying structure in the bright host galaxy of SN 2023ixf, which could cause larger than expected preexplosion photometric noise in the difference image (Kessler et al. 2015;Doctor et al. 2017;Jones et al. 2017), we forward model our full reduction pipeline. We simulate a noisy detection by estimating the signal-to-noise ratio that would be recovered from a source of a given flux assuming the following sources of uncertainty: (1) the Poisson noise at the SN location (i.e., the square root of the counts) and (2) Gaussian noise from the background (i.e., the standard deviation of flux values measured from random differenceimage apertures at coordinates with approximately the same underlying host galaxy surface brightness as exists at the SN location). The apertures used in our reduction pipeline must closely match the background noise statistics at the site of SN 2023ixf in order to obtain a more rigorous calculation of our detection limits. In order to select these apertures, a grid of 3″ apertures is placed over the host in images in each grizy filter. The aperture grid, (with 367 trial apertures) is placed over a 57″ × 57″ area (covering the host region in the images), with no overlap between apertures. An aperture is also placed over the location of SN 2023ixf (determined using the coordinates of SN 2023ixf from Kilpatrick et al. 2023). The distribution of the flux values within the aperture containing SN 2023ixf is measured and then compared with the flux distributions of the apertures in the grid. Apertures from the grid are then chosen for use in our source injection method. These apertures are selected using a given flux distribution similarity tolerance (here our tolerance was chosen such that at least 10 apertures are found in each image) on the distribution of parameters. More specifically, we select apertures based on the mean (within 25% of the standard deviation of the mean), standard deviation (within 10% of the standard deviation), the skew (within 10% of the skew), and kurtosis (within 10% of the kurtosis) of the distribution. The number of apertures differ per filter and these apertures largely follow the spiral arms of the host, similar to the location of SN 2023ixf. A summary of these data (including the number of apertures found in each image) found from PS1 is tabulated in Table 1. To search for pre-SN emission in all Pan-STARRS images, we perform an idealized fake source injection within each chosen aperture to estimate the recovery fraction (i.e., the fraction of apertures where the injected source is recovered at >3σ significance) as a function of the injected source flux. To find true pre-SN detections, we compared the derived limiting magnitude to photometric measurements from Photpipe at the SN location. We label a detection as real if the latter is brighter than the former. For each image, we estimate the limiting magnitude based on the flux (i.e., in analog-to-digital units given the zero-point calculated above) associated with an 80% recovery fraction in the chosen background apertures. We consider this 80% recovery fraction as a detection. At this recovery level, we do not generate false-positive detections that would be statistically expected in more standard photometric methodologies. To test the validity of any possible detections, we perform a more robust fake source injection routine in the science images, also using Photpipe, to estimate a new set of recovery curves for each epoch where there may be a possible detection. This procedure is slower and more computationally intensive than the procedure described above and uses the PSF shape determined by DoPhot (i.e., a seven parameter Gaussian as described in Schechter et al. 1993) to create artificial sources with a known flux and at the same aperture locations described above in the original science image. We then repeat the reduction process, including image subtraction with hotpants, in order to simulate the effect of convolution noise in the recovery of each source. Finally, we perform forced photometry at the source location to simulate the detection of sources whose sky locations are known a priori and create recovery curves as a function of the injected source flux. In order to obtain a statistically significant number of sources over a broad range of magnitudes, we repeat this process with the same image and aperture locations until we have forced photometry for 1500 sources from 17 to 24 mag. Here we also adopt the 80% recovery fraction as the limiting magnitude, which we then compare to the photometric measurement at the SN location." ;
+        nif:beginIndex            "13004"^^xsd:nonNegativeInteger ;
+        nif:endIndex              "19279"^^xsd:nonNegativeInteger ;
+        nif:referenceContext      <http://scilake-project.eu/res/20e61e05> ;
+        dct:section_number        "2.1." ;
+        dct:source                "" ;
+        dct:title                 "Presupernova Eruption Detection Pipeline" ;
+        qont:LabelUnit            [ a       qont:Label ;
+                                    <dfki:ScientificDocumentSection>
+                                            "introduction"
+                                  ] ;
+        qont:metadata             []  ;
+        scilake:DocumentPartType  "section" .
+
+<http://scilake-project.eu/res/20e61e05/location/_5_Department_of_Physics,_University_of_California,_>
+        a                     scilake:ScientificLocation ;
+        nif:referenceContext  <http://scilake-project.eu/res/20e61e05> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:locationName  " 5 Department of Physics, University of California, " .
+
+<http://scilake-project.eu/res/20e61e05/author/3202aedb>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/443934b8> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "Wynn" ;
+        scilake:lastname      "Jacobson-Galán" ;
+        scilake:middlename    "V" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05/author/4fde7d11>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/d472298f> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "Sebastian" ;
+        scilake:lastname      "Gonzalez" ;
+        scilake:middlename    "Javier" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05/author/4b54c64c>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/48945096> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "Yossef" ;
+        scilake:lastname      "Zenati" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05/author/656d7b33>
+        a                     scilake:ScientificAuthor ;
+        nif:referenceContext  <http://scilake-project.eu/res/f255ca20> ;
+        dct:source            "" ;
+        qont:metadata         []  ;
+        scilake:corresp       false ;
+        scilake:firstname     "Yuan" ;
+        scilake:lastname      "Ni" ;
+        scilake:middlename    "Qi" ;
+        scilake:valid         false .
+
+<http://scilake-project.eu/res/20e61e05/author/e23bee1c>
+        a                        scilake:ScientificAuthor ;
+        nif:referenceContext     <http://scilake-project.eu/res/586f5181> ;
+        dct:source               "" ;
+        qont:metadata            []  ;
+        scilake:corresp          false ;
+        scilake:has_affiliation  <http://scilake-project.eu/res/20e61e05/affiliation/> ;
+        scilake:valid            false .

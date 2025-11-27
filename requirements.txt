@@ -23,3 +23,5 @@ sentence-transformers>=2.2.0
 protobuf<5.0.0
 loguru>=0.7.0
 
+# AffilGood
+git+https://github.com/sirisacademic/affilgood@v3.0.0 # or @main
