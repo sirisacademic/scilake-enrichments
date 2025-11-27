@@ -159,30 +159,38 @@ DOMAIN_MODELS = {
     },
 
     "cancer": {
-        "models": [
-            {
-                "name": "SIRIS-Lab/SciLake-Biomed-roberta-large",
-                "type": "roberta",
-                "threshold": 0.8,
-                # RoBERTa labels - DOCUMENTATION ONLY
-                "output_labels": [
-                    "Gene", "Disease", "CellLine", 
-                    "Chemical", "Species",
+            "models": [
+                {
+                    "name": "SIRIS-Lab/AIObioEnts-core-pubmedbert-full",
+                    "type": "aioner",
+                    "threshold": 0.5,
+                },
+                {
+                    "name": "SIRIS-Lab/AIObioEnts-core-biolink-base",
+                    "type": "aioner",
+                    "threshold": 0.5,
+                },
+                {
+                    "name": "SIRIS-Lab/AIObioEnts-core-biolink-large",
+                    "type": "aioner",
+                    "threshold": 0.5,
+                }
+            ],
+            "labels": {
+                "aioner": [
+                    "Gene",
+                    "Disease",
+                    "CellLine",
+                    "Chemical",
+                    "Species",
                 ],
             },
-        ],
-        "labels": {
-            "roberta": [
-                "Gene", "Disease", "CellLine",
-                "Chemical", "Species",
-            ],
+            "kb": {
+                "Gene": "NCBI Gene",
+                "Disease": "Disease Ontology (fallback: MeSH)",
+                "CellLine": "BRENDA",
+                "Chemical": "DrugBank",
+                "Species": "NCBI Taxonomy",
+            },
         },
-        "kb": {
-            "Gene": "NCBI Gene",
-            "Disease": "Disease Ontology (fallback: MeSH)",
-            "CellLine": "BRENDA",
-            "Chemical": "DrugBank",
-            "Species": "NCBI Taxonomy",
-        },
-    },
 }

@@ -59,9 +59,50 @@ def get_model(model_info: Dict[str, Any], logger=None):
     PIPELINE_CACHE[name] = model
     return model
 
+# ======================================================
+# 2) AIONER post-processing
+# ======================================================
+
+def process_aioner_output(pipeline_output, pipeline, text, entity_type='ALL'):
+    entity_tag = '<{}>'.format(entity_type)
+    closing_tag = '</{}>'.format(entity_type)
+    offset = len(entity_tag)
+
+    index_offset = min([i for i, x in enumerate(pipeline.tokenizer.tokenize(entity_tag + text + closing_tag)) if x=='>'])
+
+    results = []
+    for entity in pipeline_output:
+        if entity['entity'].startswith('O') or entity['word'].startswith('##'):
+            continue
+
+        entity['start'] -= offset
+        entity['end'] -= offset
+        entity['index'] -= index_offset
+
+        results.append(entity)
+
+    if results:
+        for entity in results:
+            entity['word'] = complete_subwords(entity['word'], entity['index']-1, pipeline.tokenizer.tokenize(text))
+            entity['end'] = entity['start'] + len(entity['word'])
+        return pipeline.group_entities(results)
+    return []
+
+def complete_subwords(word, word_index, token_list):
+    output_word = word
+    idx = word_index
+    while idx<len(token_list):
+        if token_list[idx].startswith('##'):
+            output_word+=token_list[idx][2:]
+            idx+=1
+        else:
+            break
+    
+    return output_word
+
 
 # ======================================================
-# 2) RoBERTa Post-processing
+# 3) RoBERTa Post-processing
 # ======================================================
 
 def process_roberta_output(pipeline_output, text):
@@ -308,7 +349,7 @@ def merge_entities(words, text):
 
 
 # ======================================================
-# 3) Text Chunking
+# 4) Text Chunking
 # ======================================================
 
 def chunk_text(text: str, max_tokens: int = 512, stride: int = 50):
@@ -340,7 +381,7 @@ def chunk_text(text: str, max_tokens: int = 512, stride: int = 50):
 
 
 # ======================================================
-# 4) Entity Merging
+# 5) Entity Merging
 # ======================================================
 
 def merge_adjacent_entities(entities: List[Dict[str, Any]], max_gap: int = 1):
@@ -386,7 +427,7 @@ def merge_adjacent_entities(entities: List[Dict[str, Any]], max_gap: int = 1):
 
 
 # ======================================================
-# 5) Batch Prediction
+# 6) Batch Prediction
 # ======================================================
 
 def predict_entities_batch(
@@ -406,7 +447,7 @@ def predict_entities_batch(
 
     labels_dict: Dict[str, List[str]] = domain_conf.get("labels", {})
 
-    if "gliner" in model_type:
+    if model_type == "gliner":
         # Use domain label list if provided (your config uses per-domain)
         labels = labels_dict.get(domain, []) or labels_dict.get("gliner", [])
 
@@ -464,7 +505,7 @@ def predict_entities_batch(
                     }
                 )
 
-    elif "roberta" in model_type:
+    elif model_type == "roberta":
         preds_batch = model(texts, batch_size=len(texts))
         # Defensive: ensure list length and structure
         preds_batch = preds_batch if isinstance(preds_batch, list) else []
@@ -521,11 +562,72 @@ def predict_entities_batch(
                         }
                     )
 
+    elif model_type == "aioner":
+        entity_type = 'ALL'
+        entity_tag = '<{}>'.format(entity_type)
+        closing_tag = '</{}>'.format(entity_type)
+
+        preds_batch = model([entity_tag+text+closing_tag for text in texts], batch_size=len(texts))
+        # Defensive: ensure list length and structure
+        preds_batch = preds_batch if isinstance(preds_batch, list) else []
+        preds_batch = [
+            process_aioner_output(preds, pipeline=model, text=texts[i]) if i < len(texts) else []
+            for i, preds in enumerate(preds_batch)
+        ]
+
+        if logger:
+            logger.debug(
+                f"🧩 DEBUG[AIONER] texts={len(texts)} offsets={len(offsets)} "
+                f"sections={len(section_ids)} preds={len(preds_batch)}"
+            )
+
+        n = min(len(preds_batch), len(offsets), len(section_ids))
+        if (len(preds_batch) != len(texts)) and logger:
+            logger.warning(
+                f"⚠️ AIONER mismatch: texts={len(texts)} preds={len(preds_batch)} "
+                f"(model={model_conf['name']})"
+            )
+
+        for i in range(n):
+            preds = preds_batch[i] or []
+            offset = offsets[i]
+            sid = section_ids[i]
+            for p in preds:
+                if float(p.get("score", 0.0)) >= threshold:
+                    raw = p.get("word", "")
+                    clean_text = (
+                        raw.replace(" ##", "").replace("Ġ", "").replace(" - ", "-").strip()
+                    )
+                    
+                    entity_start = p.get("start") or 0
+                    entity_end = p.get("end") or 0
+                    final_start = entity_start + offset
+                    final_end = entity_end + offset
+                    
+                    if logger:
+                        logger.debug(
+                            f"  Entity '{clean_text}': chunk_pos=({entity_start},{entity_end}) "
+                            f"+ offset={offset} → final=({final_start},{final_end})"
+                        )
+                    
+                    results.append(
+                        {
+                            "entity": p.get("entity_group", p.get("entity")),
+                            "text": clean_text,
+                            "score": float(p.get("score", 0.0)),
+                            "start": (p.get("start") or 0) + offset,
+                            "end": (p.get("end") or 0) + offset,
+                            "model": model_conf["name"],
+                            "domain": domain,
+                            "section_id": sid,
+                        }
+                    )
+
     return results
 
 
 # ======================================================
-# 6) Full Section Prediction Pipeline
+# 7) Full Section Prediction Pipeline
 # ======================================================
 
 def predict_sections_multimodel(
@@ -628,7 +730,7 @@ def predict_sections_multimodel(
 
 
 # ======================================================
-# 7) CLI (optional debug)
+# 8) CLI (optional debug)
 # ======================================================
 
 if __name__ == "__main__":
