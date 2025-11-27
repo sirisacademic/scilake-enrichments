@@ -47,10 +47,10 @@ done
 
 # Validate domain
 if [ -z "$DOMAIN" ]; then
-    echo "Usage: $0 --domain <energy|maritime|neuro> [OPTIONS]"
+    echo "Usage: $0 --domain <energy|maritime|neuro|ccam> [OPTIONS]"
     echo ""
     echo "Options:"
-    echo "  --domain            Domain to enrich (energy, maritime, neuro)"
+    echo "  --domain            Domain to enrich (energy, maritime, neuro, ccam)"
     echo "  --use-genre         Enable GENRE model (slower, more accurate)"
     echo "  --threshold N       Similarity threshold 0.0-1.0 (default: 0.6)"
     echo "  --delay N           Delay between API calls in seconds (default: 0.5)"
@@ -77,9 +77,13 @@ case $DOMAIN in
         INPUT="taxonomies/neuro/Neuroscience_Combined.tsv"
         OUTPUT="taxonomies/neuro/Neuroscience_Combined_enriched.tsv"
         ;;
+    ccam)
+        INPUT="taxonomies/ccam/CCAM_Combined.tsv"
+        OUTPUT="taxonomies/ccam/CCAM_Combined_enriched.tsv"
+        ;;
     *)
         echo "❌ Unknown domain: $DOMAIN"
-        echo "   Valid domains: energy, maritime, neuro"
+        echo "   Valid domains: energy, maritime, neuro, ccam"
         exit 1
         ;;
 esac

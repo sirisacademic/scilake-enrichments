@@ -213,6 +213,10 @@ pipeline_comparison_results/
 tmp/
 test/
 taxonomies/
+scripts/
+# Keep this file
+!scripts/wikidata_enricher.py
+
 
 # LibreOffice / OpenOffice lock files
 .~lock.*#

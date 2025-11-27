@@ -82,7 +82,20 @@ class InstructLinker:
         
         documents = []
         metadata = []
-        
+
+        # Aliases
+        aliases_cols = ["synonyms", "wikidata_aliases"]
+        # Keep only the columns that actually exist in df
+        existing = [c for c in aliases_cols if c in df.columns]
+        # Create "aliases" by joining existing columns
+        df["aliases"] = (
+            df[existing]
+            .fillna("")                      # replace NaN with empty string
+            .apply(lambda row: " | ".join(
+                [v for v in row if v]        # keep only non-empty values
+            ), axis=1)
+        )
+
         for _, row in df.iterrows():
             # Build rich document
             doc = row['concept']
@@ -92,8 +105,8 @@ class InstructLinker:
                 doc += f". {row['description']}"
             
             # Add aliases if available
-            if row.get('wikidata_aliases'):
-                aliases = row['wikidata_aliases'].replace(' | ', ', ')
+            if row.get('aliases'):
+                aliases = row['aliases'].replace(' | ', ', ')
                 doc += f". Also known as: {aliases}"
             
             documents.append(doc)

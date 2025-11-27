@@ -143,7 +143,20 @@ class RerankerLinker:
         documents = []
         metadata = []
         top_level_ids = set()
-        
+
+        # Aliases
+        aliases_cols = ["synonyms", "wikidata_aliases"]
+        # Keep only the columns that actually exist in df
+        existing = [c for c in aliases_cols if c in df.columns]
+        # Create "aliases" by joining existing columns
+        df["aliases"] = (
+            df[existing]
+            .fillna("")                      # replace NaN with empty string
+            .apply(lambda row: " | ".join(
+                [v for v in row if v]        # keep only non-empty values
+            ), axis=1)
+        )
+
         for _, row in df.iterrows():
             # Build rich document
             doc = row['concept']
@@ -151,8 +164,8 @@ class RerankerLinker:
             if row.get('description'):
                 doc += f". {row['description']}"
             
-            if row.get('wikidata_aliases'):
-                aliases = row['wikidata_aliases'].replace(' | ', ', ')
+            if row.get('aliases'):
+                aliases = row['aliases'].replace(' | ', ', ')
                 doc += f". Also known as: {aliases}"
             
             documents.append(doc)
@@ -177,7 +190,7 @@ class RerankerLinker:
                 'concept': row['concept'],
                 'wikidata_id': row.get('wikidata_id', ''),
                 'description': row.get('description', ''),
-                'aliases': row.get('wikidata_aliases', ''),
+                'aliases': row.get('aliases', ''),
                 'type': row.get('type', ''),
                 'is_top_level': is_top_level,
                 'parent_id': parent_id  # NEW: Store parent ID
