@@ -134,6 +134,16 @@ class RerankerLinker:
     
     def _build_taxonomy_index(self, taxonomy_path: str) -> Dict:
         """Build taxonomy index with embeddings"""
+        
+        def get_first(value):
+            """Return the first element before a |, stripping whitespace."""
+            if pd.isna(value):
+                return None
+            value = str(value).strip()
+            if not value:
+                return None
+            return value.split("|")[0].strip()
+        
         if not Path(taxonomy_path).is_absolute():
             project_root = Path(__file__).parent.parent
             taxonomy_path = project_root / taxonomy_path
@@ -180,10 +190,11 @@ class RerankerLinker:
             
             # Get parent_id (note: column might be 'parent-id' or 'parent_id')
             parent_id = None
+                
             if 'parent-id' in row and pd.notna(row['parent-id']) and str(row['parent-id']).strip():
-                parent_id = str(row['parent-id']).strip()
+                parent_id = get_first(row['parent-id'])
             elif 'parent_id' in row and pd.notna(row['parent_id']) and str(row['parent_id']).strip():
-                parent_id = str(row['parent_id']).strip()
+                parent_id = get_first(row['parent_id'])
             
             metadata.append({
                 'taxonomy_id': str(row['id']),

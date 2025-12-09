@@ -4,11 +4,12 @@ export PYTHONPATH="$(dirname "$0"):$PYTHONPATH"
 # !!! Run with --resume to resume from previous run !!!
 
 python src/pipeline.py \
-    --domain neuro \
-    --taxonomy taxonomies/neuro/Neuroscience_Combined.tsv \
-    --taxonomy_source OPENMINDS-UBERON \
-    --input data/neuro-all-ft \
-    --output outputs/neuro-all-ft \
+    --step gaz \
+    --domain ccam \
+    --taxonomy taxonomies/ccam/CCAM_Combined.tsv \
+    --taxonomy_source SINFONICA-FAME \
+    --input data/ccam-all-ft \
+    --output outputs/ccam-all-ft-gaz \
     --linker_type reranker \
     --el_model_name intfloat/multilingual-e5-large-instruct \
     --threshold 0.70 \

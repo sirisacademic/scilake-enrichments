@@ -17,5 +17,6 @@ python src/pipeline.py \
     --max_contexts 5 \
     --reranker_llm Qwen/Qwen3-1.7B \
     --reranker_top_k 7 \
-    --reranker_fallbacks
+    --reranker_fallbacks \
+    --resume
 

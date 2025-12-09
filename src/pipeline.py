@@ -145,13 +145,13 @@ def run_ner(domain, input_dir, output_dir, resume=False, file_batch_size=100, de
     total = len(remaining_files)
     logger.info(f"Found {len(all_files)} files ({total} pending)")
     
-    # Check how many already have expanded sections
-    files_with_expanded = sum(
-        1 for f in remaining_files 
+    files_with_expanded = [
+        f for f in remaining_files 
         if os.path.exists(get_expanded_csv_path(f, expanded_dir))
-    )
-    if files_with_expanded > 0:
-        logger.info(f"📂 {files_with_expanded}/{total} pending files already have expanded sections (will skip expansion)")
+    ]
+
+    if len(files_with_expanded) > 0:
+        logger.info(f"📂 {len(files_with_expanded)}/{total} pending files already have expanded sections (will skip expansion)")
 
     # Initialize gazetteer if enabled
     gazetteer = None
@@ -196,19 +196,19 @@ def run_ner(domain, input_dir, output_dir, resume=False, file_batch_size=100, de
                 if os.path.exists(expanded_csv_path):
                     # Load pre-expanded sections
                     df = load_expanded_sections(expanded_csv_path, logger=logger)
-                    if df is not None and not df.empty:
-                        df["paper_path"] = path
-                        
-                        # Keep mapping to rebuild per-paper outputs later
-                        for sid in df["section_id"].tolist():
-                            paper_map[sid] = path
-                        
-                        all_sections.append(df)
-                        files_expanded_from_cache += 1
+                    if df is None or df.empty:
+                        processed[path] = {"status": "empty_expanded"}
+                        files_empty += 1
                         continue
-                    else:
-                        # CSV exists but is empty or failed to load - re-expand
-                        logger.warning(f"⚠️ Pre-expanded CSV empty or invalid for {path}, re-expanding...")
+                    
+                    df["paper_path"] = path
+                    for sid in df["section_id"].tolist():
+                        paper_map[sid] = path
+                    all_sections.append(df)
+                    files_expanded_from_cache += 1
+                    continue
+                
+                logger.info(f"📄 No pre-expanded sections for {path}, re-expanding...")
                 
                 # Parse and expand (no pre-expanded sections available)
                 records = parse_nif_file(path, logger=logger)
@@ -247,18 +247,17 @@ def run_ner(domain, input_dir, output_dir, resume=False, file_batch_size=100, de
             logger.warning("⚠️ No sections to process in this batch.")
             continue
 
-        df_all = pd.concat(all_sections, ignore_index=True)
+        df_all = pd.concat(all_sections, ignore_index=True).fillna("")
         logger.info(f"📊 Combined batch: {len(df_all)} sections total")
         
         # Save any newly expanded sections that weren't saved yet
-        # (This handles the case where sections were loaded from cache)
         for path, group in df_all.groupby("paper_path"):
             expanded_csv_path = get_expanded_csv_path(path, expanded_dir)
             if not os.path.exists(expanded_csv_path):
                 group.to_csv(expanded_csv_path, index=False)
 
         # Run gazetteer
-        df_gazetteer = pd.DataFrame()  # Initialize empty DataFrame (FIX for UnboundLocalError)
+        df_gazetteer = pd.DataFrame()
         if gazetteer:
             logger.info("🔍 Running gazetteer-based entity extraction...")
             gazetteer_entities = []
@@ -268,70 +267,58 @@ def run_ner(domain, input_dir, output_dir, resume=False, file_batch_size=100, de
                     section_id=row['section_id'],
                     domain=domain
                 )
-                if gaz_ents:
-                    gazetteer_entities.append({
-                        'section_id': row['section_id'],
-                        'entities': gaz_ents
-                    })
-            
-            df_gazetteer = pd.DataFrame(gazetteer_entities) if gazetteer_entities else pd.DataFrame()
+                gazetteer_entities.append({
+                    'section_id': row['section_id'],
+                    'entities': gaz_ents
+                })
+            df_gazetteer = pd.DataFrame(gazetteer_entities)
+            total_gaz = sum(len(e['entities']) for e in gazetteer_entities)
+            logger.info(f"✅ Gazetteer found {total_gaz} entities")
 
-        if gazetter_only:
-            df_entities = df_gazetteer
+        # Run NER models (unless gazetteer_only)
+        df_ner = pd.DataFrame()
+        if not gazetter_only:
+            logger.info("🤖 Running NER models...")
+            df_ner = predict_sections_multimodel(
+                df_all,
+                domain=domain,
+                logger=logger
+            )
+            total_ner = sum(len(e) for e in df_ner['entities'].tolist())
+            logger.info(f"✅ NER found {total_ner} entities")
+
+        # Merge gazetteer + NER
+        if not df_gazetteer.empty and not df_ner.empty:
+            df_merged = merge_gazetteer_and_ner(df_gazetteer, df_ner, logger)
+        elif not df_gazetteer.empty:
+            df_merged = df_gazetteer
+        elif not df_ner.empty:
+            df_merged = df_ner
         else:
-            # Run NER once for all sections in batch
-            try:
-                df_entities = predict_sections_multimodel(
-                    df_all,
-                    domain=domain,
-                    text_col="section_content_expanded",
-                    id_col="section_id",
-                    stride=100,
-                    batch_size=8,
-                    logger=logger,
-                )
-            except Exception as e:
-                tb = traceback.format_exc()
-                logger.error(f"🔥 NER failed on batch: {e}")
-                logger.debug(tb)
+            logger.warning("⚠️ No entities found in this batch")
+            continue
+
+        # --- Split and save per paper ---
+        logger.info("💾 Saving results per paper...")
+        for path in batch_files:
+            paper_section_ids = [sid for sid, p in paper_map.items() if p == path]
+            paper_df = df_merged[df_merged['section_id'].isin(paper_section_ids)]
+
+            if paper_df.empty:
+                processed[path] = {"status": "no_entities"}
                 continue
 
-            # Merge gazetteer + NER results (FIX: check gazetteer exists)
-            if gazetteer and not df_gazetteer.empty:
-                df_entities = merge_gazetteer_and_ner(df_gazetteer, df_entities, logger)
+            out_name = os.path.basename(path).replace(".ttl", ".jsonl")
+            out_path = os.path.join(output_dir, out_name)
+            
+            paper_df.to_json(out_path, orient='records', lines=True, force_ascii=False)
 
-        # Group entities per paper and save
-        section_dict = {}
-        if not df_entities.empty:
-            section_dict = dict(zip(df_entities["section_id"], df_entities["entities"]))
-            logger.info(f"🧩 Grouping NER results per paper...")
+            total_ents = sum(len(e) for e in paper_df['entities'].tolist())
+            processed[path] = {"status": "done", "entities": total_ents}
 
-        for paper_path, group_df in df_all.groupby("paper_path"):
-            section_ids = group_df["section_id"].tolist()
-            # Keep only sections with entities
-            entities_subset = {
-                sid: section_dict.get(sid, [])
-                for sid in section_ids
-                if section_dict.get(sid)
-            }
-
-            if not entities_subset:
-                logger.info(f"⚪ No entities found for {paper_path} — skipping JSONL write.")
-                processed[paper_path] = {"status": "no_entities"}
-                continue
-
-            # Write only non-empty entity sections
-            base_name = os.path.basename(paper_path).replace(".ttl", ".jsonl")
-            out_path = os.path.join(output_dir, base_name)
-            for sid, ents in entities_subset.items():
-                append_jsonl({"section_id": sid, "entities": ents}, out_path)
-
-            processed[paper_path] = {"status": "done"}
-            logger.info(f"✔️ Written {len(entities_subset)} sections for {paper_path}")
-
-        # 4️⃣ Save checkpoint
+        # Save checkpoint
         save_json(processed, checkpoint_file)
-        logger.info(f"✅ Batch complete — total processed so far: {len(processed)} files.")
+        logger.info(f"💾 Checkpoint saved: {len(processed)} files processed")
 
     logger.info("🎉 All batches processed successfully.")
 
@@ -360,6 +347,11 @@ def run_el(
     """
     Run Entity Linking on NER outputs.
     
+    Supports multiple linking strategies based on domain configuration:
+    - "semantic": SemanticLinker (default for most domains)
+    - "reranker": RerankerLinker with LLM
+    - "fts5": FTS5Linker with per-entity-type indices (e.g., cancer domain)
+    
     Args:
         domain: Domain name
         ner_output_dir: Directory with NER .jsonl outputs
@@ -373,7 +365,6 @@ def run_el(
         max_contexts: Max number of contexts to extract
         use_sentence_context: Use full sentences instead of token windows
         use_context_for_retrieval: Use context in embedding retrieval (default: False)
-                                   LLM always uses context regardless of this setting
         reranker_llm: LLM model for reranker linker
         reranker_top_k: Number of candidates for reranker
         reranker_fallbacks: Add top-level fallbacks in reranker
@@ -387,25 +378,14 @@ def run_el(
     log_dir = os.path.join(el_output_dir, "logs")
     logger = setup_logger(log_dir, name=f"{domain}_el", debug=debug)
     
-    # Auto-detect linker type from model name
-    if linker_type == "auto":
-        if "qwen" in model_name.lower() or "qwen" in reranker_llm.lower():
-            linker_type = "reranker"
-        elif "instruct" in model_name.lower():
-            linker_type = "instruct"
-        else:
-            linker_type = "semantic"
+    # Get domain configuration
+    domain_conf = DOMAIN_MODELS.get(domain, {})
+    linking_strategy = domain_conf.get("linking_strategy", "semantic")
     
     logger.info(f"🔗 Starting Entity Linking for domain={domain}")
     logger.info(f"NER input: {ner_output_dir}")
     logger.info(f"EL output: {el_output_dir}")
-    logger.info(f"Linker type: {linker_type}")
-    logger.info(f"Taxonomy: {taxonomy_path} (source: {taxonomy_source})")
-    logger.info(f"Threshold: {threshold}")
-    logger.info(f"Context window: {context_window} {'tokens' if context_window > 0 else '(disabled)'}")
-    logger.info(f"Max. contexts: {max_contexts}")
-    if context_window > 0:
-        logger.info(f"Context type: {'sentences' if use_sentence_context else 'token windows'}")
+    logger.info(f"Linking strategy: {linking_strategy}")
 
     # Load checkpoint
     checkpoint_file = os.path.join(checkpoint_dir, "processed.json")
@@ -424,63 +404,148 @@ def run_el(
     cache = load_json(cache_file, default={})
     logger.info(f"💾 Cache loaded: {len(cache)} entries")
 
-    # Initialize linker based on type
-    if linker_type == "reranker":
-        from src.reranker_linker import RerankerLinker
-        
-        logger.info(f"Reranker configuration:")
-        logger.info(f"  Embedding model: {model_name}")
-        logger.info(f"  LLM model: {reranker_llm}")
-        logger.info(f"  Top-k candidates: {reranker_top_k}")
-        logger.info(f"  Context for retrieval: {use_context_for_retrieval}")
-        logger.info(f"  Top-level fallbacks: {reranker_fallbacks}")
-        logger.info(f"  Thinking mode: {reranker_thinking}")
-        
-        linker = RerankerLinker(
-            taxonomy_path=taxonomy_path,
-            domain=domain,
-            embedding_model_name=model_name,
-            llm_model_name=reranker_llm,
-            threshold=threshold,
-            context_window=context_window,
-            max_contexts=max_contexts,
-            use_sentence_context=use_sentence_context,
-            use_context_for_retrieval=use_context_for_retrieval,
-            top_k_candidates=reranker_top_k,
-            add_top_level_fallbacks=reranker_fallbacks,
-            enable_thinking=reranker_thinking,
-            logger=logger
-        )
+    # === Initialize linkers based on strategy ===
     
-    elif linker_type == "instruct":
-        from src.instruct_linker import InstructLinker
+    if linking_strategy == "fts5":
+        # FTS5-based linking (e.g., cancer domain)
+        from src.fts5_linker import FTS5Linker
         
-        logger.info(f"Instruct model: {model_name}")
+        fts5_config = domain_conf.get("fts5_linkers", {})
+        fts5_linkers = {}
         
-        linker = InstructLinker(
-            model_name=model_name,
-            taxonomy_path=taxonomy_path,
-            threshold=threshold,
-            context_window=context_window,
-            max_contexts=max_contexts,
-            use_sentence_context=use_sentence_context,
-            logger=logger
-        )
-    
-    else:  # semantic
-        from src.semantic_linker import SemanticLinker
+        logger.info("Initializing FTS5 linkers:")
+        for entity_type, config in fts5_config.items():
+            try:
+                fts5_linkers[entity_type.lower()] = {
+                    "linker": FTS5Linker(
+                        index_path=config["index_path"],
+                        taxonomy_source=config["taxonomy_source"],
+                        logger=logger
+                    ),
+                    "blocked_mentions": config.get("blocked_mentions", set()),
+                    "fallback": config.get("fallback"),
+                }
+                logger.info(f"  ✅ {entity_type}: {config['index_path']}")
+            except Exception as e:
+                logger.error(f"  ❌ {entity_type}: {e}")
         
-        logger.info(f"Semantic model: {model_name}")
+        # Initialize semantic fallback linker if needed
+        semantic_fallback_linker = None
+        semantic_fallback_config = domain_conf.get("semantic_fallback", {})
         
-        linker = SemanticLinker(
-            model_name=model_name,
-            taxonomy_path=taxonomy_path,
-            threshold=threshold,
-            context_window=context_window,
-            max_contexts=max_contexts,
-            use_sentence_context=use_sentence_context,
-            logger=logger
-        )
+        if semantic_fallback_config:
+            # Check if any entity type needs semantic fallback
+            needs_fallback = any(
+                cfg.get("fallback") == "semantic" 
+                for cfg in fts5_config.values()
+            )
+            
+            if needs_fallback:
+                from src.semantic_linker import SemanticLinker
+                
+                # Use first fallback config (typically disease)
+                fallback_type = next(
+                    (t for t, cfg in fts5_config.items() if cfg.get("fallback") == "semantic"),
+                    None
+                )
+                
+                if fallback_type and fallback_type in semantic_fallback_config:
+                    fb_config = semantic_fallback_config[fallback_type]
+                    logger.info(f"Initializing semantic fallback for {fallback_type}:")
+                    logger.info(f"  Taxonomy: {fb_config['taxonomy_path']}")
+                    
+                    semantic_fallback_linker = SemanticLinker(
+                        model_name=fb_config.get("model_name", model_name),
+                        taxonomy_path=fb_config["taxonomy_path"],
+                        threshold=fb_config.get("threshold", threshold),
+                        context_window=context_window,
+                        max_contexts=max_contexts,
+                        use_sentence_context=use_sentence_context,
+                        logger=logger
+                    )
+                    logger.info(f"  ✅ Semantic fallback ready")
+        
+        linker = None  # Not using single linker for FTS5 strategy
+        
+    else:
+        # Traditional linking (semantic/instruct/reranker)
+        fts5_linkers = None
+        semantic_fallback_linker = None
+        
+        # Auto-detect linker type from model name
+        if linker_type == "auto":
+            if "qwen" in model_name.lower() or "qwen" in reranker_llm.lower():
+                linker_type = "reranker"
+            elif "instruct" in model_name.lower():
+                linker_type = "instruct"
+            else:
+                linker_type = "semantic"
+        
+        logger.info(f"Linker type: {linker_type}")
+        logger.info(f"Taxonomy: {taxonomy_path} (source: {taxonomy_source})")
+        logger.info(f"Threshold: {threshold}")
+        logger.info(f"Context window: {context_window} {'tokens' if context_window > 0 else '(disabled)'}")
+        logger.info(f"Max. contexts: {max_contexts}")
+        if context_window > 0:
+            logger.info(f"Context type: {'sentences' if use_sentence_context else 'token windows'}")
+
+        # Initialize linker based on type
+        if linker_type == "reranker":
+            from src.reranker_linker import RerankerLinker
+            
+            logger.info(f"Reranker configuration:")
+            logger.info(f"  Embedding model: {model_name}")
+            logger.info(f"  LLM model: {reranker_llm}")
+            logger.info(f"  Top-k candidates: {reranker_top_k}")
+            logger.info(f"  Context for retrieval: {use_context_for_retrieval}")
+            logger.info(f"  Top-level fallbacks: {reranker_fallbacks}")
+            logger.info(f"  Thinking mode: {reranker_thinking}")
+            
+            linker = RerankerLinker(
+                taxonomy_path=taxonomy_path,
+                domain=domain,
+                embedding_model_name=model_name,
+                llm_model_name=reranker_llm,
+                threshold=threshold,
+                context_window=context_window,
+                max_contexts=max_contexts,
+                use_sentence_context=use_sentence_context,
+                use_context_for_retrieval=use_context_for_retrieval,
+                top_k_candidates=reranker_top_k,
+                add_top_level_fallbacks=reranker_fallbacks,
+                enable_thinking=reranker_thinking,
+                logger=logger
+            )
+        
+        elif linker_type == "instruct":
+            from src.instruct_linker import InstructLinker
+            
+            logger.info(f"Instruct model: {model_name}")
+            
+            linker = InstructLinker(
+                model_name=model_name,
+                taxonomy_path=taxonomy_path,
+                threshold=threshold,
+                context_window=context_window,
+                max_contexts=max_contexts,
+                use_sentence_context=use_sentence_context,
+                logger=logger
+            )
+        
+        else:  # semantic
+            from src.semantic_linker import SemanticLinker
+            
+            logger.info(f"Semantic model: {model_name}")
+            
+            linker = SemanticLinker(
+                model_name=model_name,
+                taxonomy_path=taxonomy_path,
+                threshold=threshold,
+                context_window=context_window,
+                max_contexts=max_contexts,
+                use_sentence_context=use_sentence_context,
+                logger=logger
+            )
     
     # Find NER output files
     ner_files = [
@@ -530,7 +595,7 @@ def run_el(
                     encoding='utf-8',
                     dtype=str
                 )
-                logger.info(f"  ✓ Loaded {len(df_expanded)} sections successfully")
+                logger.info(f"  ✔ Loaded {len(df_expanded)} sections successfully")
                 
             except Exception as csv_error:
                 logger.error(f"❌ Failed to load CSV: {csv_error}")
@@ -549,6 +614,7 @@ def run_el(
             linked_sections = []
             total_entities = 0
             total_linked = 0
+            total_skipped = 0
             
             for _, row in df_ner.iterrows():
                 section_id = row['section_id']
@@ -559,19 +625,90 @@ def run_el(
                     linked_sections.append(row.to_dict())
                     continue
                 
-                # Link entities with taxonomy source
-                enriched_entities, cache = linker.link_entities_in_section(
-                    section_text, 
-                    entities, 
-                    cache, 
-                    taxonomy_source,
-                    filename=os.path.basename(ner_file),
-                    section_id=section_id
-                )
-                               
-                # Count statistics
-                total_entities += len(entities)
-                total_linked += sum(1 for e in enriched_entities if e.get('linking'))
+                # === Link entities based on strategy ===
+                
+                if linking_strategy == "fts5" and fts5_linkers:
+                    # FTS5-based linking (per entity type)
+                    enriched_entities = []
+                    
+                    for entity in entities:
+                        # Skip if already has linking (from gazetteer)
+                        if entity.get('linking'):
+                            enriched_entities.append(entity)
+                            total_linked += 1
+                            continue
+                        
+                        entity_type = entity.get('entity', '').lower()
+                        entity_text = entity.get('text', '')
+                        entity_text_lower = entity_text.lower()
+                        
+                        # Check if we have a linker for this entity type
+                        if entity_type not in fts5_linkers:
+                            # No linker for this type, keep as-is
+                            enriched_entities.append(entity)
+                            continue
+                        
+                        linker_config = fts5_linkers[entity_type]
+                        fts5_linker = linker_config["linker"]
+                        blocked_mentions = linker_config.get("blocked_mentions", set())
+                        fallback = linker_config.get("fallback")
+                        
+                        # Check blocked mentions
+                        if entity_text_lower in blocked_mentions:
+                            logger.debug(f"Skipping blocked mention: '{entity_text}' ({entity_type})")
+                            total_skipped += 1
+                            # Don't add to enriched_entities - skip entirely
+                            continue
+                        
+                        # Check cache
+                        cache_key = f"{entity_type}:{entity_text_lower}"
+                        if cache_key in cache:
+                            cached = cache[cache_key]
+                            entity_copy = entity.copy()
+                            if cached.get('linking'):
+                                entity_copy['linking'] = cached['linking']
+                                total_linked += 1
+                            enriched_entities.append(entity_copy)
+                            continue
+                        
+                        # Try FTS5 linking
+                        linking = fts5_linker.link_entity(entity_text)
+                        
+                        # Try semantic fallback if no match and fallback is configured
+                        if not linking and fallback == "semantic" and semantic_fallback_linker:
+                            # Use semantic linker for this entity
+                            fallback_source = semantic_fallback_config.get(entity_type, {}).get("taxonomy_source", "DOID")
+                            linking = semantic_fallback_linker.link_entity_all_contexts(
+                                entity_text,
+                                [section_text[:500]],  # Use section as context
+                                fallback_source
+                            )
+                        
+                        # Cache result
+                        cache[cache_key] = {'linking': linking}
+                        
+                        # Add to entity
+                        entity_copy = entity.copy()
+                        if linking:
+                            entity_copy['linking'] = linking
+                            total_linked += 1
+                        enriched_entities.append(entity_copy)
+                    
+                    total_entities += len(entities)
+                    
+                else:
+                    # Traditional linking (semantic/instruct/reranker)
+                    enriched_entities, cache = linker.link_entities_in_section(
+                        section_text, 
+                        entities, 
+                        cache, 
+                        taxonomy_source,
+                        filename=os.path.basename(ner_file),
+                        section_id=section_id
+                    )
+                    
+                    total_entities += len(entities)
+                    total_linked += sum(1 for e in enriched_entities if e.get('linking'))
                 
                 linked_sections.append({
                     'section_id': section_id,
@@ -586,17 +723,20 @@ def run_el(
             df_linked = pd.DataFrame(linked_sections)
             df_linked.to_json(output_file, orient='records', lines=True, force_ascii=False)
             
+            linking_rate = f"{100*total_linked/total_entities:.1f}%" if total_entities > 0 else "0%"
+            
             processed[ner_file] = {
                 "status": "done",
                 "total_entities": total_entities,
                 "linked_entities": total_linked,
-                "linking_rate": f"{100*total_linked/total_entities:.1f}%" if total_entities > 0 else "0%"
+                "skipped_entities": total_skipped,
+                "linking_rate": linking_rate
             }
             
             logger.info(
                 f"✅ {os.path.basename(ner_file)}: "
-                f"{total_linked}/{total_entities} entities linked "
-                f"({100*total_linked/total_entities:.1f}%)"
+                f"{total_linked}/{total_entities} entities linked ({linking_rate})"
+                + (f", {total_skipped} skipped" if total_skipped > 0 else "")
             )
             
             # Save checkpoint and cache
@@ -632,8 +772,11 @@ def run_el(
     total_files = len([p for p in processed.values() if p.get('status') == 'done'])
     total_ents = sum(p.get('total_entities', 0) for p in processed.values() if p.get('status') == 'done')
     total_links = sum(p.get('linked_entities', 0) for p in processed.values() if p.get('status') == 'done')
+    total_skip = sum(p.get('skipped_entities', 0) for p in processed.values() if p.get('status') == 'done')
     
     logger.info(f"📊 Summary: {total_files} files, {total_ents} entities, {total_links} linked")
+    if total_skip > 0:
+        logger.info(f"   Skipped (blocked): {total_skip}")
     if total_ents > 0:
         logger.info(f"   Overall linking rate: {100*total_links/total_ents:.1f}%")
 
@@ -710,99 +853,68 @@ def run_geotagging(domain, input_dir, output_dir, resume=True, file_batch_size=1
             logger.warning("⚠️ No sections to process in this batch.")
             continue
 
-        # 2️⃣ Combine all sections for this batch
-        df_all = pd.concat(all_sections, ignore_index=True)
-        logger.info(f"📊 Combined batch: {len(df_all)} sections total")
+        df_all = pd.concat(all_sections, ignore_index=True).fillna("")
+        logger.info(f"📊 Batch sections: {len(df_all)}")
 
-        # 3️⃣ Run Geotagging (GeoNER + Role classification)
-        try:
-            df_geo = run_geotagging_batch(
-                df_all,
-                logger=logger,
-                text_col="section_content_expanded",
-                id_col="section_id",
-                batch_size=8,  # batch size for transformers pipeline
-                device=device,
-            )
-        except Exception as e:
-            tb = traceback.format_exc()
-            logger.error(f"🔥 Geotagging failed on batch {batch_idx}: {e}")
-            logger.debug(tb)
-            continue
+        # 2️⃣ Run Geotagging
+        df_enriched = run_geotagging_batch(
+            df_all,
+            device=device,
+            logger=logger
+        )
 
-        # 4️⃣ Group entities per paper and save
-        if df_geo.empty:
-            logger.warning("⚪ No entities found in this batch.")
-            continue
+        # 3️⃣ Save per paper
+        for path in batch_files:
+            paper_section_ids = [sid for sid, p in paper_map.items() if p == path]
+            paper_df = df_enriched[df_enriched['section_id'].isin(paper_section_ids)]
 
-        section_dict = dict(zip(df_geo["section_id"], df_geo["entities"]))
-        logger.info("🧩 Grouping Geotagging results per paper...")
-
-        for paper_path, group_df in df_all.groupby("paper_path"):
-            section_ids = group_df["section_id"].tolist()
-            entities_subset = {
-                sid: section_dict.get(sid, [])
-                for sid in section_ids
-                if section_dict.get(sid)
-            }
-
-            if not entities_subset:
-                logger.info(f"⚪ No entities found for {paper_path} — skipping JSONL write.")
-                processed[paper_path] = {"status": "no_entities"}
+            if paper_df.empty:
+                processed[path] = {"status": "no_entities"}
                 continue
 
-            base_name = os.path.basename(paper_path).replace(".ttl", ".jsonl")
-            out_path = os.path.join(output_dir, base_name)
+            out_name = os.path.basename(path).replace(".ttl", ".jsonl")
+            out_path = os.path.join(output_dir, out_name)
+            paper_df.to_json(out_path, orient='records', lines=True, force_ascii=False)
 
-            for sid, ents in entities_subset.items():
-                append_jsonl({"section_id": sid, "entities": ents}, out_path)
+            total_ents = sum(len(e) for e in paper_df['entities'].tolist())
+            processed[path] = {"status": "done", "entities": total_ents}
 
-            processed[paper_path] = {"status": "done"}
-            logger.info(f"✔️ Written {len(entities_subset)} sections for {paper_path}")
-
-        # 5️⃣ Save checkpoint
         save_json(processed, checkpoint_file)
-        logger.info(f"✅ Batch {batch_idx} complete — total processed so far: {len(processed)} files.")
+        logger.info(f"💾 Checkpoint saved: {len(processed)} files processed")
 
-    logger.info("🎉 All Geotagging batches processed successfully.")
+    logger.info("🎉 Geotagging complete.")
 
 
-def run_affiliations(domain, input_dir, output_dir, resume=True, file_batch_size=500, device="cuda"):
+def run_affiliations(domain, input_dir, output_dir, resume=True, file_batch_size=100, device="cpu"):
     """
-    Extract, clean, and enrich affiliations from NIF .ttl files using AffilGood.
-    Combines raw extraction + AffilGood processing in one step.
-    Supports resume via checkpoint (avoids reprocessing the same affiliations).
+    Run AffilGood affiliation extraction and normalization.
     """
     from rdflib import Graph
     import re
-    from src.affilgood_runner import run_affilgood_batch
-    from affilgood.affilgood import AffilGood  # assuming installed
+    from src.affilgood_runner import run_affilgood_batch, AffilGood
 
-    # --- Setup output and logging ---
+    # --- Setup directories ---
     os.makedirs(output_dir, exist_ok=True)
     checkpoint_dir = os.path.join(output_dir, "checkpoints")
     os.makedirs(checkpoint_dir, exist_ok=True)
     log_dir = os.path.join(output_dir, "logs")
-    logger = setup_logger(log_dir, name=f"{domain}_affilgood_combined")
+    logger = setup_logger(log_dir, name=f"{domain}_affiliations")
 
     # --- Load checkpoint ---
     checkpoint_file = os.path.join(checkpoint_dir, "processed.json")
-    processed = load_json(checkpoint_file, default={})
-    logger.info(f"📒 Loaded checkpoint: {len(processed)} affiliations already processed")
+    if resume:
+        processed = load_json(checkpoint_file, default={})
+    else:
+        processed = {}
 
-    # --- Initialize AffilGood model ---
-    logger.info(f"🏗️ Initializing AffilGood (device={device})...")
-    affil_good = AffilGood(
-        span_separator='',
-        span_model_path='SIRIS-Lab/affilgood-span-multilingual',
-        ner_model_path='SIRIS-Lab/affilgood-NER-multilingual',
-        entity_linkers=['Whoosh'],
-        return_scores=True,
-        metadata_normalization=True,
-        verbose=False,
-        device=device,
-    )
-    logger.info("✅ AffilGood model initialized successfully.")
+    logger.info(f"🏛️ Starting Affiliation extraction for domain={domain}")
+    logger.info(f"Input dir: {input_dir}")
+    logger.info(f"Output dir: {output_dir}")
+    logger.info(f"Resuming from checkpoint: {len(processed)} affiliations already done")
+
+    # --- Initialize AffilGood ---
+    affil_good = AffilGood(device=device)
+    logger.info("✅ AffilGood initialized")
 
     # --- Find all .ttl input files ---
     all_files = [

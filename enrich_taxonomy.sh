@@ -47,7 +47,7 @@ done
 
 # Validate domain
 if [ -z "$DOMAIN" ]; then
-    echo "Usage: $0 --domain <energy|maritime|neuro|ccam> [OPTIONS]"
+    echo "Usage: $0 --domain <energy|maritime|neuro|ccam|disease> [OPTIONS]"
     echo ""
     echo "Options:"
     echo "  --domain            Domain to enrich (energy, maritime, neuro, ccam)"
@@ -81,9 +81,13 @@ case $DOMAIN in
         INPUT="taxonomies/ccam/CCAM_Combined.tsv"
         OUTPUT="taxonomies/ccam/CCAM_Combined_enriched.tsv"
         ;;
+    disease)
+        INPUT="taxonomies/cancer/DOID_DISEASE.tsv"
+        OUTPUT="taxonomies/cancer/DOID_DISEASE.tsv_enriched.tsv"
+        ;;
     *)
         echo "❌ Unknown domain: $DOMAIN"
-        echo "   Valid domains: energy, maritime, neuro, ccam"
+        echo "   Valid domains: energy, maritime, neuro, ccam, disease"
         exit 1
         ;;
 esac

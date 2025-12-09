@@ -224,7 +224,16 @@ class GazetteerLinker:
             
             # Get the form that was actually matched (could be alias)
             matched_form = metadata.get('matched_form', concept)
-            
+
+            # FIX: Discard broken FlashText matches (offset bug with special chars)
+            if matched_text.lower() != matched_form.lower():
+                if self.logger:
+                    self.logger.debug(
+                        f"Skipping broken FlashText match: expected '{matched_form}' "
+                        f"but got '{matched_text}' at {start}-{end}"
+                    )
+                continue
+
             # Apply filters
             
             # 1. Minimum length filter

@@ -214,8 +214,14 @@ tmp/
 test/
 taxonomies/
 scripts/
+analysis/
+indices/
+
 # Keep this file
 !scripts/wikidata_enricher.py
+!scripts/build_fts5_indices.py
+!scripts/sample_extractor.py
+
 
 
 # LibreOffice / OpenOffice lock files
@@ -224,6 +230,7 @@ scripts/
 *BKP*
 BKP*
 nohup.out
+*.tgz
 
 # Scripts for local tasks
 run_all_tests.sh

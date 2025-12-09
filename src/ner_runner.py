@@ -111,6 +111,43 @@ def process_roberta_output(pipeline_output, text):
     
     entities = merge_entities(words, text)
 
+    # Filter out invalid entities
+    filtered_entities = []
+    for ent in entities:
+        word = ent.get('word', '').strip()
+        
+        # Skip empty
+        if not word:
+            continue
+        
+        # Skip pure punctuation (e.g., ".", ",")
+        if not any(c.isalnum() for c in word):
+            continue
+        
+        # Skip pure numbers including decimals (e.g., "45.8", "3.2", "0.82")
+        if re.match(r'^-?\d+([.,]\d+)?%?$', word):
+            continue
+        
+        # Skip single characters (e.g., "a", "s")
+        if len(word) <= 1:
+            continue
+        
+        # Skip common stopwords that shouldn't be entities
+        stopwords = {'a', 'an', 'the', 'is', 'are', 'was', 'were', 'be', 'been', 
+                     'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will',
+                     'would', 'could', 'should', 'may', 'might', 'must', 'shall',
+                     'can', 'need', 'dare', 'ought', 'used', 'to', 'of', 'in',
+                     'for', 'on', 'with', 'at', 'by', 'from', 'as', 'into',
+                     'through', 'during', 'before', 'after', 'above', 'below',
+                     'between', 'under', 'again', 'further', 'then', 'once'}
+        if word.lower() in stopwords:
+            continue
+            
+        filtered_entities.append(ent)
+    
+    entities = filtered_entities
+
+    # Parentheses balancing
     for ent in entities:
         start, end, word = ent['start'], ent['end'], ent['word']
         if word.count("(") > word.count(")") and end < len(text) and text[end] == ")":
