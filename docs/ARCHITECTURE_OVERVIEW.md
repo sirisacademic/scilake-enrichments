@@ -17,7 +17,7 @@ The SciLake pipeline is a two-stage system for extracting and linking domain-spe
 │  Components:                                                     │
 │  1. NIF Parser → Extract text + structure                       │
 │  2. Acronym Expansion → Schwartz-Hearst algorithm (SciSpacy)    │
-│  3. Gazetteer Matching → FlashText exact matching               │
+│  3. Gazetteer/FTS5 Matching → Exact matching against taxonomy   │
 │  4. Neural NER:                                                  │
 │     • GLiNER (multi-label semantic matching)                    │
 │     • RoBERTa (domain-specific fine-tuned)                      │
@@ -46,43 +46,51 @@ The SciLake pipeline is a two-stage system for extracting and linking domain-spe
 │                                                                  │
 │  ┌──────────────────────────────────────────┐                   │
 │  │ 1. GazetteerLinker (runs during NER)     │                   │
-│  │    • Exact string matching                │                   │
-│  │    • Fastest, highest precision           │                   │
-│  │    • Limited recall                       │                   │
+│  │    • FlashText exact string matching      │                   │
+│  │    • In-memory, fast                      │                   │
+│  │    • Limited to small/medium taxonomies   │                   │
 │  └──────────────────────────────────────────┘                   │
 │                                                                  │
 │  ┌──────────────────────────────────────────┐                   │
-│  │ 2. SemanticLinker                        │                   │
+│  │ 2. FTS5Linker ⭐ (Recommended for prod)  │                   │
+│  │    • SQLite FTS5 exact matching           │                   │
+│  │    • Disk-based, no memory issues         │                   │
+│  │    • Scales to millions of entries        │                   │
+│  │    • Built-in text normalization          │                   │
+│  └──────────────────────────────────────────┘                   │
+│                                                                  │
+│  ┌──────────────────────────────────────────┐                   │
+│  │ 3. SemanticLinker                        │                   │
 │  │    • Embedding similarity (e5-base)      │                   │
 │  │    • Fast (~10-20ms per entity)          │                   │
 │  │    • Good for simple matching            │                   │
 │  └──────────────────────────────────────────┘                   │
 │                                                                  │
 │  ┌──────────────────────────────────────────┐                   │
-│  │ 3. InstructLinker                        │                   │
+│  │ 4. InstructLinker                        │                   │
 │  │    • Instruction-tuned embeddings        │                   │
 │  │    • Better context understanding        │                   │
 │  │    • Balanced speed/accuracy             │                   │
 │  └──────────────────────────────────────────┘                   │
 │                                                                  │
 │  ┌──────────────────────────────────────────┐                   │
-│  │ 4. RerankerLinker ⭐ (Recommended)        │                   │
-│  │    ┌────────────────────────────────────┐│                   │
+│  │ 5. RerankerLinker ⭐ (Best accuracy)     │                   │
+│  │    ┌─────────────────────────────────────┤                   │
 │  │    │ Stage 1: Embedding Retrieval       ││                   │
 │  │    │ • Fast candidate selection         ││                   │
 │  │    │ • Entity-only or with context      ││                   │
 │  │    │ • Top-k candidates + fallbacks     ││                   │
 │  │    │ • ~10-20ms                         ││                   │
-│  │    └────────────────────────────────────┘│                   │
+│  │    ├─────────────────────────────────────┤                   │
 │  │                   │                       │                   │
 │  │                   ▼                       │                   │
-│  │    ┌────────────────────────────────────┐│                   │
+│  │    ├─────────────────────────────────────┤                   │
 │  │    │ Stage 2: LLM Reranking             ││                   │
 │  │    │ • Context-aware validation         ││                   │
 │  │    │ • Can REJECT non-domain entities   ││                   │
 │  │    │ • Selects best match or rejects    ││                   │
 │  │    │ • ~50-100ms                        ││                   │
-│  │    └────────────────────────────────────┘│                   │
+│  │    └─────────────────────────────────────┘                   │
 │  └──────────────────────────────────────────┘                   │
 │                                                                  │
 │  Features:                                                       │
@@ -130,11 +138,21 @@ The SciLake pipeline is a two-stage system for extracting and linking domain-spe
 - Processes per section for consistency
 - Example: "PV" → "photovoltaic"
 
-#### **Gazetteer Matching** (`gazetteer_linker.py`)
-- FlashText-based exact matching
+#### **Exact Matching Options**
+
+**GazetteerLinker** (`gazetteer_linker.py`):
+- FlashText-based in-memory matching
 - Uses taxonomy terms + Wikidata aliases
 - Instant linking for exact matches
 - Zero false positives
+- ⚠️ Known issues: Offset bugs with special characters, memory issues at scale
+
+**FTS5Linker** (`fts5_linker.py`) ⭐ **Recommended**:
+- SQLite FTS5-based disk storage
+- Scales to millions of entries without memory issues
+- Built-in text normalization (Greek letters, spacing, plurals)
+- Frequency-based disambiguation
+- Production-ready for large-scale processing
 
 #### **Neural NER Models**
 
@@ -165,16 +183,46 @@ Two modes available:
 **Sentence Context** (recommended):
 ```python
 "Wind turbines convert kinetic energy into electricity."
-                ↑
+                →
          Full sentence provides semantic context
 ```
 
 **Token Window Context**:
 ```python
 "... renewable wind turbines convert kinetic ..."
-              ↑ entity ↑
+              ← entity →
       ← 3 tokens      3 tokens →
 ```
+
+#### **FTS5Linker: Exact Matching at Scale**
+
+The FTS5Linker provides production-ready exact matching using SQLite FTS5:
+
+```
+1. Pre-build SQLite FTS5 Index:
+   python src/build_fts5_indices.py \
+       --taxonomy taxonomies/cancer/NCBI_GENE.tsv \
+       --output indices/cancer/ncbi_gene.db
+
+2. Matching Strategy:
+   a. Try exact match on concept column (case-insensitive)
+   b. Try exact match on synonyms
+   c. Try normalized variants:
+      • Greek letters: "ifn-γ" → "ifn-g" → "ifng"
+      • Spacing: "erk1 / 2" → "erk1/2"
+      • Plurals: "cytokines" → "cytokine"
+   d. Disambiguate by frequency if multiple matches
+```
+
+**Why FTS5 over Gazetteer?**
+
+| Issue | Gazetteer (FlashText) | FTS5 (SQLite) |
+|-------|----------------------|---------------|
+| Memory usage | High (in-memory) | Low (disk-based) |
+| Large vocabularies | ❌ OOM risk | ✅ Millions of entries |
+| Segmentation faults | ❌ With pandas C parser | ✅ No issues |
+| Offset bugs | ❌ With special chars | ✅ Reliable |
+| Text normalization | ❌ Manual | ✅ Built-in |
 
 #### **Embedding-Based Retrieval**
 
@@ -182,12 +230,12 @@ Two modes available:
 ```
 Load IRENA.tsv:
   230000 | Wind energy | Q43302 | wind power, wind turbines
-         ↓
+         →
 Encode all entries:
   encode("passage: Wind energy")          → [768-dim vector]
   encode("passage: wind power")           → [768-dim vector]
   encode("passage: wind turbines")        → [768-dim vector]
-         ↓
+         →
 Store in memory:
   ~9000 entries × 768 dimensions = ~6 MB
 ```
@@ -196,15 +244,15 @@ Store in memory:
 ```
 Entity: "wind turbines"
 Context: "Wind turbines convert kinetic energy into electricity."
-         ↓
+         →
 Encode query:
   query_emb = encode("query: Wind turbines convert kinetic energy...")
-         ↓
+         →
 Compute similarities:
   scores = query_emb @ taxonomy_embeddings.T
-         ↓
+         →
 Results:
-  1. Wind energy (0.87) ← Best match
+  1. Wind energy (0.87) → Best match
   2. wind power (0.85)
   3. Solar energy (0.32)
   4. Nuclear energy (0.28)
@@ -284,6 +332,7 @@ Key benefits of two-stage approach:
 | NIF Parsing | ~100 ms/doc | Depends on doc size |
 | Acronym Expansion | ~50 ms/doc | Per-section processing |
 | Gazetteer Matching | ~20 ms/doc | FlashText is very fast |
+| FTS5 Matching | ~20 ms/doc | SQLite is equally fast |
 | GLiNER | ~200 ms/doc | GPU-dependent |
 | RoBERTa | ~150 ms/doc | GPU-dependent |
 | Semantic Linker | ~10-20 ms/entity | Cached after first run |
@@ -318,6 +367,8 @@ Cache Size Growth:
 
 | Component | Memory | Persistent |
 |-----------|--------|-----------|
+| Gazetteer (FlashText) | ~50-200 MB | Yes (in RAM) |
+| FTS5 indices | ~10-50 MB (disk) | Yes (disk) |
 | IRENA embeddings | ~6 MB | Yes (in RAM) |
 | Embedding model weights | ~500 MB | Yes (in RAM) |
 | LLM model weights | ~3-7 GB | Yes (in RAM/GPU) |
@@ -326,6 +377,7 @@ Cache Size Growth:
 | Linking cache | ~15-30 MB | Yes (disk + RAM) |
 | Working memory | ~100 MB | No (transient) |
 | **Total (Reranker)** | **~5-8 GB** | Mixed |
+| **Total (FTS5 only)** | **~1-2 GB** | Mixed |
 
 ---
 
@@ -341,17 +393,26 @@ project/
 │   ├── pipeline.py                # Main orchestrator
 │   ├── nif_reader.py              # NIF/RDF parser
 │   ├── ner_runner.py              # NER coordinator
-│   ├── gazetteer_linker.py        # Exact matching
+│   ├── gazetteer_linker.py        # FlashText exact matching
+│   ├── fts5_linker.py             # SQLite FTS5 exact matching ⭐
+│   ├── build_fts5_indices.py      # Build FTS5 indices from TSV
 │   ├── semantic_linker.py         # Basic embedding linking
 │   ├── instruct_linker.py         # Instruction-tuned linking
 │   ├── reranker_linker.py         # Two-stage linking ⭐
+│   ├── geo_linker.py              # Geographic entity linking
+│   ├── geotagging_runner.py       # Geotagging pipeline
+│   ├── affilgood_runner.py        # Affiliation enrichment
 │   └── utils/
 │       ├── io_utils.py            # I/O helpers
 │       └── logger.py              # Logging setup
 │
+├── indices/                       # FTS5 SQLite indices
+│   └── <domain>/
+│       └── *.db                   # Pre-built FTS5 databases
+│
 ├── taxonomies/
-│   └── energy/
-│       └── IRENA.tsv              # Energy domain taxonomy
+│   └── <domain>/
+│       └── *.tsv                  # Taxonomy source files
 │
 ├── data/
 │   └── <domain>/
@@ -514,6 +575,23 @@ python src/pipeline.py \
     --context_window 3
 ```
 
+### For Production Exact Matching (FTS5)
+
+Configure in `domain_models.py`:
+
+```python
+"energy": {
+    "gazetteer": {"enabled": False},
+    "linking_strategy": "fts5",
+    "fts5_linkers": {
+        "energytype": {
+            "index_path": "indices/energy/irena.db",
+            "taxonomy_source": "IRENA",
+        }
+    }
+}
+```
+
 ---
 
 ## Design Principles
@@ -536,7 +614,7 @@ python src/pipeline.py \
 - Cache-first strategy (avoids redundant computation)
 - Batch processing with progress tracking
 - Two-stage linking (fast retrieval + accurate reranking)
-- Memory-efficient data structures
+- Disk-based storage for large vocabularies (FTS5)
 
 ### 4. **Domain Agnostic**
 
@@ -613,13 +691,16 @@ Linking entities: 89%|████████▉  | 45234/51000 [00:12:34<00:01
 The SciLake pipeline provides:
 
 ✅ **Flexible NER**: Multiple models for high recall  
-✅ **Advanced Linking**: Four linking strategies, from fast to accurate  
+✅ **Advanced Linking**: Five linking strategies, from fast to accurate  
 ✅ **Production-Ready**: Checkpointing, caching, logging  
 ✅ **Domain-Agnostic**: Easy to adapt to new domains  
 ✅ **High Quality**: >90% precision, >85% linking rate  
-✅ **Scalable**: Processes 20k+ documents efficiently
+✅ **Scalable**: Processes 20k+ documents efficiently  
+✅ **Memory-Safe**: FTS5 for large vocabularies without OOM
 
-**Recommended Configuration**: RerankerLinker with entity-only retrieval for optimal precision/recall balance.
+**Recommended Configuration**: 
+- **Exact matching**: FTS5Linker (disk-based, production-ready)
+- **Semantic matching**: RerankerLinker with entity-only retrieval for optimal precision/recall balance
 
 ---
 
@@ -627,7 +708,7 @@ The SciLake pipeline provides:
 
 For more detailed information, see:
 
-- **[README.md](README.md)** - This overview and quick start guide
-- **[ENTITY_LINKING_README.md](docs/ENTITY_LINKING_README.md)** - Detailed guide to all linking approaches
+- **[README.md](README.md)** - Quick start and overview
+- **[ENTITY_LINKING_README.md](docs/ENTITY_LINKING_README.md)** - Detailed guide to all 5 linking approaches
 - **[RERANKER_GUIDE.md](docs/RERANKER_GUIDE.md)** - Deep dive into RerankerLinker (recommended approach)
 - **[CONFIGURATION_GUIDE.md](docs/CONFIGURATION_GUIDE.md)** - Configuration recipes and best practices

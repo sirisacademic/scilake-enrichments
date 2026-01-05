@@ -6,18 +6,19 @@ Comprehensive guide to all entity linking approaches in the SciLake pipeline.
 
 ## Overview
 
-Entity Linking (NEL) maps detected entities to concepts in a controlled vocabulary (taxonomy). The pipeline offers **four linking strategies**, each with different trade-offs between speed, accuracy, and complexity.
+Entity Linking (NEL) maps detected entities to concepts in a controlled vocabulary (taxonomy). The pipeline offers **five linking strategies**, each with different trade-offs between speed, accuracy, and complexity.
 
 ---
 
 ## Quick Comparison
 
-| Linker | Speed | Accuracy | Use Case | GPU |
-|--------|-------|----------|----------|-----|
-| **Gazetteer** | ⚡⚡⚡ Instant | 🎯🎯🎯 100% precision | Exact matches only | No |
-| **Semantic** | ⚡⚡ Fast | 🎯🎯 Good | Large-scale, CPU-only | No |
-| **Instruct** | ⚡ Medium | 🎯🎯🎯 Better | Balanced speed/accuracy | Optional |
-| **Reranker** | 🐢 Slower | 🎯🎯🎯🎯 Best | High accuracy needs | Yes (LLM) |
+| Linker | Speed | Accuracy | Use Case | GPU | Memory |
+|--------|-------|----------|----------|-----|--------|
+| **Gazetteer** | ⚡⚡⚡ Instant | 🎯🎯🎯 100% precision | Exact matches only | No | High (in-memory) |
+| **FTS5** ⭐ | ⚡⚡⚡ Instant | 🎯🎯🎯 100% precision | Exact matches, large vocabularies | No | Low (disk-based) |
+| **Semantic** | ⚡⚡ Fast | 🎯🎯 Good | Large-scale, CPU-only | No | Medium |
+| **Instruct** | ⚡ Medium | 🎯🎯🎯 Better | Balanced speed/accuracy | Optional | Medium |
+| **Reranker** | 🐢 Slower | 🎯🎯🎯🎯 Best | High accuracy needs | Yes (LLM) | High |
 
 ---
 
@@ -25,7 +26,7 @@ Entity Linking (NEL) maps detected entities to concepts in a controlled vocabula
 
 ### Description
 
-Exact string matching against taxonomy terms and their aliases. Runs automatically during NER if enabled.
+Exact string matching against taxonomy terms and their aliases using FlashText. Runs automatically during NER if enabled.
 
 ### How It Works
 
@@ -71,17 +72,187 @@ DOMAIN_MODELS = {
 - ❌ No fuzzy matching
 - ❌ Sensitive to spelling variations
 - ❌ Misses paraphrases ("wind turbine" vs "turbine for wind")
+- ❌ In-memory: High RAM usage for large vocabularies
+- ❌ Known issues with FlashText offset calculation for special characters
+- ❌ May cause segmentation faults with pandas C parser during large-scale processing
 
 ### When to Use
 
-- ✅ You have comprehensive taxonomy with good alias coverage
+- ✅ Small to medium taxonomies (<50k concepts)
 - ✅ Text uses standardized terminology
 - ✅ Processing speed is critical
 - ✅ You need guaranteed precision
 
+> **Note:** For large-scale production processing, consider using **FTS5 Linker** instead to avoid memory issues.
+
 ---
 
-## 2. Semantic Linker
+## 2. FTS5 Linker ⭐ (Recommended for Production)
+
+### Description
+
+SQLite FTS5-based exact matching designed as a **production-ready alternative to the Gazetteer**. Uses disk-based SQLite indices instead of in-memory matching, making it suitable for very large vocabularies (millions of entries) and large-scale processing without memory issues.
+
+### Why FTS5 Was Developed
+
+The FTS5Linker was developed to address several issues encountered with the FlashText-based Gazetteer during large-scale processing:
+
+1. **Memory Issues**: When processing hundreds or thousands of files, the combination of in-memory FlashText dictionaries and pandas CSV loading led to memory fragmentation and segmentation faults
+2. **Pandas C Parser Crashes**: The pipeline would crash after ~310 files due to pandas' C parser buffer allocation issues with very long text fields (5000+ characters)
+3. **FlashText Offset Bugs**: FlashText occasionally returns incorrect character offsets when text contains special characters
+
+FTS5 solves these by using a disk-based database backend that doesn't suffer from memory fragmentation.
+
+### How It Works
+
+```
+1. Pre-build SQLite FTS5 Index:
+   CREATE VIRTUAL TABLE entities_fts USING fts5(concept, synonyms, ...);
+   
+   Table entries:
+     id: "NCBI:7157", concept: "TP53", synonyms: "p53|tumor protein p53"
+     id: "NCBI:1956", concept: "EGFR", synonyms: "ErbB-1|HER1"
+     ...
+
+2. For Each Entity:
+   Query: "TP53" (case-insensitive)
+   
+3. Matching Strategy:
+   a. Try exact match on concept column
+   b. Try exact match on synonyms
+   c. Try normalized variants (Greek letters, spacing, plurals)
+   
+4. Disambiguation:
+   If multiple matches → return highest frequency entry
+
+Example:
+  Input: "ifn-γ"
+  Normalized: "ifn-g" → "ifng"
+  Match: "IFNG" (NCBI:3458)
+```
+
+### Text Normalization
+
+FTS5Linker includes built-in text normalization to improve matching:
+
+| Normalization | Example |
+|---------------|---------|
+| Greek letters | `ifn-γ` → `ifn-g` |
+| Greek aggressive | `ifn-γ` → `ifng` (removes hyphen) |
+| Spacing | `erk1 / 2` → `erk1/2` |
+| Depluralization | `cytokines` → `cytokine` |
+
+### Configuration
+
+In `configs/domain_models.py`:
+
+```python
+DOMAIN_MODELS = {
+    "cancer": {
+        "gazetteer": {
+            "enabled": False,  # Disable FlashText gazetteer
+        },
+        "linking_strategy": "fts5",
+        
+        "fts5_linkers": {
+            "gene": {
+                "index_path": "indices/cancer/ncbi_gene.db",
+                "taxonomy_source": "NCBI_Gene",
+                "taxonomy_path": "taxonomies/cancer/NCBI_GENE.tsv",
+            },
+            "species": {
+                "index_path": "indices/cancer/ncbi_species.db",
+                "taxonomy_source": "NCBI_Taxonomy",
+                "blocked_mentions": {
+                    "patient", "patients", "man", "woman",
+                    # ... other blocked terms
+                },
+            },
+            "disease": {
+                "index_path": "indices/cancer/doid_disease.db",
+                "taxonomy_source": "DOID",
+                "fallback": "semantic",  # Optional semantic fallback
+            },
+        },
+    }
+}
+```
+
+### Building FTS5 Indices
+
+Use the `build_fts5_indices.py` script to create indices from taxonomy TSV files:
+
+```bash
+python src/build_fts5_indices.py \
+    --taxonomy taxonomies/cancer/NCBI_GENE.tsv \
+    --output indices/cancer/ncbi_gene.db \
+    --source NCBI_Gene
+```
+
+### Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `index_path` | Path to SQLite FTS5 database file |
+| `taxonomy_source` | Source name for linking output (e.g., "NCBI_Gene") |
+| `taxonomy_path` | Original TSV file (for reference/rebuilding) |
+| `blocked_mentions` | Set of lowercase terms to always reject |
+| `fallback` | Optional fallback strategy ("semantic") for unmatched entities |
+
+### Pros & Cons
+
+**Pros:**
+- ✅ Zero false positives (100% precision on matches)
+- ✅ Instant speed (~1ms per entity)
+- ✅ Low memory usage (disk-based)
+- ✅ Scales to millions of entities
+- ✅ No segmentation faults during large-scale processing
+- ✅ Built-in text normalization (Greek, spacing, plurals)
+- ✅ Frequency-based disambiguation
+- ✅ Per-entity-type configuration (different indices for genes, diseases, etc.)
+- ✅ Production-ready and battle-tested
+
+**Cons:**
+- ❌ Limited recall (only exact matches + normalized variants)
+- ❌ Requires pre-building indices
+- ❌ No fuzzy matching
+- ❌ No semantic understanding
+
+### When to Use
+
+- ✅ Large vocabularies (>50k concepts, up to millions)
+- ✅ Large-scale processing (thousands of documents)
+- ✅ Need guaranteed stability (no memory issues)
+- ✅ Multiple entity types with different taxonomies (e.g., cancer domain)
+- ✅ **Recommended for all production deployments**
+
+### Migrating from Gazetteer to FTS5
+
+1. Build FTS5 index from your taxonomy TSV:
+   ```bash
+   python src/build_fts5_indices.py \
+       --taxonomy taxonomies/energy/IRENA.tsv \
+       --output indices/energy/irena.db \
+       --source IRENA
+   ```
+
+2. Update `domain_models.py`:
+   ```python
+   "energy": {
+       "gazetteer": {"enabled": False},
+       "linking_strategy": "fts5",
+       "fts5_linkers": {
+           "energytype": {
+               "index_path": "indices/energy/irena.db",
+               "taxonomy_source": "IRENA",
+           }
+       }
+   }
+   ```
+
+---
+
+## 3. Semantic Linker
 
 ### Description
 
@@ -164,7 +335,7 @@ python src/pipeline.py \
 
 ---
 
-## 3. Instruct Linker
+## 4. Instruct Linker
 
 ### Description
 
@@ -229,45 +400,45 @@ python src/pipeline.py \
 
 ---
 
-## 4. Reranker Linker ⭐
+## 5. Reranker Linker
 
 ### Description
 
-**Two-stage approach**: Fast embedding retrieval followed by LLM-based reranking. This is the **recommended approach** for high-quality entity linking.
+**Two-stage approach**: Fast embedding retrieval followed by LLM-based reranking. This is the **recommended approach** for highest-quality entity linking when accuracy is critical.
 
 ### How It Works
 
 ```
-┌───────────────────────────────────────────┐
-│ Stage 1: Embedding Retrieval (~10-20ms)   │
-├───────────────────────────────────────────┤
-│ Query: "wind turbines" (+ context?)       │
-│    ↓                                      │
-│ Embedding similarity search               │
-│    ↓                                      │
-│ Top-k candidates:                         │
-│   1. Wind energy (0.87)                   │
-│   2. Wind power (0.85)                    │
-│   3. Renewable energy (0.72)              │
-│   4. Energy technology (0.68)             │
-│   5. Power generation (0.65)              │
-│    ↓                                      │
-│ + Optional top-level fallbacks            │
-└───────────────────────────────────────────┘
+┌─────────────────────────────────────────────────┐
+│ Stage 1: Embedding Retrieval (~10-20ms)         │
+├─────────────────────────────────────────────────┤
+│ Query: "wind turbines" (+ context?)             │
+│    ↓                                            │
+│ Embedding similarity search                     │
+│    ↓                                            │
+│ Top-k candidates:                               │
+│   1. Wind energy (0.87)                         │
+│   2. Wind power (0.85)                          │
+│   3. Renewable energy (0.72)                    │
+│   4. Energy technology (0.68)                   │
+│   5. Power generation (0.65)                    │
+│    ↓                                            │
+│ + Optional top-level fallbacks                  │
+└─────────────────────────────────────────────────┘
                   │
                   ▼
-┌───────────────────────────────────────────┐
-│ Stage 2: LLM Reranking (~50-100ms)        │
-├───────────────────────────────────────────┤
-│ LLM Prompt:                               │
-│   Entity: "wind turbines"                 │
-│   Context: "Wind turbines convert..."     │
-│   Candidates: [list of 5 with details]    │
-│    ↓                                      │
-│ LLM evaluates with domain knowledge       │
-│    ↓                                      │
-│ Answer: "1" or "REJECT"                   │
-└───────────────────────────────────────────┘
+┌─────────────────────────────────────────────────┐
+│ Stage 2: LLM Reranking (~50-100ms)              │
+├─────────────────────────────────────────────────┤
+│ LLM Prompt:                                     │
+│   Entity: "wind turbines"                       │
+│   Context: "Wind turbines convert..."           │
+│   Candidates: [list of 5 with details]          │
+│    ↓                                            │
+│ LLM evaluates with domain knowledge             │
+│    ↓                                            │
+│ Answer: "1" or "REJECT"                         │
+└─────────────────────────────────────────────────┘
 ```
 
 ### Configuration
@@ -431,6 +602,7 @@ Consider the entity **"emissions"** in context:
 | Linker | Result | Explanation |
 |--------|--------|-------------|
 | **Gazetteer** | No link | "emissions" not in taxonomy |
+| **FTS5** | No link | "emissions" not in taxonomy |
 | **Semantic** | Links to "Energy storage" | False positive (context contamination) |
 | **Instruct** | Links to "Renewable energy" | False positive (better but still wrong) |
 | **Reranker** | **REJECTS** | Correctly identifies as pollution, not energy concept |
@@ -568,17 +740,29 @@ Cache Hit Rate:
 **Possible causes:**
 - Large LLM model
 - Too many GPU models loaded simultaneously
+- Large in-memory gazetteer (FlashText)
 
 **Solutions:**
 ```bash
 # Use smaller LLM
 --reranker_llm Qwen/Qwen3-1.7B  # ~3.4 GB
 
-# Use CPU
---device cpu  # (if parameter exists)
+# Switch from Gazetteer to FTS5 (disk-based)
+# Update domain_models.py to use linking_strategy: "fts5"
 
 # Reduce batch size (if processing in batches)
 ```
+
+### Problem: Segmentation Faults During Large-Scale Processing
+
+**Possible causes:**
+- Pandas C parser buffer issues with long text fields
+- Memory fragmentation from FlashText + pandas combination
+
+**Solutions:**
+1. Switch to FTS5 linker (recommended)
+2. Use Python parser for pandas: `engine='python'`
+3. Process in smaller batches with explicit garbage collection
 
 ---
 
@@ -599,7 +783,26 @@ Cache Hit Rate:
 --linker_type reranker --use_context_for_retrieval false
 ```
 
-### 2. Monitor Cache Performance
+### 2. Use FTS5 for Production Exact Matching
+
+For any domain with exact-match needs, prefer FTS5 over Gazetteer:
+
+```python
+# Instead of:
+"gazetteer": {"enabled": True, "taxonomy_path": "..."}
+
+# Use:
+"gazetteer": {"enabled": False},
+"linking_strategy": "fts5",
+"fts5_linkers": {
+    "entity_type": {
+        "index_path": "indices/domain/taxonomy.db",
+        "taxonomy_source": "SOURCE_NAME"
+    }
+}
+```
+
+### 3. Monitor Cache Performance
 
 Check logs for cache statistics:
 
@@ -609,7 +812,7 @@ Check logs for cache statistics:
 
 Good cache performance = consistent linking decisions.
 
-### 3. Validate on Held-Out Set
+### 4. Validate on Held-Out Set
 
 Don't tune on the same data you evaluate:
 
@@ -619,7 +822,7 @@ Don't tune on the same data you evaluate:
 3. Final evaluation on test set only once
 ```
 
-### 4. Use Reranker for Final Production
+### 5. Use Reranker for Final Production (When Accuracy Matters)
 
 Once you've established baseline with faster methods:
 
@@ -631,7 +834,7 @@ Once you've established baseline with faster methods:
 --linker_type reranker --use_context_for_retrieval false
 ```
 
-### 5. Document Your Configuration
+### 6. Document Your Configuration
 
 Save your optimal configuration:
 
@@ -656,10 +859,14 @@ python src/pipeline.py \
 
 | When you need... | Use this linker | Configuration |
 |------------------|-----------------|---------------|
-| **Zero false positives** | Gazetteer | Enable in domain config |
+| **Zero false positives (small vocab)** | Gazetteer | Enable in domain config |
+| **Zero false positives (large vocab)** | FTS5 ⭐ | `linking_strategy: "fts5"` |
 | **Maximum speed** | Semantic | `--linker_type semantic --threshold 0.6` |
 | **Good balance** | Instruct | `--linker_type instruct --threshold 0.7` |
 | **Best accuracy** | Reranker | `--linker_type reranker --use_context_for_retrieval false` |
 | **Explicit rejection** | Reranker | Same as above + monitor REJECT rate |
+| **Large-scale production** | FTS5 + Semantic/Reranker | Use FTS5 for exact, fallback to semantic for fuzzy |
 
-**Default recommendation**: Start with **Semantic** for exploration, move to **Reranker** for production.
+**Default recommendations:**
+- **For exact matching**: Use **FTS5** (replaces Gazetteer for production)
+- **For semantic matching**: Start with **Semantic** for exploration, move to **Reranker** for production
