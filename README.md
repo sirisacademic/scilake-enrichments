@@ -49,9 +49,9 @@ python src/pipeline.py \
 1. **Extract text** from NIF `.ttl` files in `data/{domain}/*.ttl`
 2. **Expand acronyms** using SciSpacy (Schwartz-Hearst algorithm)
 3. **Detect entities** with domain-specific NER models:
+   - GazetteerLinker (exact matching - extracts AND links in one step)
    - GLiNER (multi-label semantic matching)
    - RoBERTa (fine-tuned for domain)
-   - FTS5/Gazetteer (exact matching against taxonomy)
 4. **Link entities** to controlled vocabularies:
    - Domain-specific taxonomies (IRENA, openMINDS, etc.)
    - Wikidata for additional context
@@ -63,25 +63,37 @@ python src/pipeline.py \
 
 **Components:**
 - **Acronym Expansion**: Uses SciSpacy to detect and expand abbreviations (e.g., "PV" → "photovoltaic")
-- **Exact Matching**: FTS5 or Gazetteer-based string matching against taxonomy terms
+- **GazetteerLinker**: FlashText-based exact matching - **extracts AND links** entities found in taxonomy (non-cancer domains only)
 - **Neural NER**: 
   - **GLiNER**: Multi-label semantic matching (gives model options for ambiguous entities)
   - **RoBERTa**: Domain-specific fine-tuned token classification
-- **Entity Merging**: Deduplicates and resolves overlaps
+  - **AIOner**: Biomedical NER (cancer domain)
+- **Entity Merging**: Deduplicates and resolves overlaps (Gazetteer has priority)
 
-**Output**: Detected entities with character offsets in `.jsonl` format
+**Output**: Detected entities with character offsets in `.jsonl` format. Gazetteer-found entities are already linked.
 
 #### Stage 2: Entity Linking (EL)
 
+**Purpose**: Link entities NOT already linked by GazetteerLinker.
+
 **Components:**
-- **Five linking strategies** (choose based on speed/accuracy needs):
-  1. **Gazetteer Linker**: FlashText exact matches (in-memory)
-  2. **FTS5 Linker** ⭐: SQLite exact matches (disk-based, recommended for production)
-  3. **Semantic Linker**: Fast embedding-based similarity
-  4. **Instruct Linker**: Instruction-tuned embeddings
-  5. **Reranker Linker** ⭐: Two-stage (embedding + LLM reranking) - **Best accuracy**
+- **FTS5Linker** ⭐: SQLite exact matches (disk-based, used for cancer domain)
+- **SemanticLinker**: Fast embedding-based similarity
+- **InstructLinker**: Instruction-tuned embeddings
+- **RerankerLinker** ⭐: Two-stage (embedding + LLM reranking) - **Best accuracy**
 
 **Output**: Entities enriched with taxonomy IDs and Wikidata links
+
+### Domain-Specific Architectures
+
+The pipeline uses different architectures depending on domain characteristics:
+
+| Domain | NER Step | EL Step | Why |
+|--------|----------|---------|-----|
+| **Energy, Neuro, CCAM, Maritime** | GazetteerLinker + Neural NER | Semantic/Reranker | Small taxonomies, low ambiguity |
+| **Cancer** | Neural NER only (no Gazetteer) | FTS5Linker | Large taxonomies, high ambiguity |
+
+**Why the difference?** Cancer domain has large, ambiguous vocabularies (millions of gene symbols like "MET", "ALL", "CAT"). Scanning text with a gazetteer would produce too many false positives. Instead, a specialized NER model extracts entities contextually, then FTS5 links them.
 
 ---
 
@@ -118,6 +130,7 @@ python -m src.pipeline --domain energy --input data/energy --output outputs/ener
 
 **🌍 Run Geotagging**
 
+Example:
 ```bash
 python -m src.pipeline \
   --domain energy \
@@ -126,12 +139,12 @@ python -m src.pipeline \
   --step geotagging \
   --batch_size 8
 ```
-
 You can then link geotagged outputs:
-```bash
+```
 python -m src.geo_linker \
   --input_dir outputs/energy/geotagging-ner \
   --output_dir outputs/energy/geotagging-linked
+
 ```
 
 **🏛️ Run Affiliation Enrichment (AffilGood)**
@@ -186,30 +199,28 @@ python src/pipeline.py \
 
 ## 🔗 Entity Linking Strategies
 
-The pipeline offers **five linking strategies** with different speed/accuracy trade-offs:
+### Important: Extraction vs Linking
 
-| Linker | Speed | Accuracy | GPU | Memory | Best For |
-|--------|-------|----------|-----|--------|----------|
-| **Gazetteer** | ⚡⚡⚡ | 🎯🎯🎯 | No | High | Small taxonomies |
-| **FTS5** ⭐ | ⚡⚡⚡ | 🎯🎯🎯 | No | Low | Production, large vocabularies |
-| **Semantic** | ⚡⚡ | 🎯🎯 | Optional | Medium | Large-scale, CPU-only |
-| **Instruct** | ⚡ | 🎯🎯🎯 | Optional | Medium | Balanced speed/accuracy |
-| **Reranker** ⭐ | 🐢 | 🎯🎯🎯🎯 | Yes (LLM) | High | Highest quality |
+The pipeline has two types of "linkers" that serve different purposes:
 
-### Recommended: FTS5 + Reranker
+| Component | Stage | Purpose | Scans Text? |
+|-----------|-------|---------|-------------|
+| **GazetteerLinker** | NER | Extraction + Linking | Yes |
+| **FTS5/Semantic/Reranker** | EL | Linking only | No |
 
-For production deployments, we recommend:
+**GazetteerLinker** finds entities in text AND links them. **EL linkers** only link entities already found by NER.
 
-1. **FTS5Linker** for exact matching (replaces Gazetteer)
-2. **RerankerLinker** for semantic matching when exact matches fail
+### Linking Strategies Comparison
 
-**Why FTS5 over Gazetteer?**
-- ✅ Disk-based: No memory issues with large vocabularies
-- ✅ Scales to millions of entries
-- ✅ No segmentation faults during large-scale processing
-- ✅ Built-in text normalization (Greek letters, spacing, plurals)
+| Linker | Stage | Speed | Accuracy | GPU | Best For |
+|--------|-------|-------|----------|-----|----------|
+| **GazetteerLinker** | NER | ⚡⚡⚡ | 🎯🎯🎯 | No | Taxonomy-driven discovery |
+| **FTS5Linker** ⭐ | EL | ⚡⚡⚡ | 🎯🎯🎯 | No | Large vocabularies (cancer) |
+| **SemanticLinker** | EL | ⚡⚡ | 🎯🎯 | Optional | Large-scale, CPU-only |
+| **InstructLinker** | EL | ⚡ | 🎯🎯🎯 | Optional | Balanced speed/accuracy |
+| **RerankerLinker** ⭐ | EL | 🐢 | 🎯🎯🎯🎯 | Yes (LLM) | Highest quality |
 
-### Reranker Linker
+### Recommended: Reranker Linker
 
 The **RerankerLinker** uses a two-stage approach for optimal accuracy:
 
@@ -232,30 +243,30 @@ python src/pipeline.py \
 
 **Critical setting**: `--use_context_for_retrieval false` prevents context contamination in Stage 1 while Stage 2 still uses context for validation.
 
-### FTS5 Linker Configuration
+### FTS5Linker (Cancer Domain)
 
-Configure FTS5 in `configs/domain_models.py`:
+For domains with large, ambiguous vocabularies:
 
 ```python
-"energy": {
-    "gazetteer": {"enabled": False},  # Disable FlashText
+# In domain_models.py
+"cancer": {
+    "gazetteer": {"enabled": False},  # No extraction
     "linking_strategy": "fts5",
     "fts5_linkers": {
-        "energytype": {
-            "index_path": "indices/energy/irena.db",
-            "taxonomy_source": "IRENA",
-        }
+        "gene": {
+            "index_path": "indices/cancer/ncbi_gene.db",
+            "taxonomy_source": "NCBI_Gene",
+        },
+        ...
     }
 }
 ```
 
-Build FTS5 indices:
-```bash
-python src/build_fts5_indices.py \
-    --taxonomy taxonomies/energy/IRENA.tsv \
-    --output indices/energy/irena.db \
-    --source IRENA
-```
+**Features:**
+- ✅ Disk-based (no memory issues)
+- ✅ Text normalization (Greek letters → Latin: "IFN-γ" → "IFNG")
+- ✅ Frequency-based disambiguation
+- ✅ Scales to millions of entries
 
 **See detailed comparison and configuration:** [ENTITY_LINKING_README.md](docs/ENTITY_LINKING_README.md)  
 **Deep dive into RerankerLinker:** [RERANKER_GUIDE.md](docs/RERANKER_GUIDE.md)
@@ -292,10 +303,6 @@ The pipeline is optimized for large-scale processing:
    --batch_size 100  # Process 100 files per batch
    ```
 
-5. **Memory-Safe**: FTS5 for large vocabularies without OOM
-   - Gazetteer (FlashText) can cause memory issues at scale
-   - FTS5 uses disk-based SQLite indices
-
 ### Monitoring Progress
 
 **Cache statistics** (every 500 files):
@@ -324,13 +331,13 @@ The pipeline is optimized for large-scale processing:
 
 ### Supported Domains & Knowledge Bases
 
-| Domain | Knowledge Base | Notes |
-|--------|----------------|-------|
-| **Energy** | IRENA | Renewable energy taxonomy (~9000 concepts) |
-| **Neuro** | openMINDS, UBERON | CNS-limited neuroanatomy |
-| **CCAM** | Project-specific | Transport/mobility concepts |
-| **Maritime** | Project taxonomy | Maritime domain terms |
-| **Cancer** | NCBI, DO, MeSH, DrugBank | Biomedical baseline (millions of entries) |
+| Domain | Knowledge Base | Architecture |
+|--------|----------------|--------------|
+| **Energy** | IRENA (~9k concepts) | Gazetteer + NER → Semantic/Reranker |
+| **Neuro** | openMINDS, UBERON | Gazetteer + NER → Semantic/Reranker |
+| **CCAM** | Project-specific | Gazetteer + NER → Semantic/Reranker |
+| **Maritime** | Project taxonomy | Gazetteer + NER → Semantic/Reranker |
+| **Cancer** | NCBI, DO, MeSH, DrugBank | NER only → FTS5 |
 
 **Fallback**: Wikification for unknown entities
 
@@ -340,29 +347,43 @@ Edit `configs/domain_models.py`:
 
 ```python
 DOMAIN_MODELS = {
+    # Non-cancer: Gazetteer enabled
     "energy": {
+        "gazetteer": {
+            "enabled": True,
+            "taxonomy_path": "taxonomies/energy/IRENA.tsv",
+            "taxonomy_source": "IRENA",
+            "min_term_length": 2,
+        },
         "models": [
             {
                 "name": "SIRIS-Lab/SciLake-Energy-roberta-base",
                 "type": "roberta",
                 "threshold": 0.85,
-                "output_labels": ["EnergyType", "EnergyStorage"],
             }
         ],
-        # Use FTS5 for production (recommended)
+    },
+    
+    # Cancer: Gazetteer disabled, FTS5 for linking
+    "cancer": {
         "gazetteer": {"enabled": False},
         "linking_strategy": "fts5",
         "fts5_linkers": {
-            "energytype": {
-                "index_path": "indices/energy/irena.db",
-                "taxonomy_source": "IRENA",
-            }
-        }
+            "gene": {
+                "index_path": "indices/cancer/ncbi_gene.db",
+                "taxonomy_source": "NCBI_Gene",
+            },
+            "disease": {
+                "index_path": "indices/cancer/doid_disease.db",
+                "taxonomy_source": "DOID",
+                "blocked_mentions": {"patient", "patients", ...},
+            },
+        },
     }
 }
 ```
 
-**Key principle**: For large-scale production, use FTS5 instead of Gazetteer to avoid memory issues and segmentation faults.
+**Key principle**: Multi-label NER configuration is critical for GLiNER. Providing alternative categories (like "transportation" for energy domain) dramatically improves accuracy by helping the model reject ambiguous entities.
 
 ---
 
@@ -452,13 +473,15 @@ scilake-enrichments/
 │
 ├── docs/
 │   ├── ARCHITECTURE_OVERVIEW.md # System architecture
-│   ├── ENTITY_LINKING_README.md # Linking strategies guide (5 linkers)
+│   ├── ENTITY_LINKING_README.md # Linking strategies guide
 │   ├── RERANKER_GUIDE.md        # RerankerLinker deep dive
 │   └── CONFIGURATION_GUIDE.md   # Configuration recipes
 │
-├── indices/                     # FTS5 SQLite indices
-│   └── {domain}/
-│       └── *.db                 # Pre-built FTS5 databases
+├── indices/                     # FTS5 SQLite indices (cancer domain)
+│   └── cancer/
+│       ├── ncbi_gene.db
+│       ├── doid_disease.db
+│       └── ...
 │
 ├── outputs/
 │   └── {domain}/
@@ -476,14 +499,14 @@ scilake-enrichments/
 │   ├── pipeline.py              # Main orchestrator
 │   ├── ner_runner.py            # NER inference logic
 │   ├── nif_reader.py            # NIF parsing & acronym expansion
-│   ├── gazetteer_linker.py      # FlashText exact matching
-│   ├── fts5_linker.py           # SQLite FTS5 exact matching ⭐
+│   ├── gazetteer_linker.py      # Extraction + Linking (NER step)
+│   ├── fts5_linker.py           # Linking only (EL step, cancer)
 │   ├── build_fts5_indices.py    # Build FTS5 indices
 │   ├── semantic_linker.py       # Semantic similarity linking
 │   ├── instruct_linker.py       # Instruction-based linking
-│   ├── reranker_linker.py       # Two-stage reranking ⭐
-│   ├── geo_linker.py            # Geographic entity linking
-│   ├── geotagging_runner.py     # Geotagging pipeline
+│   ├── reranker_linker.py       # Two-stage reranking
+│   ├── geo_linker.py            # Geotagging linker
+│   ├── geotagging_runner.py     # Geotagging runner
 │   ├── affilgood_runner.py      # Affiliation enrichment
 │   └── utils/
 │       ├── io_utils.py
@@ -510,9 +533,9 @@ scilake-enrichments/
 | Low linking rate (<80%) | `--threshold 0.6` or `--linker_type reranker` | [ENTITY_LINKING_README.md](docs/ENTITY_LINKING_README.md#troubleshooting) |
 | Too many false positives | `--use_context_for_retrieval false` (Reranker) | [RERANKER_GUIDE.md](docs/RERANKER_GUIDE.md#troubleshooting) |
 | Slow processing | `--linker_type semantic` or wait for cache warmup | [CONFIGURATION_GUIDE.md](docs/CONFIGURATION_GUIDE.md) |
-| Out of memory | Use FTS5 instead of Gazetteer, or run stages separately | [README.md](#out-of-memory-gpu) |
-| Segmentation faults | Switch to FTS5 linker | [README.md](#segmentation-faults) |
+| Out of memory | Run `--step ner` and `--step el` separately | [README.md](#out-of-memory-gpu) |
 | Pipeline interrupted | Add `--resume` flag | [README.md](#pipeline-interrupted) |
+| Segmentation faults | Process smaller batches (Gazetteer issue) | [README.md](#segmentation-faults) |
 
 ### Common Issues
 
@@ -581,33 +604,9 @@ python src/pipeline.py --domain energy --step el --output outputs/energy
 
 # Reduce batch size
 --batch_size 50
-
-# Switch to FTS5 (disk-based) instead of Gazetteer (in-memory)
-# Update domain_models.py to use linking_strategy: "fts5"
 ```
 
-**Memory requirements:** NER: ~3GB | EL (Reranker): ~5-8GB | EL (FTS5 only): ~1-2GB
-</details>
-
-<details>
-<summary><b>Segmentation Faults</b></summary>
-
-This typically occurs during large-scale processing with the Gazetteer (FlashText) + pandas combination:
-
-**Solutions:**
-1. **Switch to FTS5 linker** (recommended):
-   ```python
-   # In domain_models.py
-   "linking_strategy": "fts5",
-   "gazetteer": {"enabled": False}
-   ```
-
-2. Use Python parser for pandas:
-   ```python
-   pd.read_csv(file, engine='python')
-   ```
-
-3. Process in smaller batches with explicit garbage collection
+**Memory requirements:** NER: ~3GB | EL (Reranker): ~5-8GB
 </details>
 
 <details>
@@ -626,6 +625,19 @@ The pipeline automatically:
 - ✅ Loads checkpoint from `outputs/energy/checkpoints/processed.json`
 - ✅ Skips already-processed files  
 - ✅ Preserves existing cache
+</details>
+
+<details>
+<summary><b>Segmentation Faults (Gazetteer at Scale)</b></summary>
+
+This occurs with FlashText + pandas at scale (~300+ files).
+
+**Solutions:**
+1. Process in smaller batches: `--batch_size 50`
+2. Use Python parser for pandas (in code): `engine='python'`
+3. For large vocabularies: consider cancer-style architecture (NER → FTS5)
+
+**Note:** This is a known limitation of the FlashText-based GazetteerLinker. See [LINKER_ARCHITECTURE_TRACKER.md](docs/LINKER_ARCHITECTURE_TRACKER.md) for details.
 </details>
 
 **For detailed troubleshooting guides, see:**
@@ -693,9 +705,10 @@ This README provides a quick start and overview. For detailed information:
 | Document | Contents | When to Read |
 |----------|----------|--------------|
 | **[ARCHITECTURE_OVERVIEW.md](docs/ARCHITECTURE_OVERVIEW.md)** | System architecture, data flow, component details, performance characteristics | Understanding how the system works internally |
-| **[ENTITY_LINKING_README.md](docs/ENTITY_LINKING_README.md)** | Complete guide to all 5 linking approaches, when to use each, configuration examples | Choosing and configuring a linker |
+| **[ENTITY_LINKING_README.md](docs/ENTITY_LINKING_README.md)** | Complete guide to linking approaches, when to use each, configuration examples | Choosing and configuring a linker |
 | **[RERANKER_GUIDE.md](docs/RERANKER_GUIDE.md)** | Deep dive into RerankerLinker: two-stage architecture, prompt engineering, optimization | Using the recommended approach for production |
 | **[CONFIGURATION_GUIDE.md](docs/CONFIGURATION_GUIDE.md)** | Configuration recipes (high precision, high recall, speed, balanced), taxonomy preparation, testing | Setting up for your specific use case |
+| **[LINKER_ARCHITECTURE_TRACKER.md](docs/LINKER_ARCHITECTURE_TRACKER.md)** | Internal notes on Gazetteer vs FTS5 design decisions, known limitations, future plans | Understanding architectural choices |
 
 ### Quick Links by Topic
 
@@ -731,7 +744,7 @@ When adding new domains:
 
 1. Add model configuration to `configs/domain_models.py`
 2. Create taxonomy file in `taxonomies/{domain}/`
-3. Build FTS5 index: `python src/build_fts5_indices.py --taxonomy ... --output ...`
+3. If using FTS5, build index: `python src/build_fts5_indices.py --taxonomy ... --output ... --source ...`
 4. Test on small sample (100-500 docs) before full processing
 5. Document domain-specific considerations
 6. Submit PR with evaluation results
@@ -744,7 +757,7 @@ Apache-2.0
 
 ---
 
-## 💡 Support
+## 👋 Support
 
 For issues or questions:
 
@@ -766,5 +779,5 @@ This work is part of the **SciLake Project**, which aims to create a coherent ec
 - [Sentence Transformers](https://www.sbert.net/) - Semantic embeddings
 - [Qwen](https://github.com/QwenLM/Qwen) - LLM for reranking
 - [SciSpacy](https://allenai.github.io/scispacy/) - Scientific text processing
+- [SQLite FTS5](https://www.sqlite.org/fts5.html) - Full-text search
 - [NIF](http://persistence.uni-leipzig.org/nlp2rdf/) - RDF format for NLP
-- [SQLite FTS5](https://www.sqlite.org/fts5.html) - Full-text search for exact matching

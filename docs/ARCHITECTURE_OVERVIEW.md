@@ -4,6 +4,8 @@
 
 The SciLake pipeline is a two-stage system for extracting and linking domain-specific entities from scientific literature in NIF/RDF format.
 
+### High-Level Flow
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    INPUT: NIF/RDF Files (.ttl)                   │
@@ -17,10 +19,11 @@ The SciLake pipeline is a two-stage system for extracting and linking domain-spe
 │  Components:                                                     │
 │  1. NIF Parser → Extract text + structure                       │
 │  2. Acronym Expansion → Schwartz-Hearst algorithm (SciSpacy)    │
-│  3. Gazetteer/FTS5 Matching → Exact matching against taxonomy   │
+│  3. GazetteerLinker → Extract + Link (non-cancer domains only)  │
 │  4. Neural NER:                                                  │
 │     • GLiNER (multi-label semantic matching)                    │
 │     • RoBERTa (domain-specific fine-tuned)                      │
+│     • AIOner (biomedical - cancer domain)                       │
 │  5. Entity Merging → Deduplicate & resolve overlaps             │
 └────────────────────────────────┬────────────────────────────────┘
                                  │
@@ -28,69 +31,42 @@ The SciLake pipeline is a two-stage system for extracting and linking domain-spe
 ┌─────────────────────────────────────────────────────────────────┐
 │               OUTPUT: Detected Entities (.jsonl)                 │
 │                                                                  │
-│  {                                                               │
-│    "text": "wind turbines",                                      │
-│    "entity": "energytype",                                       │
-│    "start": 42,                                                  │
-│    "end": 55,                                                    │
-│    "model": "RoBERTa",                                           │
-│    "linking": null  ← Not yet linked                             │
-│  }                                                               │
+│  Gazetteer entities: Already linked (linking: {...})            │
+│  NER entities: Not yet linked (linking: null)                   │
 └────────────────────────────────┬────────────────────────────────┘
                                  │
                                  ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                  STAGE 2: Entity Linking (NEL)                   │
 ├─────────────────────────────────────────────────────────────────┤
-│  Linker Options (choose one):                                   │
+│  Links entities NOT already linked by GazetteerLinker           │
+│                                                                  │
+│  Linker Options:                                                │
 │                                                                  │
 │  ┌──────────────────────────────────────────┐                   │
-│  │ 1. GazetteerLinker (runs during NER)     │                   │
-│  │    • FlashText exact string matching      │                   │
-│  │    • In-memory, fast                      │                   │
-│  │    • Limited to small/medium taxonomies   │                   │
+│  │ FTS5Linker ⭐ (cancer domain)            │                   │
+│  │   • SQLite FTS5 exact matching           │                   │
+│  │   • Per-entity-type indices              │                   │
+│  │   • Disk-based, scales to millions       │                   │
 │  └──────────────────────────────────────────┘                   │
 │                                                                  │
 │  ┌──────────────────────────────────────────┐                   │
-│  │ 2. FTS5Linker ⭐ (Recommended for prod)  │                   │
-│  │    • SQLite FTS5 exact matching           │                   │
-│  │    • Disk-based, no memory issues         │                   │
-│  │    • Scales to millions of entries        │                   │
-│  │    • Built-in text normalization          │                   │
+│  │ SemanticLinker                           │                   │
+│  │   • Embedding similarity                 │                   │
+│  │   • Fast, fuzzy matching                 │                   │
 │  └──────────────────────────────────────────┘                   │
 │                                                                  │
 │  ┌──────────────────────────────────────────┐                   │
-│  │ 3. SemanticLinker                        │                   │
-│  │    • Embedding similarity (e5-base)      │                   │
-│  │    • Fast (~10-20ms per entity)          │                   │
-│  │    • Good for simple matching            │                   │
+│  │ InstructLinker                           │                   │
+│  │   • Instruction-tuned embeddings         │                   │
+│  │   • Better context understanding         │                   │
 │  └──────────────────────────────────────────┘                   │
 │                                                                  │
 │  ┌──────────────────────────────────────────┐                   │
-│  │ 4. InstructLinker                        │                   │
-│  │    • Instruction-tuned embeddings        │                   │
-│  │    • Better context understanding        │                   │
-│  │    • Balanced speed/accuracy             │                   │
-│  └──────────────────────────────────────────┘                   │
-│                                                                  │
-│  ┌──────────────────────────────────────────┐                   │
-│  │ 5. RerankerLinker ⭐ (Best accuracy)     │                   │
-│  │    ┌─────────────────────────────────────┤                   │
-│  │    │ Stage 1: Embedding Retrieval       ││                   │
-│  │    │ • Fast candidate selection         ││                   │
-│  │    │ • Entity-only or with context      ││                   │
-│  │    │ • Top-k candidates + fallbacks     ││                   │
-│  │    │ • ~10-20ms                         ││                   │
-│  │    ├─────────────────────────────────────┤                   │
-│  │                   │                       │                   │
-│  │                   ▼                       │                   │
-│  │    ├─────────────────────────────────────┤                   │
-│  │    │ Stage 2: LLM Reranking             ││                   │
-│  │    │ • Context-aware validation         ││                   │
-│  │    │ • Can REJECT non-domain entities   ││                   │
-│  │    │ • Selects best match or rejects    ││                   │
-│  │    │ • ~50-100ms                        ││                   │
-│  │    └─────────────────────────────────────┘                   │
+│  │ RerankerLinker ⭐ (Recommended)          │                   │
+│  │   • Stage 1: Embedding retrieval         │                   │
+│  │   • Stage 2: LLM reranking               │                   │
+│  │   • Can REJECT non-domain entities       │                   │
 │  └──────────────────────────────────────────┘                   │
 │                                                                  │
 │  Features:                                                       │
@@ -124,6 +100,64 @@ The SciLake pipeline is a two-stage system for extracting and linking domain-spe
 
 ---
 
+## Domain-Specific Architectures
+
+The pipeline uses different architectures depending on domain characteristics:
+
+### Non-Cancer Domains (Energy, Neuro, CCAM, Maritime)
+
+```
+NER Step:
+  ┌─────────────────┐     ┌─────────────────┐
+  │ GazetteerLinker │     │   Neural NER    │
+  │ (FlashText)     │     │ (GLiNER/RoBERTa)│
+  │                 │     │                 │
+  │ Extracts AND    │     │ Extracts only   │
+  │ links entities  │     │ (no linking)    │
+  └────────┬────────┘     └────────┬────────┘
+           │                       │
+           └───────────┬───────────┘
+                       ▼
+              ┌────────────────┐
+              │  Merge Results │
+              │  (Gaz priority)│
+              └────────┬───────┘
+                       │
+EL Step:               ▼
+              ┌────────────────┐
+              │ Link unlinked  │
+              │ entities via   │
+              │ Semantic/      │
+              │ Reranker       │
+              └────────────────┘
+```
+
+**Why this works:** Small/medium taxonomies (~9K-50K entries) with unambiguous terms.
+
+### Cancer Domain
+
+```
+NER Step:
+              ┌─────────────────┐
+              │   Neural NER    │
+              │    (AIOner)     │
+              │                 │
+              │ Extracts only   │
+              │ (no Gazetteer)  │
+              └────────┬────────┘
+                       │
+EL Step:               ▼
+              ┌────────────────┐
+              │  FTS5Linker    │
+              │ (per entity    │
+              │  type indices) │
+              └────────────────┘
+```
+
+**Why this works:** Large vocabularies (millions of entries) with ambiguous terms (gene symbols like "MET", "ALL", "CAT"). Gazetteer would produce too many false positives scanning text.
+
+---
+
 ## Component Details
 
 ### 1. NER Stage Components
@@ -138,21 +172,18 @@ The SciLake pipeline is a two-stage system for extracting and linking domain-spe
 - Processes per section for consistency
 - Example: "PV" → "photovoltaic"
 
-#### **Exact Matching Options**
+#### **GazetteerLinker** (`gazetteer_linker.py`) - Extraction + Linking
 
-**GazetteerLinker** (`gazetteer_linker.py`):
+**Purpose:** Scans text during NER step to find AND link taxonomy terms.
+
 - FlashText-based in-memory matching
 - Uses taxonomy terms + Wikidata aliases
-- Instant linking for exact matches
-- Zero false positives
-- ⚠️ Known issues: Offset bugs with special characters, memory issues at scale
+- **Runs during NER step** (not EL step)
+- Both extracts and links in one operation
+- Zero false positives on matches
+- ⚠️ Known issues: Offset bugs with special characters, memory issues at scale (~300+ files)
 
-**FTS5Linker** (`fts5_linker.py`) ⭐ **Recommended**:
-- SQLite FTS5-based disk storage
-- Scales to millions of entries without memory issues
-- Built-in text normalization (Greek letters, spacing, plurals)
-- Frequency-based disambiguation
-- Production-ready for large-scale processing
+**Used by:** Non-cancer domains (Energy, Neuro, CCAM, Maritime)
 
 #### **Neural NER Models**
 
@@ -194,9 +225,13 @@ Two modes available:
       ← 3 tokens      3 tokens →
 ```
 
-#### **FTS5Linker: Exact Matching at Scale**
+#### **FTS5Linker: Linking Only (EL Step)** ⭐
 
-The FTS5Linker provides production-ready exact matching using SQLite FTS5:
+The FTS5Linker provides production-ready exact matching using SQLite FTS5. Unlike GazetteerLinker, it does **not scan text** - it receives entities already extracted by NER and looks them up.
+
+**Purpose:** Link entities that were extracted by Neural NER (not extraction).
+
+**Used by:** Cancer domain (large, ambiguous vocabularies)
 
 ```
 1. Pre-build SQLite FTS5 Index:
@@ -204,7 +239,7 @@ The FTS5Linker provides production-ready exact matching using SQLite FTS5:
        --taxonomy taxonomies/cancer/NCBI_GENE.tsv \
        --output indices/cancer/ncbi_gene.db
 
-2. Matching Strategy:
+2. Matching Strategy (for each entity from NER):
    a. Try exact match on concept column (case-insensitive)
    b. Try exact match on synonyms
    c. Try normalized variants:
@@ -214,15 +249,17 @@ The FTS5Linker provides production-ready exact matching using SQLite FTS5:
    d. Disambiguate by frequency if multiple matches
 ```
 
-**Why FTS5 over Gazetteer?**
+**GazetteerLinker vs FTS5Linker:**
 
-| Issue | Gazetteer (FlashText) | FTS5 (SQLite) |
-|-------|----------------------|---------------|
-| Memory usage | High (in-memory) | Low (disk-based) |
-| Large vocabularies | ❌ OOM risk | ✅ Millions of entries |
-| Segmentation faults | ❌ With pandas C parser | ✅ No issues |
-| Offset bugs | ❌ With special chars | ✅ Reliable |
-| Text normalization | ❌ Manual | ✅ Built-in |
+| Aspect | GazetteerLinker | FTS5Linker |
+|--------|-----------------|------------|
+| **Stage** | NER step | EL step |
+| **Purpose** | Extraction + Linking | Linking only |
+| **Scans text?** | Yes | No |
+| **Memory** | High (in-memory) | Low (disk-based) |
+| **Large vocabularies** | ❌ OOM risk | ✅ Millions of entries |
+| **Text normalization** | ❌ No | ✅ Built-in |
+| **Disambiguation** | First match wins | Frequency-based |
 
 #### **Embedding-Based Retrieval**
 
