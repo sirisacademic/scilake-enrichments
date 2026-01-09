@@ -15,7 +15,10 @@ Each domain defines:
 """
 
 DOMAIN_MODELS = {
+
+    #### NEURO ####
     "neuro": {
+        # Gazetteer settings
         "gazetteer": {
             "enabled": True,
             "taxonomy_path": "taxonomies/neuro/Neuroscience_Combined.tsv",
@@ -23,6 +26,10 @@ DOMAIN_MODELS = {
             "model_name": "Neuroscience-Gazetteer",
             "default_type": "UBERONParcellation"
         },
+        # Set of ignored mentions that can be artifacts of the NER models.
+        # This can be defined in general or at entity-type level (see example in cancer domain)
+        "blocked_mentions": {},
+        # Model configurations
         "models": [
             {
                 "name": "SIRIS-Lab/SciLake-Neuroscience-GLiNER-large",
@@ -38,6 +45,9 @@ DOMAIN_MODELS = {
                 ],
             },
         ],
+        # Min. length of mentions extracted by NER models.
+        # This could be set at entity-type level, too - see example in "cancer".
+        "min_mention_length": 2,
         # Domain-level labels for GLiNER (alternative lookup)
         "labels": {
             "gliner": [
@@ -54,7 +64,9 @@ DOMAIN_MODELS = {
         },
     },
     
+    ##### CCAM ####
     "ccam": {
+        # Gazetteer settings
         "gazetteer": {
             "enabled": True,
             "taxonomy_path": "taxonomies/ccam/CCAM_Combined.tsv",
@@ -80,6 +92,13 @@ DOMAIN_MODELS = {
                 'assessment', 'evaluation', 'validation', 'verification',
             }
         },
+        # Min. length of mentions extracted by NER models.
+        # This could be set at entity-type level, too - see example in "cancer".
+        "min_mention_length": 2,       
+        # Set of ignored mentions that can be artifacts of the NER models.
+        # This can be defined in general or at entity-type level (see example in cancer domain)
+        "blocked_mentions": {},
+        # Model configurations
         "models": [
             {
                 "name": "SIRIS-Lab/SciLake-CCAM-roberta-large-vehicle-vru",
@@ -114,7 +133,8 @@ DOMAIN_MODELS = {
             "default": "Project-specific CCAM vocabulary (pilot sheet)",
         },
     },
-    
+
+    #### ENERGY ####
     "energy": {
         "gazetteer": {
             "enabled": True,
@@ -123,6 +143,28 @@ DOMAIN_MODELS = {
             "model_name": "IRENA-Gazetteer",
             "default_type": "EnergyType"
         },
+        # Min. length of mentions extracted by NER models.
+        # This could be set at entity-type level, too - see example in "cancer".
+        "min_mention_length": 2,
+        # Set of ignored mentions that can be artifacts of the NER models.
+        # This can be defined in general or at entity-type level (see example in cancer domain)
+        "blocked_mentions": {
+            "aerosol", "aerosols", "agribusiness", "agrochemicals", "air preheater", "alkali", "alkaline", "alkaline sorbent", "ammonia borane", "ammonium",
+            "anthropogenic aerosols", "asphalt", "basalt", "biofertilizers", "biogenic", "biogenic co 2", "biopolymers", "bivalve", "bromine", "cadmium",
+            "calcium aluminate", "califonria", "candle lighting", "carbon", "carbon dioxide", "cascade heat exchanger", "cellulose nanomaterials", "co",
+            "coals", "cobalt", "cocoa beans", "cocoa butter", "cracked", "cracked micro beams", "crassulacean acid", "date palm", "dihydrogen",
+            "dish reflector", "dri-eaf", "dso", "electric arc furnace slag", "electric boilers", "electric heaters", "electrified",
+            "electrochemical ammonia", "electrolytic manganese slag", "energy", "exchangers", "fertilizer", "fin heat exchangers", "fluorinated",
+            "fly ash cement paste", "gas boiler", "gas-carbon", "gas ccs", "greenhouse", "greenhouse gas", "ground", "heat exchangers", "hybrid",
+            "hydrochlorofluorocarbons", "internal", "internal combustion engine", "internal combustion engine cars", "iron ore", "isopropanol",
+            "jet engines", "karst aquifers", "lithium polysulfide", "manganese", "manganese slag", "manure", "methanotrophs", "molten salt",
+            "monocyclic", "nadph", "nanoparticles", "nh3", "nitric", "nitrification", "nitrite", "nox", "nuclides", "particulate", "pfass",
+            "pha", "phosphogypsum", "phosphoric", "phosphoric acid", "phosphorus", "pin fin heat exchanger", "pin heat exchanger", "potassium", 
+            "ppo", "proton", "pyrolytic", "pyruvate", "rap", "rare", "reheater", "sand", "sdfb", "selenoproteins", "slag", "so2", "sodium", "soot",
+            "soot aerosol", "soybean", "soybeans", "ste", "steel", "sulfate", "syngas-hydrogen", "synthesis gas", "thermal power", "thiosulfate",
+            "tsos", "ups", "volcanic", "west texas intermediate"
+        },
+        # Model configurations
         "models": [
             {
                 "name": "SIRIS-Lab/SciLake-Energy-roberta-base",
@@ -139,7 +181,8 @@ DOMAIN_MODELS = {
             "default": "IRENA energy taxonomy",
         },
     },
-    
+
+    #### MARITIME ####
     "maritime": {
         "gazetteer": {
             "enabled": True,
@@ -148,6 +191,13 @@ DOMAIN_MODELS = {
             "model_name": "Maritime-Gazetteer",
             "default_type": "vesselType"
         },
+        # Min. length of mentions extracted by NER models.
+        # This could be set at entity-type level, too - see example in "cancer".
+        "min_mention_length": 2,
+        # Set of ignored mentions that can be artifacts of the NER models.
+        # This can be defined in general or at entity-type level (see example in cancer domain)
+        "blocked_mentions": {},
+        # Model configurations
         "models": [
             {
                 "name": "SIRIS-Lab/SciLake-Maritime-roberta-base",
@@ -164,12 +214,24 @@ DOMAIN_MODELS = {
             "default": "Maritime ontology provided by partners",
         },
     },
-    
+
+    #### CANCER ####
     "cancer": {
         # Disable combined gazetteer - use FTS5 per entity type instead
         "gazetteer": {
             "enabled": False,
         },
+        # Global minimum length for NER-extracted mentions (all entity types).
+        # This could also be set per-entity type:
+        # For example:
+        #"min_mention_length": {
+        #    "gene": 2,        # Gene symbols can be short (P53)
+        #    "species": 3,     # Species names longer
+        #    "disease": 3,     # Disease names longer
+        #    "_default": 2,    # Fallback for unlisted types
+        #},
+        "min_mention_length": 2,
+        # Model configurations        
         "models": [
             {
                 "name": "SIRIS-Lab/AIObioEnts-core-pubmedbert-full",
@@ -194,8 +256,7 @@ DOMAIN_MODELS = {
             "Chemical": "DrugBank",
             "Species": "NCBI Taxonomy",
         },
-        
-        # New: FTS5-based linking strategy
+        # FTS5-based linking strategy
         "linking_strategy": "fts5",
         
         # FTS5 linker configuration per entity type
@@ -209,7 +270,30 @@ DOMAIN_MODELS = {
                 "index_path": "indices/cancer/ncbi_species.db",
                 "taxonomy_source": "NCBI_Taxonomy",
                 "taxonomy_path": "taxonomies/cancer/NCBI_SPECIES.tsv",
-                "blocked_mentions": {
+            },
+            "disease": {
+                "index_path": "indices/cancer/doid_disease.db",
+                "taxonomy_source": "DOID",
+                "taxonomy_path": "taxonomies/cancer/DOID_DISEASE.tsv",
+            },
+            "chemical": {
+                "index_path": "indices/cancer/drugbank_chemical.db",
+                "taxonomy_source": "DrugBank",
+                "taxonomy_path": "taxonomies/cancer/DRUGBANK_CHEMICAL.tsv",
+            },
+            "cellline": {
+                "index_path": "indices/cancer/brenda_cellline.db",
+                "taxonomy_source": "BRENDA",
+                "taxonomy_path": "taxonomies/cancer/BRENDA_CELLLINE.tsv",
+            },
+            # Variant: skip for now (no vocabulary)
+        },
+
+        # Set of ignored mentions that can be artifacts of the NER models.
+        # This could be defined as a set for all entities or at entity-level, as in this case.
+        # Per-entity-type blocked mentions
+        "blocked_mentions": {
+                "species": {
                     # === Original blocked terms ===
                     "patient", "patients", 
                     "man", "men", "woman", "women",
@@ -232,20 +316,10 @@ DOMAIN_MODELS = {
                     "plant",
                     # Colors (false positives from species names)
                     "green", "red", "black",
-                    # Single letters and numbers (noise)
-                    "a", "b", "c", "e", "h", "m", "s",
-                    "1", "2",
                     # Other noise/false positives
                     "ad", "nod", "gas", "waterpipe", "spions",
-                    # Punctuation artifacts
-                    "-", ".", "- 19",
                 },
-            },
-            "disease": {
-                "index_path": "indices/cancer/doid_disease.db",
-                "taxonomy_source": "DOID",
-                "taxonomy_path": "taxonomies/cancer/DOID_DISEASE.tsv",
-                "blocked_mentions": {
+                "disease": {
                     # === Biological processes / mechanisms (not diseases) ===
                     "inflammatory", "inflammation", "chronic inflammation", "proinflammatory",
                     "toxicity", "toxicities", "cytotoxicity", "cytotoxic",
@@ -308,18 +382,6 @@ DOMAIN_MODELS = {
                     "ov",    # likely abbreviation noise
                     "breast",  # anatomical term, not disease
                 },
-            },
-            "chemical": {
-                "index_path": "indices/cancer/drugbank_chemical.db",
-                "taxonomy_source": "DrugBank",
-                "taxonomy_path": "taxonomies/cancer/DRUGBANK_CHEMICAL.tsv",
-            },
-            "cellline": {
-                "index_path": "indices/cancer/brenda_cellline.db",
-                "taxonomy_source": "BRENDA",
-                "taxonomy_path": "taxonomies/cancer/BRENDA_CELLLINE.tsv",
-            },
-            # Variant: skip for now (no vocabulary)
-        },
+        },        
     },
 }

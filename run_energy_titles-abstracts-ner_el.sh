@@ -1,15 +1,14 @@
 #!/bin/bash
 export PYTHONPATH="$(dirname "$0"):$PYTHONPATH"
-
-# !!! Run with --resume to resume from previous run !!!
-
+    
 python src/pipeline.py \
-    --step gaz \
-    --domain neuro \
-    --taxonomy taxonomies/neuro/Neuroscience_Combined.tsv \
-    --taxonomy_source OPENMINDS-UBERON \
-    --input data/neuro-all-ft \
-    --output outputs/neuro-all-ft-gaz \
+    --domain energy \
+    --step all \
+    --input_format title_abstract \
+    --taxonomy taxonomies/energy/IRENA.tsv \
+    --taxonomy_source IRENA \
+    --input /root/scilake-enrichments/data/title_abstract_json/sample-energy_titleabstract.json \
+    --output outputs/sample-energy-titleabstract \
     --linker_type reranker \
     --el_model_name intfloat/multilingual-e5-large-instruct \
     --threshold 0.70 \

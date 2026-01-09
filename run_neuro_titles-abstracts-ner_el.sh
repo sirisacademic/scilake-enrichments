@@ -1,15 +1,14 @@
 #!/bin/bash
 export PYTHONPATH="$(dirname "$0"):$PYTHONPATH"
 
-# !!! Run with --resume to resume from previous run !!!
-
 python src/pipeline.py \
-    --step gaz \
-    --domain ccam \
-    --taxonomy taxonomies/ccam/CCAM_Combined.tsv \
-    --taxonomy_source SINFONICA-FAME \
-    --input data/ccam-all-ft \
-    --output outputs/ccam-all-ft-gaz \
+    --domain neuro \
+    --step all \
+    --input_format title_abstract \
+    --taxonomy taxonomies/neuro/Neuroscience_Combined.tsv \
+    --taxonomy_source OPENMINDS-UBERON \
+    --input /root/scilake-enrichments/data/title_abstract_json/neuro_titleabstract.json \
+    --output outputs/neuro-titleabstract \
     --linker_type reranker \
     --el_model_name intfloat/multilingual-e5-large-instruct \
     --threshold 0.70 \

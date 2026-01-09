@@ -213,7 +213,6 @@ pipeline_comparison_results/
 tmp/
 test/
 taxonomies/
-scripts/
 analysis/
 indices/
 
@@ -222,13 +221,11 @@ indices/
 !scripts/build_fts5_indices.py
 !scripts/sample_extractor.py
 
-
-
 # LibreOffice / OpenOffice lock files
 .~lock.*#
 
+*bkp*
 *BKP*
-BKP*
 nohup.out
 *.tgz
 
@@ -242,8 +239,4 @@ irena_wikidata_enrichment.py
 jsonl2json.sh
 ner_log_analyzer.py
 
-affilgood
-affilgood/
-
-affilgood/
-affilgood/
+affilgood*
