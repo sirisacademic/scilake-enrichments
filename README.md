@@ -1,8 +1,10 @@
 # SciLake NER & Entity Linking Pipeline
 
-Python pipeline for extracting domain-specific entities from scientific literature (NIF/RDF format) and linking them to controlled vocabularies.
+Python pipeline for extracting domain-specific entities from scientific literature and linking them to controlled vocabularies.
 
 **Supported domains**: Energy, Neuro, CCAM (transport), Maritime, Cancer
+
+**Supported input formats**: NIF/RDF files, Title/Abstract JSON, Legal Text JSON
 
 ---
 
@@ -42,20 +44,104 @@ python src/pipeline.py \
 
 ---
 
+## 📥 Input Formats
+
+The pipeline supports three input formats:
+
+| Format | Flag | Description | Use Case |
+|--------|------|-------------|----------|
+| `nif` (default) | `--input_format nif` | NIF/RDF TTL files | Full-text scientific papers |
+| `title_abstract` | `--input_format title_abstract` | JSON with title/abstract | OpenAIRE metadata |
+| `legal_text` | `--input_format legal_text` | JSON with legal documents | Regulatory texts (e.g., Fedlex) |
+
+### NIF Format (Default)
+
+Standard NIF/RDF format with `.ttl` files:
+
+```bash
+python src/pipeline.py \
+    --domain energy \
+    --input data/energy \
+    --output outputs/energy \
+    --step all
+```
+
+### Title/Abstract JSON Format
+
+For processing publication metadata (titles and abstracts):
+
+**Input format** (JSONL - one JSON object per line):
+```json
+{
+    "oaireid": "50|doi_dedup___::abc123",
+    "titles": ["Paper Title Here"],
+    "abstracts": ["Abstract text here..."],
+    "pids": [{"scheme": "doi", "value": "10.1234/example"}]
+}
+```
+
+**Usage:**
+```bash
+python src/pipeline.py \
+    --domain energy \
+    --step ner \
+    --input_format title_abstract \
+    --input data/energy_titleabstract.json \
+    --output outputs/energy-titleabstract \
+    --resume
+```
+
+**Features:**
+- Combines title and abstract into single section (faster processing)
+- Saves results incrementally after each batch
+- Supports resume from checkpoint
+
+### Legal Text JSON Format
+
+For processing legal/regulatory documents:
+
+**Input format** (JSONL):
+```json
+{
+    "rsNr": "0.101",
+    "en_lawTitle": "Convention for the Protection of Human Rights...",
+    "en_lawText": "Full legal text content..."
+}
+```
+
+**Usage:**
+```bash
+python src/pipeline.py \
+    --domain energy \
+    --step ner \
+    --input_format legal_text \
+    --input data/fedlex-dataset.jsonl \
+    --output outputs/energy-legal \
+    --resume
+```
+
+**Features:**
+- Handles very long documents (automatic chunking in NER)
+- Truncates sections >1M chars for entity linking (spaCy limit)
+- Normalizes whitespace in legal texts
+
+---
+
 ## 📋 Pipeline Overview
 
 ### 🔄 Workflow
 
-1. **Extract text** from NIF `.ttl` files in `data/{domain}/*.ttl`
+1. **Extract text** from input files (NIF, JSON title/abstract, or legal text)
 2. **Expand acronyms** using SciSpacy (Schwartz-Hearst algorithm)
 3. **Detect entities** with domain-specific NER models:
    - GazetteerLinker (exact matching - extracts AND links in one step)
    - GLiNER (multi-label semantic matching)
    - RoBERTa (fine-tuned for domain)
-4. **Link entities** to controlled vocabularies:
+4. **Filter entities** using domain-level blocked mentions and minimum length
+5. **Link entities** to controlled vocabularies:
    - Domain-specific taxonomies (IRENA, openMINDS, etc.)
    - Wikidata for additional context
-5. **Export enriched outputs** to `outputs/{domain}/`
+6. **Export enriched outputs** to `outputs/{domain}/`
 
 ### Two-Stage Process
 
@@ -116,10 +202,11 @@ python src/pipeline.py \
 | Flag | Description | Default |
 |------|-------------|---------|
 | `--domain` | Domain name (energy, neuro, ccam, maritime, cancer) | Required |
-| `--input` | Directory with `.ttl` NIF files (recursive search) | Required |
+| `--input` | Directory with `.ttl` NIF files or JSON file | Required |
 | `--output` | Output directory for results | Required |
+| `--input_format` | Input format: `nif` \| `title_abstract` \| `legal_text` | `nif` |
 | `--step` | Pipeline step: `ner` \| `el` \| `geotagging` \| `affiliations` \| `all` | `ner` |
-| `--batch_size` | Files per batch (for checkpointing) | 1000 |
+| `--batch_size` | Sections per batch (for checkpointing) | 1000 |
 | `--resume` | Resume from checkpoint if interrupted | Flag |
 
 **🧬 Run NER**
@@ -194,6 +281,27 @@ python src/pipeline.py \
 | `--reranker_fallbacks` | Add top-level categories | True |
 | `--use_context_for_retrieval` | Use context in Stage 1 (embedding) | False |
 | `--reranker_thinking` | Enable chain-of-thought (slower) | False |
+
+### Entity Filtering Configuration
+
+Configure entity filtering in `configs/domain_models.py`:
+
+```python
+"energy": {
+    # Minimum mention length (characters)
+    "min_mention_length": 2,  # Global setting
+    # OR per entity type:
+    # "min_mention_length": {"gene": 2, "disease": 3, "_default": 2},
+    
+    # Blocked mentions (terms to skip)
+    "blocked_mentions": {"energy", "power", "system", "data"},
+    # OR per entity type:
+    # "blocked_mentions": {
+    #     "species": {"patient", "patients"},
+    #     "disease": {"pain", "fever"},
+    # },
+}
+```
 
 ---
 
@@ -273,7 +381,7 @@ For domains with large, ambiguous vocabularies:
 
 ---
 
-## 💾 Large-Scale Processing (20k+ Documents)
+## 🚀 Large-Scale & Parallel Processing (20k+ Documents)
 
 The pipeline is optimized for large-scale processing:
 
@@ -293,124 +401,74 @@ The pipeline is optimized for large-scale processing:
    - Dramatically improves speed for recurring entities
    - Preserved across runs
 
-3. **Progress Tracking**: Detailed logging with tqdm
-   ```
-   Processing files: 100%|████████| 1000/1000 [00:45:23<00:00, 22.1 files/s]
-   ```
+3. **Incremental Saving**: Results saved after each batch
+   - Results available immediately (don't have to wait for completion)
+   - No data loss on crash
+   - Safe to stop and resume at any time
 
-4. **Batch Processing**: Configurable batch size
-   ```bash
-   --batch_size 100  # Process 100 files per batch
-   ```
+### Parallel Processing
 
-### Monitoring Progress
+For large datasets (millions of records), split input files and run in parallel:
 
-**Cache statistics** (every 500 files):
-```
-📊 Cache stats: 5234 total, 4456 linked (85.1%), 778 rejected (14.9%)
-```
-
-**Cache checkpoints** (every 100 files):
-```
-💾 Cache checkpoint saved: 5234 entries
+**Step 1: Split Input File**
+```bash
+# Split into 6 parts
+split -n l/6 -d --additional-suffix=.json \
+    data/energy_titleabstract.json \
+    data/energy_titleabstract_part
 ```
 
-**Final summary**:
+**Step 2: Run Parallel NER**
+```bash
+for i in 00 01 02 03 04 05; do
+    nohup python src/pipeline.py \
+        --domain energy \
+        --step ner \
+        --input_format title_abstract \
+        --input data/energy_titleabstract_part${i}.json \
+        --output outputs/energy-part${i} \
+        --resume \
+        > outputs/energy-part${i}_ner.log 2>&1 &
+done
 ```
-🎉 Entity Linking complete!
-📊 Total: 15234 entities processed
-✅ Linked: 12987 (85.2%)
-❌ Rejected: 2247 (14.8%)
-⚡ Avg time: 68ms per entity
-💾 Cache hit rate: 82.3%
+
+**Step 3: Run Parallel EL**
+```bash
+for i in 00 01 02 03 04 05; do
+    nohup python src/pipeline.py \
+        --domain energy \
+        --step el \
+        --input_format title_abstract \
+        --output outputs/energy-part${i} \
+        --linker_type reranker \
+        --threshold 0.70 \
+        --reranker_llm Qwen/Qwen3-1.7B \
+        --reranker_top_k 7 \
+        --reranker_fallbacks \
+        --resume \
+        > outputs/energy-part${i}_el.log 2>&1 &
+done
+```
+
+**Step 4: Merge Results**
+```bash
+# Merge NER outputs
+cat outputs/energy-part*/ner/*.jsonl > outputs/energy-merged/ner/energy_ner.jsonl
+
+# Merge sections (header from first, data from all)
+head -1 outputs/energy-part00/sections/*.csv > outputs/energy-merged/sections/sections.csv
+tail -n +2 -q outputs/energy-part*/sections/*.csv >> outputs/energy-merged/sections/sections.csv
+```
+
+**Monitor progress:**
+```bash
+tail -3 outputs/energy-part*_ner.log
+nvidia-smi
 ```
 
 ---
 
-## 🧩 Domain Configuration
-
-### Supported Domains & Knowledge Bases
-
-| Domain | Knowledge Base | Architecture |
-|--------|----------------|--------------|
-| **Energy** | IRENA (~9k concepts) | Gazetteer + NER → Semantic/Reranker |
-| **Neuro** | openMINDS, UBERON | Gazetteer + NER → Semantic/Reranker |
-| **CCAM** | Project-specific | Gazetteer + NER → Semantic/Reranker |
-| **Maritime** | Project taxonomy | Gazetteer + NER → Semantic/Reranker |
-| **Cancer** | NCBI, DO, MeSH, DrugBank | NER only → FTS5 |
-
-**Fallback**: Wikification for unknown entities
-
-### Configuring Domains
-
-Edit `configs/domain_models.py`:
-
-```python
-DOMAIN_MODELS = {
-    # Non-cancer: Gazetteer enabled
-    "energy": {
-        "gazetteer": {
-            "enabled": True,
-            "taxonomy_path": "taxonomies/energy/IRENA.tsv",
-            "taxonomy_source": "IRENA",
-            "min_term_length": 2,
-        },
-        "models": [
-            {
-                "name": "SIRIS-Lab/SciLake-Energy-roberta-base",
-                "type": "roberta",
-                "threshold": 0.85,
-            }
-        ],
-    },
-    
-    # Cancer: Gazetteer disabled, FTS5 for linking
-    "cancer": {
-        "gazetteer": {"enabled": False},
-        "linking_strategy": "fts5",
-        "fts5_linkers": {
-            "gene": {
-                "index_path": "indices/cancer/ncbi_gene.db",
-                "taxonomy_source": "NCBI_Gene",
-            },
-            "disease": {
-                "index_path": "indices/cancer/doid_disease.db",
-                "taxonomy_source": "DOID",
-                "blocked_mentions": {"patient", "patients", ...},
-            },
-        },
-    }
-}
-```
-
-**Key principle**: Multi-label NER configuration is critical for GLiNER. Providing alternative categories (like "transportation" for energy domain) dramatically improves accuracy by helping the model reject ambiguous entities.
-
----
-
-## 📦 NIF Format
-
-### Input Format
-
-NIF (NLP Interchange Format) is an RDF-based format for representing text and annotations.
-
-**Example input** (`data/energy/paper1.ttl`):
-
-```turtle
-@prefix nif: <http://persistence.uni-leipzig.org/nlp2rdf/ontologies/nif-core#> .
-@prefix dct: <http://purl.org/dc/terms/> .
-
-<http://scilake.eu/resource#context_1>
-    a nif:Context ;
-    nif:isString "Wind turbines convert kinetic energy into electricity." .
-
-<http://scilake.eu/resource#section_1>
-    a nif:Section ;
-    nif:referenceContext <http://scilake.eu/resource#context_1> ;
-    dct:title "Introduction" ;
-    nif:anchorOf "Wind turbines convert kinetic energy into electricity." .
-```
-
-### Output Format
+## 📁 Output Format
 
 Enriched NIF files include entity annotations with taxonomy links:
 
@@ -488,6 +546,7 @@ scilake-enrichments/
 │       ├── ner/                 # NER results (.jsonl)
 │       │   ├── checkpoints/
 │       │   └── logs/
+│       ├── sections/            # Section texts for EL context
 │       ├── el/                  # Entity linking results
 │       │   ├── *.jsonl
 │       │   ├── cache/           # Persistent linking cache
@@ -499,6 +558,8 @@ scilake-enrichments/
 │   ├── pipeline.py              # Main orchestrator
 │   ├── ner_runner.py            # NER inference logic
 │   ├── nif_reader.py            # NIF parsing & acronym expansion
+│   ├── title_abstract_reader.py # Title/abstract JSON reader
+│   ├── legal_text_reader.py     # Legal text JSON reader
 │   ├── gazetteer_linker.py      # Extraction + Linking (NER step)
 │   ├── fts5_linker.py           # Linking only (EL step, cancer)
 │   ├── build_fts5_indices.py    # Build FTS5 indices
@@ -515,27 +576,23 @@ scilake-enrichments/
 ├── taxonomies/
 │   └── {domain}/
 │       └── *.tsv                # Domain taxonomies (IRENA, etc.)
-│
-├── environment.yml              # Conda environment
-├── requirements.txt             # Pip dependencies
-├── LICENSE
-└── README.md                    # This file
 ```
 
 ---
 
-## 🐛 Troubleshooting
+## 🔍 Troubleshooting
 
-### Quick Diagnostics
+### Quick Reference
 
-| Problem | Quick Fix | More Info |
-|---------|-----------|-----------|
-| Low linking rate (<80%) | `--threshold 0.6` or `--linker_type reranker` | [ENTITY_LINKING_README.md](docs/ENTITY_LINKING_README.md#troubleshooting) |
-| Too many false positives | `--use_context_for_retrieval false` (Reranker) | [RERANKER_GUIDE.md](docs/RERANKER_GUIDE.md#troubleshooting) |
-| Slow processing | `--linker_type semantic` or wait for cache warmup | [CONFIGURATION_GUIDE.md](docs/CONFIGURATION_GUIDE.md) |
-| Out of memory | Run `--step ner` and `--step el` separately | [README.md](#out-of-memory-gpu) |
-| Pipeline interrupted | Add `--resume` flag | [README.md](#pipeline-interrupted) |
-| Segmentation faults | Process smaller batches (Gazetteer issue) | [README.md](#segmentation-faults) |
+| Issue | Solution | Details |
+|-------|----------|---------|
+| Low linking rate | Lower threshold, enable fallbacks | [Low Linking Rate](#low-linking-rate-80) |
+| Too many false positives | Disable context in retrieval, raise threshold | [Too Many False Positives](#too-many-false-positives) |
+| Slow processing | Use faster linker, reduce context | [Slow Processing](#slow-processing) |
+| Out of memory | Smaller batches, run stages separately | [Out of Memory](#out-of-memory-gpu) |
+| Pipeline interrupted | Add `--resume` flag | [Pipeline Interrupted](#pipeline-interrupted) |
+| Segmentation faults | Process smaller batches (Gazetteer issue) | [Segmentation Faults](#segmentation-faults-gazetteer-at-scale) |
+| Text too long | Automatic truncation (see warning) | [Text Too Long](#text-too-long-for-spacy) |
 
 ### Common Issues
 
@@ -638,6 +695,30 @@ This occurs with FlashText + pandas at scale (~300+ files).
 3. For large vocabularies: consider cancer-style architecture (NER → FTS5)
 
 **Note:** This is a known limitation of the FlashText-based GazetteerLinker. See [LINKER_ARCHITECTURE_TRACKER.md](docs/LINKER_ARCHITECTURE_TRACKER.md) for details.
+</details>
+
+<details>
+<summary><b>Text Too Long for spaCy</b></summary>
+
+**Symptoms:** `Text of length X exceeds maximum of 1000000`
+
+**Automatic handling:**
+- The pipeline automatically truncates sections >1M characters
+- Entities beyond truncation point are skipped with a warning
+- This affects <0.1% of typical documents
+
+**Manual check:**
+```bash
+grep "Truncating section" outputs/energy/el/logs/*.log
+```
+</details>
+
+<details>
+<summary><b>CSV Escape Errors</b></summary>
+
+**Symptoms:** `need to escape, but no escapechar set`
+
+**Already fixed:** The pipeline uses `escapechar='\\'` for CSV output and normalizes whitespace in title/abstract and legal text readers.
 </details>
 
 **For detailed troubleshooting guides, see:**

@@ -2,7 +2,7 @@
 
 ## System Architecture
 
-The SciLake pipeline is a two-stage system for extracting and linking domain-specific entities from scientific literature in NIF/RDF format.
+The SciLake pipeline is a two-stage system for extracting and linking domain-specific entities from scientific literature. It supports multiple input formats: NIF/RDF files, Title/Abstract JSON, and Legal Text JSON.
 
 ### High-Level Flow
 
@@ -167,6 +167,19 @@ EL Step:               ▼
 - Extracts document structure and text
 - Preserves character offsets for accurate entity positioning
 
+#### **Title/Abstract Reader** (`title_abstract_reader.py`)
+- Parses JSON/JSONL files with publication metadata (oaireid, titles, abstracts)
+- **Combined mode (default):** Merges title and abstract into single section
+- **Separate mode:** Creates separate sections for title and abstract
+- Normalizes whitespace (removes embedded newlines)
+- Benefits: Halves section count, better context, faster processing
+
+#### **Legal Text Reader** (`legal_text_reader.py`)
+- Parses JSON/JSONL files with legal documents (rsNr, en_lawTitle, en_lawText)
+- Combines title and text content
+- Normalizes whitespace throughout
+- Handles very long documents (chunking done in NER step)
+
 #### **Acronym Expansion** (via `abbreviations` package)
 - Uses Schwartz-Hearst algorithm
 - Processes per section for consistency
@@ -202,6 +215,28 @@ EL Step:               ▼
 - Resolves overlaps (longest span wins)
 - Deduplicates across models
 - Preserves provenance (tracks which model found entity)
+
+#### **Entity Filtering** (applied in EL step)
+
+Domain-level filters configured in `domain_models.py`:
+
+```python
+"energy": {
+    "min_mention_length": 2,  # Skip entities shorter than 2 chars
+    "blocked_mentions": {"energy", "power", "system", "data"},  # Skip generic terms
+}
+```
+
+Supports per-entity-type configuration:
+```python
+"cancer": {
+    "min_mention_length": {"gene": 2, "disease": 3, "_default": 2},
+    "blocked_mentions": {
+        "species": {"patient", "patients", "man", "woman"},
+        "disease": {"pain", "syndrome"},
+    }
+}
+```
 
 ---
 
@@ -429,6 +464,8 @@ project/
 ├── src/
 │   ├── pipeline.py                # Main orchestrator
 │   ├── nif_reader.py              # NIF/RDF parser
+│   ├── title_abstract_reader.py   # Title/abstract JSON reader
+│   ├── legal_text_reader.py       # Legal text JSON reader
 │   ├── ner_runner.py              # NER coordinator
 │   ├── gazetteer_linker.py        # FlashText exact matching
 │   ├── fts5_linker.py             # SQLite FTS5 exact matching ⭐
@@ -631,6 +668,78 @@ Configure in `domain_models.py`:
 
 ---
 
+## Long Text Handling
+
+### NER Step
+
+Long texts are handled automatically by chunking:
+- Texts split into 512-token chunks with 50-token overlap
+- Entities deduplicated across chunks based on (entity_type, start, end)
+- No length limit
+
+### EL Step
+
+SpaCy has a 1M character limit for context extraction:
+```python
+MAX_SECTION_LENGTH = 1000000
+if len(section_text) > MAX_SECTION_LENGTH:
+    logger.warning(f"⚠️ Truncating section {section_id}")
+    section_text = section_text[:MAX_SECTION_LENGTH]
+```
+
+**Impact:** Only affects ~0.04% of documents. Entities beyond truncation point get linked without context.
+
+---
+
+## Incremental Saving
+
+For title/abstract and legal text formats, results are saved incrementally after each batch:
+
+```python
+# After each batch of 1000 sections:
+with open(out_path, 'a', encoding='utf-8') as f:
+    for record in batch_results:
+        f.write(json.dumps(record) + '\n')
+save_json(processed, checkpoint_file)
+```
+
+**Benefits:**
+- Results available immediately (don't wait for completion)
+- No data loss on crash
+- Safe to stop and resume at any time
+
+---
+
+## Parallel Processing
+
+For large datasets (millions of records), split input files and run in parallel:
+
+```bash
+# Split into 6 parts
+split -n l/6 -d --additional-suffix=.json input.json input_part
+
+# Run in parallel
+for i in 00 01 02 03 04 05; do
+    nohup python src/pipeline.py \
+        --domain energy --step ner --input_format title_abstract \
+        --input input_part${i}.json --output outputs/part${i} --resume \
+        > outputs/part${i}.log 2>&1 &
+done
+
+# Merge results
+cat outputs/part*/ner/*.jsonl > outputs/merged/ner/merged.jsonl
+```
+
+### GPU Memory Planning
+
+| Instances | GPU Memory | RTX 4000 (20GB) | RTX 6000 (49GB) |
+|-----------|------------|-----------------|-----------------|
+| 1 | ~5-6GB | ✅ | ✅ |
+| 3 | ~15-18GB | ✅ | ✅ |
+| 6 | ~30-36GB | ❌ | ✅ |
+
+---
+
 ## Design Principles
 
 ### 1. **Separation of Concerns**
@@ -727,12 +836,14 @@ Linking entities: 89%|████████▉  | 45234/51000 [00:12:34<00:01
 
 The SciLake pipeline provides:
 
+✅ **Multiple Input Formats**: NIF, Title/Abstract, Legal Text  
 ✅ **Flexible NER**: Multiple models for high recall  
+✅ **Entity Filtering**: Domain-level blocked mentions and min length  
 ✅ **Advanced Linking**: Five linking strategies, from fast to accurate  
-✅ **Production-Ready**: Checkpointing, caching, logging  
+✅ **Production-Ready**: Checkpointing, caching, incremental saving, logging  
 ✅ **Domain-Agnostic**: Easy to adapt to new domains  
 ✅ **High Quality**: >90% precision, >85% linking rate  
-✅ **Scalable**: Processes 20k+ documents efficiently  
+✅ **Scalable**: Parallel processing for millions of documents  
 ✅ **Memory-Safe**: FTS5 for large vocabularies without OOM
 
 **Recommended Configuration**: 
