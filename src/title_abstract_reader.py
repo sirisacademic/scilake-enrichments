@@ -69,7 +69,7 @@ def parse_title_abstract_record(
     if titles and isinstance(titles, list) and len(titles) > 0:
         title = titles[0]
         if title and isinstance(title, str) and title.strip():
-            title_text = title.strip()
+            title_text = ' '.join(title.strip().split())
     
     # Extract abstract (take first element)
     abstract_text = ""
@@ -77,7 +77,7 @@ def parse_title_abstract_record(
     if abstracts and isinstance(abstracts, list) and len(abstracts) > 0:
         abstract = abstracts[0]
         if abstract and isinstance(abstract, str) and abstract.strip():
-            abstract_text = abstract.strip()
+            abstract_text = ' '.join(abstract.strip().split())
     
     if combine_sections:
         # Combined mode: single section with "title. abstract"

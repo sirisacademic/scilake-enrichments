@@ -23,6 +23,7 @@ from src.nif_reader import parse_nif_file, apply_acronym_expansion
 from src.ner_runner import predict_sections_multimodel
 from src.gazetteer_linker import GazetteerLinker
 from src.title_abstract_reader import parse_title_abstract_file, parse_title_abstract_directory
+from src.legal_text_reader import parse_legal_text_file, parse_legal_text_directory
 from configs.domain_models import DOMAIN_MODELS
 
 
@@ -324,14 +325,27 @@ def run_ner_title_abstract(
         source_file = os.path.basename(input_path)
     else:
         source_file = f"{domain}_titleabstract.json"
+       
+    if source_file.endswith('.jsonl'):
+        out_filename = source_file.replace('.jsonl', '_ner.jsonl')
+    elif source_file.endswith('.json'):
+        out_filename = source_file.replace('.json', '_ner.jsonl')
+    else:
+        out_filename = f"{source_file}_ner.jsonl"
     
-    out_filename = source_file.replace('.json', '_ner.jsonl')
     out_path = os.path.join(output_dir, out_filename)
     
     # Sections file for EL step
     sections_dir = os.path.join(os.path.dirname(output_dir), "sections")
     os.makedirs(sections_dir, exist_ok=True)
-    sections_filename = source_file.replace('.json', '_ner_sections.csv')
+    
+    if source_file.endswith('.jsonl'):
+        sections_filename = source_file.replace('.jsonl', '_ner_sections.csv')
+    elif source_file.endswith('.json'):
+        sections_filename = source_file.replace('.json', '_ner_sections.csv')
+    else:
+        sections_filename = f"{source_file}_ner_sections.csv"
+    
     sections_path = os.path.join(sections_dir, sections_filename)
 
     # Load checkpoint
@@ -473,6 +487,218 @@ def run_ner_title_abstract(
         logger.info(f"💾 Checkpoint saved: {len(processed)} sections processed total")
 
     logger.info(f"\n🎉 Title/abstract NER processing complete.")
+    logger.info(f"📊 Total: {total_sections_processed} sections, {total_entities_all} entities")
+    logger.info(f"📄 Output: {out_path}")
+    logger.info(f"📄 Sections: {sections_path}")
+
+
+def run_ner_legal_text(
+    domain: str,
+    input_path: str,
+    output_dir: str,
+    resume: bool = False,
+    batch_size: int = 1000,
+    debug: bool = False,
+    gazetteer_only: bool = False
+):
+    """
+    Run NER enrichment on legal text JSON files.
+    
+    Features:
+    - Saves results incrementally after each batch (safe for long-running jobs)
+    - Supports resume from checkpoint
+    - Handles long legal texts (NER chunking is done internally)
+    
+    Args:
+        domain: Domain name (energy, etc.)
+        input_path: Path to JSON file or directory containing JSON files
+        output_dir: Output directory for NER results
+        resume: Resume from checkpoint
+        batch_size: Number of sections per batch
+        debug: Enable debug logging
+        gazetteer_only: Only run gazetteer (skip neural NER)
+    """
+    os.makedirs(output_dir, exist_ok=True)
+    checkpoint_dir = os.path.join(output_dir, "checkpoints")
+    os.makedirs(checkpoint_dir, exist_ok=True)
+    log_dir = os.path.join(output_dir, "logs")
+    logger = setup_logger(log_dir, name=f"{domain}_ner_legal_text", debug=debug)
+
+    checkpoint_file = os.path.join(checkpoint_dir, "processed_sections.json")
+
+    logger.info(f"✅ Starting NER (legal text mode) for domain={domain}")
+    logger.info(f"Input: {input_path}")
+    logger.info(f"Output dir: {output_dir}")
+
+    # Determine output file paths
+    if os.path.isfile(input_path):
+        source_file = os.path.basename(input_path)
+    else:
+        source_file = f"{domain}_legal_text.json"
+    
+    # Handle .jsonl extension
+    if source_file.endswith('.jsonl'):
+        out_filename = source_file.replace('.jsonl', '_ner.jsonl')
+    elif source_file.endswith('.json'):
+        out_filename = source_file.replace('.json', '_ner.jsonl')
+    else:
+        out_filename = f"{source_file}_ner.jsonl"
+    
+    out_path = os.path.join(output_dir, out_filename)
+    
+    # Sections file for EL step
+    sections_dir = os.path.join(os.path.dirname(output_dir), "sections")
+    os.makedirs(sections_dir, exist_ok=True)
+    
+    if source_file.endswith('.jsonl'):
+        sections_filename = source_file.replace('.jsonl', '_ner_sections.csv')
+    elif source_file.endswith('.json'):
+        sections_filename = source_file.replace('.json', '_ner_sections.csv')
+    else:
+        sections_filename = f"{source_file}_ner_sections.csv"
+    
+    sections_path = os.path.join(sections_dir, sections_filename)
+
+    # Load checkpoint
+    if resume:
+        processed = load_json(checkpoint_file, default={})
+        logger.info(f"Resuming from checkpoint: {len(processed)} sections already done")
+    else:
+        processed = {}
+        # Clear output file if not resuming
+        if os.path.exists(out_path):
+            os.remove(out_path)
+        logger.info(f"Processing all sections (resume=False)")
+
+    # Parse input (file or directory)
+    if os.path.isfile(input_path):
+        df_all = parse_legal_text_file(input_path, include_title=True, logger=logger)
+    else:
+        df_all = parse_legal_text_directory(input_path, include_title=True, logger=logger)
+
+    if df_all.empty:
+        logger.warning("⚠️ No sections found in input")
+        return
+
+    logger.info(f"📊 Loaded {len(df_all)} sections total")
+    
+    # Log text length statistics
+    lengths = df_all['section_content_expanded'].str.len()
+    logger.info(f"   Text lengths - Avg: {lengths.mean():.0f}, Max: {lengths.max()}, Over 1M: {(lengths > 1000000).sum()}")
+    
+    # Save sections file for EL step (do this early, before filtering)
+    if not os.path.exists(sections_path):
+        df_all.to_csv(sections_path, index=False, escapechar='\\')
+        logger.info(f"💾 Saved {len(df_all)} sections to {sections_path}")
+
+    # Filter out already processed sections
+    if processed:
+        df_pending = df_all[~df_all['section_id'].isin(processed.keys())]
+        logger.info(f"📊 {len(df_pending)} sections remaining after filtering processed")
+    else:
+        df_pending = df_all
+
+    if df_pending.empty:
+        logger.info("✅ All sections already processed")
+        return
+
+    # Initialize gazetteer if enabled
+    gazetteer = None
+    domain_conf = DOMAIN_MODELS.get(domain)
+    if domain_conf and domain_conf.get('gazetteer', {}).get('enabled'):
+        gaz_conf = domain_conf['gazetteer']
+        gazetteer = GazetteerLinker(
+            taxonomy_path=gaz_conf['taxonomy_path'],
+            taxonomy_source=gaz_conf.get('taxonomy_source'),
+            model_name=gaz_conf.get('model_name'),
+            default_type=gaz_conf.get('default_type'),
+            domain=domain,
+            min_term_length=gaz_conf.get('min_term_length', 2),
+            blocked_terms=gaz_conf.get('blocked_terms'),
+            logger=logger
+        )
+        logger.info(f"✅ Gazetteer loaded: {gazetteer.model_name} from {gaz_conf['taxonomy_path']}")
+
+    # Process in batches
+    total_sections = len(df_pending)
+    total_entities_all = 0
+    total_sections_processed = len(processed)
+
+    for start in range(0, total_sections, batch_size):
+        batch_df = df_pending.iloc[start:start + batch_size].copy()
+        batch_num = start // batch_size + 1
+        total_batches = (total_sections + batch_size - 1) // batch_size
+        logger.info(f"\n🧩 Processing batch {batch_num}/{total_batches} ({len(batch_df)} sections)...")
+
+        # Run gazetteer
+        df_gazetteer = pd.DataFrame()
+        if gazetteer:
+            logger.info("🔍 Running gazetteer-based entity extraction...")
+            gazetteer_entities = []
+            for _, row in batch_df.iterrows():
+                gaz_ents = gazetteer.extract_entities(
+                    text=row['section_content_expanded'],
+                    section_id=row['section_id'],
+                    domain=domain
+                )
+                gazetteer_entities.append({
+                    'section_id': row['section_id'],
+                    'entities': gaz_ents
+                })
+            df_gazetteer = pd.DataFrame(gazetteer_entities)
+            total_gaz = sum(len(e['entities']) for e in gazetteer_entities)
+            logger.info(f"✅ Gazetteer found {total_gaz} entities")
+
+        # Run NER models (unless gazetteer_only)
+        df_ner = pd.DataFrame()
+        if not gazetteer_only:
+            logger.info("🤖 Running NER models...")
+            df_ner = predict_sections_multimodel(
+                batch_df,
+                domain=domain,
+                logger=logger
+            )
+            if not df_ner.empty:
+                total_ner = sum(len(e) for e in df_ner['entities'].tolist())
+                logger.info(f"✅ NER found {total_ner} entities")
+
+        # Merge gazetteer + NER
+        if not df_gazetteer.empty and not df_ner.empty:
+            df_merged = merge_gazetteer_and_ner(df_gazetteer, df_ner, logger)
+        elif not df_gazetteer.empty:
+            df_merged = df_gazetteer
+        elif not df_ner.empty:
+            df_merged = df_ner
+        else:
+            logger.warning("⚠️ No entities found in this batch")
+            for section_id in batch_df['section_id'].tolist():
+                processed[section_id] = {"status": "no_entities"}
+            save_json(processed, checkpoint_file)
+            continue
+
+        # Save results incrementally (append to JSONL)
+        batch_results = []
+        for _, row in df_merged.iterrows():
+            batch_results.append(row.to_dict())
+            processed[row['section_id']] = {"status": "done", "entities": len(row['entities'])}
+        
+        # Append batch results to output file
+        if batch_results:
+            df_batch = pd.DataFrame(batch_results)
+            with open(out_path, 'a', encoding='utf-8') as f:
+                for record in batch_results:
+                    f.write(pd.Series(record).to_json() + '\n')
+            
+            batch_entities = sum(len(r['entities']) for r in batch_results)
+            total_entities_all += batch_entities
+            total_sections_processed += len(batch_results)
+            logger.info(f"💾 Appended {len(batch_results)} sections ({batch_entities} entities) to {out_filename}")
+
+        # Save checkpoint
+        save_json(processed, checkpoint_file)
+        logger.info(f"💾 Checkpoint saved: {len(processed)} sections processed total")
+
+    logger.info(f"\n🎉 Legal text NER processing complete.")
     logger.info(f"📊 Total: {total_sections_processed} sections, {total_entities_all} entities")
     logger.info(f"📄 Output: {out_path}")
     logger.info(f"📄 Sections: {sections_path}")
@@ -1325,8 +1551,8 @@ def main():
     parser.add_argument("--step", default="all", help="gaz | ner | el | geotagging | affiliations | all")
     
     # NEW: Input format argument
-    parser.add_argument("--input_format", default="nif", choices=["nif", "title_abstract"],
-                       help="Input format: nif (TTL files) or title_abstract (JSON files)")
+    parser.add_argument("--input_format", default="nif", choices=["nif", "title_abstract", "legal_text"],
+                       help="Input format: nif (TTL files), title_abstract (JSON), or legal_text (JSON)")
     
     # Entity Linking arguments
     parser.add_argument("--threshold", type=float, default=0.7, help="EL similarity threshold")
@@ -1397,6 +1623,16 @@ def main():
         
         if args.input_format == "title_abstract":
             run_ner_title_abstract(
+                domain=args.domain,
+                input_path=args.input,
+                output_dir=os.path.join(args.output, "ner"),
+                resume=args.resume,
+                batch_size=args.batch_size,
+                debug=args.debug,
+                gazetteer_only=False
+            )
+        elif args.input_format == "legal_text":
+            run_ner_legal_text(
                 domain=args.domain,
                 input_path=args.input,
                 output_dir=os.path.join(args.output, "ner"),

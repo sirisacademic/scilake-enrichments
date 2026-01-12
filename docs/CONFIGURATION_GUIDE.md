@@ -1,84 +1,57 @@
-# Configuration Guide
+# SciLake Pipeline Configuration Guide
 
-Practical configuration examples and best practices for the SciLake NER & Entity Linking pipeline.
+This guide provides configuration recipes for different use cases, including entity filtering, parallel processing, and performance optimization.
 
 ---
 
-## Overview
+## Table of Contents
 
-The pipeline is highly configurable through:
-
-1. **Command-line arguments** (runtime behavior)
-2. **Domain configuration files** (domain-specific models)
-3. **Taxonomy files** (knowledge bases)
+1. [Domain Configuration](#domain-configuration)
+2. [Entity Filtering](#entity-filtering)
+3. [Taxonomy Preparation](#taxonomy-preparation)
+4. [Environment Setup](#environment-setup)
+5. [Input Format Configuration](#input-format-configuration)
+6. [Parallel Processing](#parallel-processing)
+7. [Performance Optimization](#performance-optimization)
+8. [Configuration Recipes](#configuration-recipes)
+9. [Checkpoint Management](#checkpoint-management)
+10. [Logging Configuration](#logging-configuration)
+11. [Testing Configuration](#testing-configuration)
+12. [Troubleshooting Common Issues](#troubleshooting-common-issues)
 
 ---
 
 ## Domain Configuration
 
-### Location
+### Basic Domain Setup
 
-```
-configs/domain_models.py
-```
-
-### Structure
+In `configs/domain_models.py`:
 
 ```python
 DOMAIN_MODELS = {
     "energy": {
-        "ner_models": {
-            "gliner": {
-                "enabled": True,
-                "model_name": "urchade/gliner_multi",
-                "labels": [
-                    "energy technology",
-                    "energy storage",
-                    "energy type",
-                    "energy source",
-                    "transportation",  # Important for disambiguation!
-                    "measurement unit"
-                ]
-            },
-            "roberta": {
-                "enabled": True,
-                "model_name": "energy-roberta-ner",
-                "labels": ["energytype", "energystorage", ...]
+        # NER Models
+        "models": [
+            {
+                "name": "SIRIS-Lab/SciLake-Energy-roberta-base",
+                "type": "roberta",
+                "entity_types": ["energytype"],
             }
-        },
+        ],
+        
+        # Gazetteer (extraction + linking)
         "gazetteer": {
             "enabled": True,
             "taxonomy_path": "taxonomies/energy/IRENA.tsv",
-            "case_sensitive": False
-        },
-        "entity_linking": {
-            "default_linker": "reranker",
-            "taxonomy_path": "taxonomies/energy/IRENA.tsv",
             "taxonomy_source": "IRENA",
-            "threshold": 0.7
-        }
-    },
-    
-    "neuro": {
-        "ner_models": {
-            "gliner": {
-                "enabled": True,
-                "model_name": "urchade/gliner_multi",
-                "labels": [
-                    "brain region",
-                    "neuron type",
-                    "neural pathway",
-                    "neurotransmitter",
-                    "disease"  # For disambiguation
-                ]
-            }
+            "model_name": "IRENA-Gazetteer",
+            "default_type": "energytype",
+            "min_term_length": 2,
         },
-        "entity_linking": {
-            "default_linker": "semantic",
-            "taxonomy_path": "taxonomies/neuro/openMINDS.tsv",
-            "taxonomy_source": "openMINDS",
-            "threshold": 0.6
-        }
+        
+        # Entity Filtering
+        "min_mention_length": 2,
+        "blocked_mentions": {"energy", "power", "system"},
     }
 }
 ```
@@ -115,9 +88,15 @@ With multiple labels:
   → Matches "transportation" better (CORRECT, rejects from energy)
 ```
 
+**Why this works:**
+- GLiNER calculates semantic similarity between entity context and label
+- Multiple labels give the model alternative categories
+- The model picks the highest-scoring label
+- This prevents misclassification of ambiguous entities
+
 #### 2. Domain-Specific Thresholds
 
-Different domains need different thresholds:
+Different domains need different thresholds based on taxonomy structure:
 
 ```python
 "energy": {
@@ -133,188 +112,135 @@ Different domains need different thresholds:
 }
 ```
 
----
+### Adding a New Domain
 
-## Command-Line Configuration
+1. **Create taxonomy file:**
+   ```
+   taxonomies/newdomain/taxonomy.tsv
+   ```
+   
+   Required columns: `id`, `concept`, `type`
+   Optional columns: `description`, `synonyms`, `wikidata_id`, `wikidata_aliases`
 
-### Complete Example
+2. **Add domain configuration:**
+   ```python
+   "newdomain": {
+       "models": [...],
+       "gazetteer": {...},
+       "min_mention_length": 2,
+       "blocked_mentions": set(),
+   }
+   ```
 
-```bash
-python src/pipeline.py \
-    # Core settings
-    --domain energy \
-    --input data/energy/papers \
-    --output outputs/energy_run_20251107 \
-    --step all \
-    --resume \
-    --batch_size 100 \
-    \
-    # Entity Linking
-    --linker_type reranker \
-    --threshold 0.7 \
-    --taxonomy taxonomies/energy/IRENA.tsv \
-    --taxonomy_source IRENA \
-    \
-    # Context extraction
-    --context_window 3 \
-    --max_contexts 3 \
-    --use_sentence_context \
-    \
-    # Reranker-specific
-    --el_model_name intfloat/multilingual-e5-large-instruct \
-    --reranker_llm Qwen/Qwen3-1.7B \
-    --reranker_top_k 5 \
-    --reranker_fallbacks \
-    --use_context_for_retrieval false \
-    \
-    # Debugging
-    --debug
-```
+3. **Test on sample:**
+   ```bash
+   python src/pipeline.py --domain newdomain --input data/sample --output outputs/test --step all
+   ```
 
 ---
 
-## Configuration Recipes
+## Entity Filtering
 
-### 1. High Precision (Minimize False Positives)
+Entity filtering helps reduce false positives by blocking generic terms and very short mentions that are likely noise.
 
-**Use case:** Scientific publications, regulatory documents
+### Minimum Mention Length
 
-```bash
-python src/pipeline.py \
-    --domain energy \
-    --input data/energy \
-    --output outputs/energy_high_precision \
-    --step all \
-    --linker_type reranker \
-    --threshold 0.8 \                      # High threshold
-    --use_context_for_retrieval false \    # Entity-only retrieval
-    --reranker_top_k 3 \                   # Fewer candidates
-    --reranker_fallbacks false \           # No broad categories
-    --context_window 2 \                   # Less context
-    --resume
+Skip entities shorter than a specified character count.
+
+**Global setting (all entity types):**
+```python
+"min_mention_length": 2,
 ```
 
-**Expected results:**
-- Precision: ~95%
-- Linking rate: ~75%
-- Speed: ~80ms/entity
-
----
-
-### 2. High Recall (Maximum Coverage)
-
-**Use case:** Initial exploration, broad surveys
-
-```bash
-python src/pipeline.py \
-    --domain energy \
-    --input data/energy \
-    --output outputs/energy_high_recall \
-    --step all \
-    --linker_type reranker \
-    --threshold 0.6 \                      # Lower threshold
-    --use_context_for_retrieval true \     # Use context for retrieval
-    --reranker_top_k 10 \                  # More candidates
-    --reranker_fallbacks \                 # Include broad categories
-    --context_window 5 \                   # More context
-    --max_contexts 5 \
-    --use_sentence_context \               # Full sentences
-    --resume
+**Per-entity-type settings:**
+```python
+"min_mention_length": {
+    "gene": 2,      # Gene symbols can be short (TP53)
+    "disease": 3,   # Disease names usually longer
+    "species": 4,   # Species names longer
+    "_default": 2,  # Fallback for unspecified types
+},
 ```
 
-**Expected results:**
-- Precision: ~85%
-- Linking rate: ~90%
-- Speed: ~120ms/entity
+### Blocked Mentions
 
----
+Skip specific terms that are too generic or cause false positives.
 
-### 3. Maximum Speed (Large-Scale Processing)
-
-**Use case:** 20k+ documents, tight deadlines
-
-```bash
-python src/pipeline.py \
-    --domain energy \
-    --input data/energy \
-    --output outputs/energy_fast \
-    --step all \
-    --linker_type semantic \               # Fastest linker
-    --threshold 0.7 \
-    --context_window 2 \                   # Minimal context
-    --max_contexts 2 \
-    --batch_size 500 \                     # Large batches
-    --resume
+**Global blocked list (all entity types):**
+```python
+"blocked_mentions": {"energy", "power", "data", "system", "model", "method"},
 ```
 
-**Expected results:**
-- Precision: ~88%
-- Linking rate: ~82%
-- Speed: ~15ms/entity (after cache warms)
-
----
-
-### 4. Balanced (Production Default)
-
-**Use case:** General purpose, good quality
-
-```bash
-python src/pipeline.py \
-    --domain energy \
-    --input data/energy \
-    --output outputs/energy_production \
-    --step all \
-    --linker_type reranker \
-    --threshold 0.7 \
-    --use_context_for_retrieval false \
-    --reranker_llm Qwen/Qwen3-1.7B \
-    --reranker_top_k 5 \
-    --reranker_fallbacks \
-    --context_window 3 \
-    --max_contexts 3 \
-    --use_sentence_context \
-    --batch_size 100 \
-    --resume
+**Per-entity-type blocked lists:**
+```python
+"blocked_mentions": {
+    "species": {"patient", "patients", "man", "woman", "human", "people"},
+    "disease": {"pain", "syndrome", "condition", "disorder"},
+    "gene": {"gene", "protein", "factor"},
+},
 ```
 
-**Expected results:**
-- Precision: ~92%
-- Linking rate: ~85%
-- Speed: ~70ms/entity
+### Complete Filtering Example
 
----
-
-### 5. Development/Testing (Fast Iteration)
-
-**Use case:** Rapid experimentation, tuning
-
-```bash
-python src/pipeline.py \
-    --domain energy \
-    --input data/energy/sample \           # Small sample
-    --output outputs/energy_dev \
-    --step all \
-    --linker_type semantic \               # Fast for testing
-    --threshold 0.65 \
-    --context_window 3 \
-    --batch_size 10 \                      # Small batches
-    --debug \                              # Verbose logging
-    --resume
+```python
+"cancer": {
+    "models": [...],
+    
+    "gazetteer": {"enabled": False},  # Cancer uses FTS5
+    
+    "linking_strategy": "fts5",
+    
+    "fts5_linkers": {
+        "gene": {
+            "index_path": "indices/cancer/ncbi_gene.db",
+            "taxonomy_source": "NCBI_Gene",
+        },
+        "disease": {
+            "index_path": "indices/cancer/doid_disease.db",
+            "taxonomy_source": "DOID",
+        },
+        "species": {
+            "index_path": "indices/cancer/ncbi_species.db",
+            "taxonomy_source": "NCBI_Taxonomy",
+        },
+    },
+    
+    # Entity Filtering
+    "min_mention_length": {
+        "gene": 2,
+        "disease": 3,
+        "species": 4,
+        "cellline": 3,
+        "_default": 2,
+    },
+    
+    "blocked_mentions": {
+        "species": {
+            "patient", "patients", "man", "men", "woman", "women",
+            "human", "humans", "people", "person", "individual",
+            "child", "children", "adult", "adults", "infant", "infants",
+        },
+        "disease": {
+            "pain", "syndrome", "disease", "disorder", "condition",
+            "symptom", "symptoms", "sign", "signs",
+        },
+        "gene": {
+            "gene", "genes", "protein", "proteins",
+        },
+    },
+}
 ```
-
-**Tips:**
-- Use small sample first (~100 docs)
-- Iterate quickly
-- Switch to reranker once config is stable
 
 ---
 
 ## Taxonomy Preparation
 
+A well-prepared taxonomy is critical for high-quality entity linking.
+
 ### Required Format
 
 ```tsv
-taxonomy_id	label	wikidata_id	aliases	parent_id	category	description
+id	concept	wikidata_id	synonyms	parent_id	type	description
 230000	Wind energy	Q43302	wind power|wind turbines	200000	Renewables	Wind energy is...
 240110	Solar cell	Q15171558	PV cell|photovoltaic cell	240000	Renewables	A solar cell...
 ```
@@ -366,8 +292,6 @@ taxonomy_id	label	wikidata_id	aliases	parent_id	category	description
 - LLM reranking
 - Human reviewers
 - Disambiguation
-
----
 
 ### Wikidata Enhancement
 
@@ -467,57 +391,317 @@ dependencies:
 
 ---
 
-## Logging Configuration
+## Input Format Configuration
 
-### Log Levels
-
-```python
-# In pipeline.py
-logger = setup_logger(
-    log_dir="outputs/energy/logs",
-    name="energy_pipeline",
-    debug=True  # Set via --debug flag
-)
-```
-
-**Debug mode (`--debug`):**
-- Logs every entity linking decision
-- Shows LLM prompts and responses
-- Tracks cache hits/misses
-- **Use for:** Development, troubleshooting
-
-**Info mode (default):**
-- Logs file-level progress
-- Shows summary statistics
-- Periodic cache stats
-- **Use for:** Production
-
-### Log Analysis
-
-**Find rejection patterns:**
+### NIF Format (Default)
 
 ```bash
-grep "REJECT" outputs/energy/logs/energy_el.log \
-  | cut -d"'" -f2 \
-  | sort \
-  | uniq -c \
-  | sort -rn \
-  | head -20
+python src/pipeline.py \
+    --domain energy \
+    --input data/energy \
+    --output outputs/energy \
+    --input_format nif \
+    --step all
 ```
 
-**Track linking rate over time:**
+### Title/Abstract JSON Format
 
-```bash
-grep "entities linked" outputs/energy/logs/energy_el.log \
-  | awk '{print $6}' \
-  | cut -d'/' -f1
+**Input file structure:**
+```json
+{"oaireid": "50|doi_dedup___::abc", "titles": ["Title"], "abstracts": ["Abstract..."]}
+{"oaireid": "50|doi_dedup___::def", "titles": ["Title 2"], "abstracts": ["Abstract 2..."]}
 ```
 
-**Monitor cache performance:**
+**Command:**
+```bash
+python src/pipeline.py \
+    --domain energy \
+    --input data/energy_titleabstract.json \
+    --output outputs/energy-ta \
+    --input_format title_abstract \
+    --step all
+```
+
+### Legal Text JSON Format
+
+**Input file structure:**
+```json
+{"rsNr": "0.101", "en_lawTitle": "Convention...", "en_lawText": "Full text..."}
+{"rsNr": "0.102", "en_lawTitle": "Regulation...", "en_lawText": "Full text..."}
+```
+
+**Command:**
+```bash
+python src/pipeline.py \
+    --domain energy \
+    --input data/fedlex-dataset.jsonl \
+    --output outputs/energy-legal \
+    --input_format legal_text \
+    --step all
+```
+
+---
+
+## Parallel Processing
+
+Parallel processing is recommended for large datasets (>10K documents) to maximize throughput.
+
+### When to Use Parallel Processing
+
+| Dataset Size | Recommendation |
+|--------------|----------------|
+| <10K sections | Single process |
+| 10K-100K sections | 2-3 parallel processes |
+| 100K-1M sections | 4-6 parallel processes |
+| >1M sections | 6-8 parallel processes |
+
+### Step 1: Split Input File
 
 ```bash
-grep "Cache:" outputs/energy/logs/energy_el.log \
-  | tail -20
+# Split into N parts (e.g., 6)
+split -n l/6 -d --additional-suffix=.json \
+    data/energy_titleabstract.json \
+    data/energy_titleabstract_part
+```
+
+This creates:
+- `energy_titleabstract_part00.json`
+- `energy_titleabstract_part01.json`
+- ...
+- `energy_titleabstract_part05.json`
+
+### Step 2: Run Parallel NER
+
+```bash
+#!/bin/bash
+# run_ner_parallel.sh
+
+for i in 00 01 02 03 04 05; do
+    echo "Starting NER part ${i}..."
+    nohup python src/pipeline.py \
+        --domain energy \
+        --step ner \
+        --input_format title_abstract \
+        --input data/energy_titleabstract_part${i}.json \
+        --output outputs/energy-part${i} \
+        --resume \
+        > outputs/energy-part${i}_ner.log 2>&1 &
+done
+
+echo "All NER instances started. Monitor with: tail -f outputs/energy-part*_ner.log"
+```
+
+### Step 3: Wait for NER Completion
+
+```bash
+# Check progress
+tail -f outputs/energy-part00_ner.log
+
+# Check if all processes are done
+ps aux | grep pipeline.py
+```
+
+### Step 4: Run Parallel Entity Linking
+
+```bash
+#!/bin/bash
+# run_el_parallel.sh
+
+for i in 00 01 02 03 04 05; do
+    echo "Starting EL part ${i}..."
+    nohup python src/pipeline.py \
+        --domain energy \
+        --step el \
+        --linker_type reranker \
+        --threshold 0.7 \
+        --output outputs/energy-part${i} \
+        --resume \
+        > outputs/energy-part${i}_el.log 2>&1 &
+done
+
+echo "All EL instances started."
+```
+
+### Step 5: Merge Results
+
+```bash
+#!/bin/bash
+# merge_results.sh
+
+mkdir -p outputs/energy-merged/el
+
+# Merge all EL JSONL files
+cat outputs/energy-part*/el/*.jsonl > outputs/energy-merged/el/all_linked.jsonl
+
+echo "Merged $(wc -l < outputs/energy-merged/el/all_linked.jsonl) documents"
+```
+
+### Parallel Processing Best Practices
+
+1. **Monitor GPU memory:** Each process needs ~4-6 GB VRAM
+2. **Stagger start times:** Start processes 30 seconds apart to avoid initialization conflicts
+3. **Use separate output directories:** Each process gets its own checkpoint/cache
+4. **Shared cache is NOT supported:** Each parallel instance maintains its own cache
+5. **Monitor logs:** `tail -f outputs/energy-part*/*.log`
+
+---
+
+## Performance Optimization
+
+### Batch Size Tuning
+
+| Setting | NER Impact | EL Impact |
+|---------|------------|-----------|
+| `--batch_size 500` | Slower, less memory | Fewer cache saves |
+| `--batch_size 1000` (default) | Balanced | Balanced |
+| `--batch_size 2000` | Faster, more memory | More cache batching |
+
+### Linker Selection by Speed
+
+| Priority | Linker | Speed | Accuracy |
+|----------|--------|-------|----------|
+| Speed | `semantic` | ⚡⚡⚡ | 🎯🎯 |
+| Balance | `instruct` | ⚡⚡ | 🎯🎯🎯 |
+| Accuracy | `reranker` | ⚡ | 🎯🎯🎯🎯 |
+
+### Threshold Tuning
+
+| Threshold | Linking Rate | Precision | Use Case |
+|-----------|--------------|-----------|----------|
+| 0.5 | ~95% | ~80% | High recall needed |
+| 0.7 (default) | ~85% | ~90% | Balanced |
+| 0.8 | ~75% | ~95% | High precision needed |
+| 0.9 | ~60% | ~98% | Very high precision |
+
+### Reranker Optimization
+
+```bash
+# Fast reranker (lower accuracy)
+--reranker_top_k 3 --threshold 0.6
+
+# Balanced (recommended)
+--reranker_top_k 5 --threshold 0.7
+
+# High accuracy (slower)
+--reranker_top_k 10 --threshold 0.8 --reranker_thinking
+```
+
+### Context Settings
+
+| Setting | Speed | Accuracy | When to Use |
+|---------|-------|----------|-------------|
+| `--context_window 0` | Fastest | Lower | Entity text is unambiguous |
+| `--context_window 3` | Balanced | Good | Most cases |
+| `--context_window 5` | Slower | Better | Ambiguous entities |
+| `--use_sentence_context` | Slowest | Best | Complex disambiguation |
+
+---
+
+## Configuration Recipes
+
+### Recipe 1: High Precision
+
+For applications where false positives are costly.
+
+```bash
+python src/pipeline.py \
+    --domain energy \
+    --step el \
+    --linker_type reranker \
+    --threshold 0.85 \
+    --context_window 5 \
+    --reranker_top_k 10 \
+    --reranker_fallbacks \
+    --output outputs/energy-highprec
+```
+
+**Expected:** ~95% precision, ~70% linking rate
+
+### Recipe 2: High Recall
+
+For applications where missing entities is costly.
+
+```bash
+python src/pipeline.py \
+    --domain energy \
+    --step el \
+    --linker_type semantic \
+    --threshold 0.5 \
+    --context_window 3 \
+    --output outputs/energy-highrecall
+```
+
+**Expected:** ~80% precision, ~95% linking rate
+
+### Recipe 3: Maximum Speed
+
+For large-scale processing where speed is critical.
+
+```bash
+python src/pipeline.py \
+    --domain energy \
+    --step el \
+    --linker_type semantic \
+    --threshold 0.6 \
+    --context_window 0 \
+    --batch_size 2000 \
+    --output outputs/energy-fast
+```
+
+**Expected:** ~85% precision, ~90% linking rate, 5x faster
+
+### Recipe 4: Balanced (Recommended)
+
+Best overall trade-off for most use cases.
+
+```bash
+python src/pipeline.py \
+    --domain energy \
+    --step el \
+    --linker_type reranker \
+    --threshold 0.7 \
+    --context_window 3 \
+    --reranker_top_k 5 \
+    --reranker_fallbacks \
+    --use_context_for_retrieval false \
+    --output outputs/energy-balanced
+```
+
+**Expected:** ~93% precision, ~85% linking rate
+
+### Recipe 5: Development/Testing
+
+For rapid experimentation and tuning.
+
+```bash
+python src/pipeline.py \
+    --domain energy \
+    --input data/energy/sample \
+    --output outputs/energy_dev \
+    --step all \
+    --linker_type semantic \
+    --threshold 0.65 \
+    --context_window 3 \
+    --batch_size 10 \
+    --debug \
+    --resume
+```
+
+**Tips:**
+- Use small sample first (~100 docs)
+- Iterate quickly with semantic linker
+- Switch to reranker once config is stable
+
+### Recipe 6: Large Vocabulary (Cancer)
+
+For domains with millions of taxonomy entries.
+
+```bash
+python src/pipeline.py \
+    --domain cancer \
+    --step el \
+    --output outputs/cancer
+    # Uses FTS5 automatically based on domain config
 ```
 
 ---
@@ -527,24 +711,27 @@ grep "Cache:" outputs/energy/logs/energy_el.log \
 ### Checkpoint Structure
 
 ```
-outputs/
-└── energy/
+outputs/energy/
+├── ner/
+│   └── checkpoints/
+│       └── processed_sections.json    # Section-level progress
+├── sections/
+│   └── energy_ner_sections.csv        # Section texts
+└── el/
     ├── checkpoints/
-    │   └── processed.json     # Tracks completed files
-    ├── el/
-    │   └── cache/
-    │       └── linking_cache.json  # Entity linking cache
-    └── logs/
+    │   └── processed.json             # File-level progress
+    └── cache/
+        └── linking_cache.json         # Entity linking cache
 ```
 
 ### Resume from Checkpoint
 
 ```bash
 # Interrupted run
-python src/pipeline.py --domain energy --step all --output outputs/energy
+python src/pipeline.py --domain energy --step ner --output outputs/energy
 
-# Resume (automatically skips processed files)
-python src/pipeline.py --domain energy --step all --output outputs/energy --resume
+# Resume (automatically skips processed sections)
+python src/pipeline.py --domain energy --step ner --output outputs/energy --resume
 ```
 
 ### Manual Checkpoint Inspection
@@ -552,11 +739,16 @@ python src/pipeline.py --domain energy --step all --output outputs/energy --resu
 ```python
 import json
 
-# Check processed files
-with open("outputs/energy/checkpoints/processed.json") as f:
+# Check NER progress
+with open("outputs/energy/ner/checkpoints/processed_sections.json") as f:
     processed = json.load(f)
-    print(f"Processed {len(processed)} files")
-    print("Last file:", list(processed.keys())[-1])
+print(f"Processed: {len(processed)} sections")
+
+# Check EL progress
+with open("outputs/energy/el/checkpoints/processed.json") as f:
+    processed = json.load(f)
+print(f"Processed: {len(processed)} files")
+print("Last file:", list(processed.keys())[-1])
 
 # Check cache size
 with open("outputs/energy/el/cache/linking_cache.json") as f:
@@ -564,6 +756,91 @@ with open("outputs/energy/el/cache/linking_cache.json") as f:
     linked = sum(1 for v in cache.values() if v is not None)
     rejected = sum(1 for v in cache.values() if v is None)
     print(f"Cache: {linked} linked, {rejected} rejected")
+```
+
+### Clear Checkpoints (Start Fresh)
+
+```bash
+# Clear all checkpoints for a domain
+rm -rf outputs/energy/ner/checkpoints
+rm -rf outputs/energy/el/checkpoints
+rm -rf outputs/energy/el/cache
+
+# Or just remove specific checkpoint
+rm outputs/energy/ner/checkpoints/processed_sections.json
+```
+
+---
+
+## Logging Configuration
+
+### Log Levels
+
+```bash
+# Normal mode (INFO level)
+python src/pipeline.py --domain energy --step all --output outputs/energy
+
+# Debug mode (detailed logging)
+python src/pipeline.py --domain energy --step all --output outputs/energy --debug
+```
+
+**Debug mode shows:**
+- Every entity linking decision
+- LLM prompts and responses
+- Cache hits/misses
+- Filter decisions (blocked mentions, too short)
+
+**Info mode shows:**
+- File-level progress
+- Summary statistics
+- Periodic cache stats
+
+### Log File Locations
+
+```
+outputs/energy/
+├── ner/
+│   └── logs/
+│       └── energy_ner.log
+└── el/
+    └── logs/
+        └── energy_el.log
+```
+
+### Log Analysis
+
+**Find rejection patterns:**
+```bash
+grep "REJECT" outputs/energy/el/logs/energy_el.log \
+  | cut -d"'" -f2 \
+  | sort | uniq -c | sort -rn | head -20
+```
+
+**Track linking rate:**
+```bash
+grep "linked" outputs/energy/el/logs/energy_el.log | tail -20
+```
+
+**Track linking rate over time:**
+```bash
+grep "entities linked" outputs/energy/el/logs/energy_el.log \
+  | awk '{print $6}' \
+  | cut -d'/' -f1
+```
+
+**Monitor cache performance:**
+```bash
+grep "Cache" outputs/energy/el/logs/energy_el.log | tail -10
+```
+
+**Check blocked entities:**
+```bash
+grep "blocked" outputs/energy/el/logs/energy_el.log | head -50
+```
+
+**Check entities filtered by length:**
+```bash
+grep "too short" outputs/energy/el/logs/energy_el.log | head -50
 ```
 
 ---
@@ -629,15 +906,27 @@ validate_linking("outputs/energy/el/paper1.jsonl")
 
 ## Troubleshooting Common Issues
 
-### Issue: Low Linking Rate
+### Issue: Out of Memory (OOM)
 
-**Check:**
-1. Threshold too high?
-2. Taxonomy coverage?
-3. Entity detection quality?
+**Symptoms:** Process killed, CUDA out of memory
+
+**Solutions:**
+1. Reduce batch size: `--batch_size 500`
+2. Reduce parallel instances
+3. Use FTS5 instead of semantic linkers
+4. Clear GPU cache between batches (automatic)
+
+### Issue: Low Linking Rate (<60%)
+
+**Symptoms:** Many entities not linked
+
+**Solutions:**
+1. Lower threshold: `--threshold 0.5`
+2. Enable fallbacks: `--reranker_fallbacks`
+3. Check taxonomy coverage
+4. Review blocked_mentions (may be too aggressive)
 
 **Debug:**
-
 ```bash
 # Run with debug logging
 --debug
@@ -649,38 +938,80 @@ grep "entity" outputs/energy/logs/energy_ner.log | head -50
 grep "below threshold" outputs/energy/logs/energy_el.log | head -20
 ```
 
----
-
 ### Issue: Too Many False Positives
 
-**Check:**
-1. `use_context_for_retrieval=true` (change to false)
-2. Threshold too low
-3. GLiNER labels too broad
+**Symptoms:** Incorrect links
+
+**Solutions:**
+1. `use_context_for_retrieval=false` (prevents context contamination)
+2. Raise threshold: `--threshold 0.8`
+3. Review GLiNER labels (may be too broad)
+4. Add more blocked_mentions
 
 **Debug:**
-
 ```bash
-# Sample false positives
+# Sample false positives for review
 python tools/sample_for_review.py \
     --input outputs/energy/el \
     --filter_by high_score \
     --output review_fps.csv
 ```
 
----
+### Issue: Slow Processing
 
-### Issue: Cache Not Working
+**Symptoms:** Processing takes too long
 
-**Check:**
-1. Cache file exists and is writable
-2. Cache format valid JSON
-3. No permission issues
+**Solutions:**
+1. Use faster linker: `--linker_type semantic`
+2. Reduce context: `--context_window 0`
+3. Increase batch size: `--batch_size 2000`
+4. Run in parallel (see Parallel Processing section)
+
+### Issue: Text Too Long for spaCy
+
+**Symptoms:** `Text of length X exceeds maximum of 1000000`
+
+**Solutions:**
+- Automatic: Pipeline truncates to 1M characters
+- Entities beyond truncation are skipped with warning
+- This affects <0.1% of typical documents
+
+### Issue: CSV Escape Errors
+
+**Symptoms:** `need to escape, but no escapechar set`
+
+**Solutions:**
+- Automatic: Pipeline uses `escapechar='\\'`
+- Title/abstract reader normalizes whitespace
+- Already fixed in latest version
+
+### Issue: Checkpoint Not Found
+
+**Symptoms:** Processing restarts from beginning
+
+**Solutions:**
+1. Check `--output` path matches previous run
+2. Verify checkpoint file exists:
+   ```bash
+   ls -la outputs/energy/ner/checkpoints/
+   ```
+3. Use `--resume` flag
+
+### Issue: Cache Not Persisting
+
+**Symptoms:** Same entities being re-linked
+
+**Solutions:**
+1. Check cache directory permissions
+2. Verify cache file:
+   ```bash
+   ls -la outputs/energy/el/cache/
+   ```
+3. Cache saves after each file, not each entity
 
 **Fix:**
-
 ```bash
-# Reset cache
+# Reset cache if corrupted
 rm outputs/energy/el/cache/linking_cache.json
 
 # Verify permissions
@@ -689,17 +1020,38 @@ chmod 644 outputs/energy/el/cache/linking_cache.json
 
 ---
 
-## Summary
+## Quick Reference
 
-### Quick Start Checklist
+### Essential Commands
 
-- [ ] Set up environment (`conda env create -f environment.yml`)
-- [ ] Configure domain in `configs/domain_models.py`
-- [ ] Prepare taxonomy (required columns + good aliases)
-- [ ] Choose linker type (semantic → instruct → reranker)
-- [ ] Run on small sample first
-- [ ] Tune threshold based on precision/recall needs
-- [ ] Scale to full dataset with `--resume`
+```bash
+# Full pipeline
+python src/pipeline.py --domain energy --input data/energy --output outputs/energy --step all --resume
+
+# NER only (title/abstract)
+python src/pipeline.py --domain energy --input data/energy.json --output outputs/energy --input_format title_abstract --step ner --resume
+
+# EL only (reranker)
+python src/pipeline.py --domain energy --output outputs/energy --step el --linker_type reranker --threshold 0.7 --resume
+
+# Check progress
+tail -f outputs/energy/*/logs/*.log
+
+# Check GPU
+nvidia-smi
+```
+
+### Configuration Checklist
+
+- [ ] Domain configured in `domain_models.py`
+- [ ] Taxonomy file in `taxonomies/{domain}/`
+- [ ] GLiNER labels include disambiguation categories
+- [ ] Taxonomy has rich aliases and descriptions
+- [ ] FTS5 indices built (if using)
+- [ ] `blocked_mentions` set appropriately
+- [ ] `min_mention_length` configured
+- [ ] Output directory has write permissions
+- [ ] Sufficient GPU memory for parallel instances
 
 ### Best Practices
 
@@ -709,6 +1061,7 @@ chmod 644 outputs/energy/el/cache/linking_cache.json
 4. **Preserve cache:** Keep `linking_cache.json` between runs
 5. **Use checkpoints:** Always enable `--resume`
 6. **Validate regularly:** Sample for manual review
+7. **Enrich taxonomy:** Add Wikidata aliases for better coverage
 
 ### Configuration Templates
 
@@ -724,8 +1077,32 @@ python src/pipeline.py \
     --use_context_for_retrieval false \
     --reranker_llm Qwen/Qwen3-1.7B \
     --reranker_top_k 5 \
+    --reranker_fallbacks \
     --context_window 3 \
     --use_sentence_context \
     --batch_size 100 \
     --resume
 ```
+
+---
+
+## Summary
+
+This configuration guide covers:
+
+✅ **Domain setup** with multi-label NER configuration
+✅ **Entity filtering** with blocked mentions and length thresholds
+✅ **Taxonomy preparation** with best practices and Wikidata enrichment
+✅ **Environment setup** with hardware recommendations
+✅ **Parallel processing** for large-scale deployments
+✅ **Performance optimization** through threshold and batch tuning
+✅ **Configuration recipes** for different precision/recall trade-offs
+✅ **Checkpoint management** for reliable resumption
+✅ **Logging and debugging** with analysis commands
+✅ **Testing and validation** with quality checks
+✅ **Troubleshooting** for common issues
+
+For more information, see:
+- [ARCHITECTURE_OVERVIEW.md](ARCHITECTURE_OVERVIEW.md) - System architecture
+- [ENTITY_LINKING_README.md](ENTITY_LINKING_README.md) - Linking strategies
+- [RERANKER_GUIDE.md](RERANKER_GUIDE.md) - RerankerLinker deep dive
