@@ -229,6 +229,8 @@ indices/
 nohup.out
 *.tgz
 
+*_utf8.md
+
 # Scripts for local tasks
 run_all_tests.sh
 test_energy_debug.sh
