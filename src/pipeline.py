@@ -374,7 +374,7 @@ def run_ner_title_abstract(
     # Save sections file for EL step (do this early, before filtering)
     # Only save if not resuming or file doesn't exist
     if not os.path.exists(sections_path):
-        df_all.to_csv(sections_path, index=False)
+        df_all.to_csv(sections_path, index=False, escapechar='\\')
         logger.info(f"💾 Saved {len(df_all)} sections to {sections_path}")
 
     # Filter out already processed sections
