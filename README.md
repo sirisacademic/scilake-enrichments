@@ -42,6 +42,8 @@ python src/pipeline.py \
     --resume
 ```
 
+All entity linking parameters (threshold, model, context settings, etc.) are automatically loaded from the domain configuration in `domain_models.py`. You only need to specify the domain and input/output paths.
+
 ---
 
 ## 📥 Input Formats
@@ -141,7 +143,8 @@ python src/pipeline.py \
 5. **Link entities** to controlled vocabularies:
    - Domain-specific taxonomies (IRENA, openMINDS, etc.)
    - Wikidata for additional context
-6. **Export enriched outputs** to `outputs/{domain}/`
+6. **Validate type matching** (ensures NER entity type matches taxonomy concept type)
+7. **Export enriched outputs** to `outputs/{domain}/`
 
 ### Two-Stage Process
 
@@ -167,6 +170,7 @@ python src/pipeline.py \
 - **SemanticLinker**: Fast embedding-based similarity
 - **InstructLinker**: Instruction-tuned embeddings
 - **RerankerLinker** ⭐: Two-stage (embedding + LLM reranking) - **Best accuracy**
+- **Type Matching**: Validates NER entity type matches linked taxonomy concept type
 
 **Output**: Entities enriched with taxonomy IDs and Wikidata links
 
@@ -184,6 +188,44 @@ The pipeline uses different architectures depending on domain characteristics:
 ---
 
 ## 🔧 Configuration
+
+### Domain Configuration (`el_config`)
+
+Entity linking parameters are centralized in `domain_models.py` under the `el_config` section for each domain. This simplifies running the pipeline - you typically only need to specify domain and paths:
+
+```bash
+# Uses all EL settings from domain_models.py el_config
+python src/pipeline.py \
+    --domain energy \
+    --input data/energy \
+    --output outputs/energy \
+    --step all \
+    --resume
+```
+
+**Default `el_config` settings (non-cancer domains):**
+
+```python
+"el_config": {
+    "taxonomy_path": "taxonomies/energy/IRENA.tsv",
+    "taxonomy_source": "IRENA",
+    "linker_type": "reranker",
+    "el_model_name": "intfloat/multilingual-e5-large-instruct",
+    "threshold": 0.80,
+    "context_window": 5,
+    "max_contexts": 5,
+    "use_sentence_context": False,
+    "reranker_llm": "Qwen/Qwen3-1.7B",
+    "reranker_top_k": 7,
+    "reranker_fallbacks": True,
+}
+```
+
+**CLI arguments override domain config** when specified. For example:
+```bash
+# Override threshold for this run only
+python src/pipeline.py --domain energy --output outputs/energy --step el --threshold 0.75 --resume
+```
 
 ### NER Step
 
@@ -250,13 +292,11 @@ The pipeline automatically:
 ### Entity Linking Step
 
 ```bash
+# Simple: uses all settings from domain el_config
 python src/pipeline.py \
     --domain energy \
     --output outputs/energy \
     --step el \
-    --linker_type reranker \
-    --threshold 0.7 \
-    --context_window 3 \
     --resume
 ```
 
@@ -264,27 +304,28 @@ python src/pipeline.py \
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `--linker_type` | Linking strategy: `auto` \| `semantic` \| `instruct` \| `reranker` | `auto` |
-| `--threshold` | Similarity threshold (0.0-1.0) | 0.7 |
-| `--context_window` | Context size in tokens (0 = no context) | 3 |
-| `--max_contexts` | Max contexts per entity | 3 |
+| `--linker_type` | Linking strategy: `auto` \| `semantic` \| `instruct` \| `reranker` | From domain config |
+| `--threshold` | Similarity threshold (0.0-1.0) | From domain config (0.80) |
+| `--context_window` | Context size in tokens (0 = no context) | From domain config (5) |
+| `--max_contexts` | Max contexts per entity | From domain config (5) |
 | `--use_sentence_context` | Use full sentences vs token windows | Flag |
-| `--taxonomy` | Path to taxonomy TSV file | `taxonomies/energy/IRENA.tsv` |
-| `--taxonomy_source` | Taxonomy name for output | `IRENA` |
+| `--taxonomy` | Path to taxonomy TSV file | From domain config |
+| `--taxonomy_source` | Taxonomy name for output | From domain config |
+| `--no_type_match` | Disable type matching validation | Flag |
 
 **Reranker-Specific Parameters:**
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `--reranker_llm` | LLM model for reranking | `Qwen/Qwen3-1.7B` |
-| `--reranker_top_k` | Number of candidates | 5 |
-| `--reranker_fallbacks` | Add top-level categories | True |
+| `--reranker_llm` | LLM model for reranking | From domain config (`Qwen/Qwen3-1.7B`) |
+| `--reranker_top_k` | Number of candidates | From domain config (7) |
+| `--reranker_fallbacks` | Add top-level categories | From domain config (True) |
 | `--use_context_for_retrieval` | Use context in Stage 1 (embedding) | False |
 | `--reranker_thinking` | Enable chain-of-thought (slower) | False |
 
 ### Entity Filtering Configuration
 
-Configure entity filtering in `configs/domain_models.py`:
+Configure entity filtering in `domain_models.py`:
 
 ```python
 "energy": {
@@ -330,17 +371,15 @@ The pipeline has two types of "linkers" that serve different purposes:
 
 ### Recommended: Reranker Linker
 
-The **RerankerLinker** uses a two-stage approach for optimal accuracy:
+The **RerankerLinker** uses a two-stage approach for optimal accuracy. It's configured as the default for non-cancer domains:
 
 ```bash
+# Simple: uses reranker from domain config
 python src/pipeline.py \
     --domain energy \
+    --output outputs/energy \
     --step el \
-    --linker_type reranker \
-    --threshold 0.7 \
-    --use_context_for_retrieval false \
-    --reranker_llm Qwen/Qwen3-1.7B \
-    --reranker_top_k 5
+    --resume
 ```
 
 **Key features:**
@@ -349,7 +388,7 @@ python src/pipeline.py \
 - 🧠 Context-aware LLM reasoning
 - ⚡ Fast candidate retrieval + careful reranking
 
-**Critical setting**: `--use_context_for_retrieval false` prevents context contamination in Stage 1 while Stage 2 still uses context for validation.
+**Critical setting**: `use_context_for_retrieval: False` (configured in domain config) prevents context contamination in Stage 1 while Stage 2 still uses context for validation.
 
 ### FTS5Linker (Cancer Domain)
 
@@ -434,17 +473,12 @@ done
 
 **Step 3: Run Parallel EL**
 ```bash
+# EL configuration is loaded from domain_models.py el_config
 for i in 00 01 02 03 04 05; do
     nohup python src/pipeline.py \
         --domain energy \
         --step el \
-        --input_format title_abstract \
         --output outputs/energy-part${i} \
-        --linker_type reranker \
-        --threshold 0.70 \
-        --reranker_llm Qwen/Qwen3-1.7B \
-        --reranker_top_k 7 \
-        --reranker_fallbacks \
         --resume \
         > outputs/energy-part${i}_el.log 2>&1 &
 done
@@ -468,7 +502,7 @@ nvidia-smi
 
 ---
 
-## 📁 Output Format
+## 📄 Output Format
 
 Enriched NIF files include entity annotations with taxonomy links:
 
@@ -518,8 +552,25 @@ Enriched NIF files include entity annotations with taxonomy links:
 ```
 scilake-enrichments/
 │
-├── configs/
-│   └── domain_models.py         # Domain-specific model configurations
+├── src/
+│   ├── pipeline.py              # Main orchestrator
+│   ├── domain_models.py         # Domain-specific configurations (includes el_config)
+│   ├── ner_runner.py            # NER inference logic
+│   ├── nif_reader.py            # NIF parsing & acronym expansion
+│   ├── title_abstract_reader.py # Title/abstract JSON reader
+│   ├── legal_text_reader.py     # Legal text JSON reader
+│   ├── gazetteer_linker.py      # Extraction + Linking (NER step)
+│   ├── fts5_linker.py           # Linking only (EL step, cancer)
+│   ├── build_fts5_indices.py    # Build FTS5 indices
+│   ├── semantic_linker.py       # Semantic similarity linking
+│   ├── instruct_linker.py       # Instruction-based linking
+│   ├── reranker_linker.py       # Two-stage reranking
+│   ├── type_matching.py         # Type validation for entity linking
+│   ├── geo_linker.py            # Geotagging linker
+│   ├── geotagging_runner.py     # Geotagging runner
+│   ├── affilgood_runner.py      # Affiliation enrichment
+│   ├── io_utils.py              # I/O utilities
+│   └── logger.py                # Logging setup
 │
 ├── data/
 │   ├── energy/
@@ -554,28 +605,11 @@ scilake-enrichments/
 │       │   └── logs/
 │       └── enriched/            # Final enriched .ttl files
 │
-├── src/
-│   ├── pipeline.py              # Main orchestrator
-│   ├── ner_runner.py            # NER inference logic
-│   ├── nif_reader.py            # NIF parsing & acronym expansion
-│   ├── title_abstract_reader.py # Title/abstract JSON reader
-│   ├── legal_text_reader.py     # Legal text JSON reader
-│   ├── gazetteer_linker.py      # Extraction + Linking (NER step)
-│   ├── fts5_linker.py           # Linking only (EL step, cancer)
-│   ├── build_fts5_indices.py    # Build FTS5 indices
-│   ├── semantic_linker.py       # Semantic similarity linking
-│   ├── instruct_linker.py       # Instruction-based linking
-│   ├── reranker_linker.py       # Two-stage reranking
-│   ├── geo_linker.py            # Geotagging linker
-│   ├── geotagging_runner.py     # Geotagging runner
-│   ├── affilgood_runner.py      # Affiliation enrichment
-│   └── utils/
-│       ├── io_utils.py
-│       └── logger.py
-│
 ├── taxonomies/
 │   └── {domain}/
 │       └── *.tsv                # Domain taxonomies (IRENA, etc.)
+│
+└── run_*.sh                     # Shell scripts for running pipeline
 ```
 
 ---
@@ -622,7 +656,7 @@ For RerankerLinker:
 --use_context_for_retrieval false
 
 # Raise threshold
---threshold 0.8
+--threshold 0.85
 
 # Reduce candidates
 --reranker_top_k 3
@@ -823,7 +857,7 @@ This README provides a quick start and overview. For detailed information:
 
 When adding new domains:
 
-1. Add model configuration to `configs/domain_models.py`
+1. Add model configuration to `src/domain_models.py` (including `el_config`)
 2. Create taxonomy file in `taxonomies/{domain}/`
 3. If using FTS5, build index: `python src/build_fts5_indices.py --taxonomy ... --output ... --source ...`
 4. Test on small sample (100-500 docs) before full processing

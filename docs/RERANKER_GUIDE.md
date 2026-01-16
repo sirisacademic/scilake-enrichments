@@ -13,6 +13,8 @@ The RerankerLinker uses a **two-stage architecture** combining:
 
 This hybrid approach achieves the **best accuracy** while maintaining reasonable speed through candidate pruning.
 
+**Note:** RerankerLinker is the **default linker** for non-cancer domains. Configuration is centralized in `domain_models.py` under `el_config`, so you typically don't need to specify parameters manually.
+
 ---
 
 ## Architecture
@@ -52,15 +54,16 @@ This hybrid approach achieves the **best accuracy** while maintaining reasonable
 │  │    3. Compute similarities:                   │    │
 │  │       scores = query_emb @ taxonomy_embs.T    │    │
 │  │                                                │    │
-│  │    4. Get top-k matches (k=5):                │    │
+│  │    4. Get top-k matches (k=7):                │    │
 │  │       • Wind energy (0.87)                    │    │
 │  │       • Wind power (0.85)                     │    │
 │  │       • Renewable energy (0.72)               │    │
 │  │       • Energy technology (0.68)              │    │
 │  │       • Power generation (0.65)               │    │
+│  │       • ...                                   │    │
 │  │                                                │    │
-│  │    5. Check threshold (0.7):                  │    │
-│  │       Top score 0.87 >= 0.7 ✓                 │    │
+│  │    5. Check threshold (0.80):                 │    │
+│  │       Top score 0.87 >= 0.80 ✓                │    │
 │  │                                                │    │
 │  │    6. Optional: Add fallbacks                 │    │
 │  │       + Top-level categories                  │    │
@@ -97,7 +100,7 @@ This hybrid approach achieves the **best accuracy** while maintaining reasonable
 │  │    - Prefer specific over broad               │    │
 │  │    - Trust entity over context associations   │    │
 │  │                                                │    │
-│  │    Answer: [1-5 or REJECT]                    │    │
+│  │    Answer: [1-7 or REJECT]                    │    │
 │  │                                                │    │
 │  │  Query LLM:                                   │    │
 │  │    response = llm.generate(prompt)            │    │
@@ -126,9 +129,55 @@ This hybrid approach achieves the **best accuracy** while maintaining reasonable
 
 ---
 
-## Key Parameters
+## Configuration
 
-### Essential Parameters
+### Using Domain Defaults (Recommended)
+
+RerankerLinker is configured as the default for non-cancer domains via `el_config` in `domain_models.py`. You typically don't need to specify any parameters:
+
+```bash
+# Uses all settings from domain el_config
+python src/pipeline.py \
+    --domain energy \
+    --output outputs/energy \
+    --step el \
+    --resume
+```
+
+### Default el_config Settings
+
+```python
+"energy": {
+    "el_config": {
+        "linker_type": "reranker",
+        "el_model_name": "intfloat/multilingual-e5-large-instruct",
+        "threshold": 0.80,
+        "context_window": 5,
+        "max_contexts": 5,
+        "use_sentence_context": False,
+        "reranker_llm": "Qwen/Qwen3-1.7B",
+        "reranker_top_k": 7,
+        "reranker_fallbacks": True,
+    },
+}
+```
+
+### Overriding Settings
+
+CLI arguments override domain config when specified:
+
+```bash
+# Override threshold and top_k for this run
+python src/pipeline.py \
+    --domain energy \
+    --output outputs/energy \
+    --step el \
+    --threshold 0.75 \
+    --reranker_top_k 10 \
+    --resume
+```
+
+### Full Parameter Reference
 
 ```python
 RerankerLinker(
@@ -142,30 +191,32 @@ RerankerLinker(
     llm_model_name="Qwen/Qwen3-1.7B",
     
     # Similarity threshold for Stage 1
-    threshold=0.7,
+    threshold=0.80,
     
     # Context extraction
-    context_window=3,              # Tokens around entity
-    max_contexts=3,                # Max contexts per entity
-    use_sentence_context=False,    # Use sentences vs token windows
+    context_window=5,               # Tokens around entity
+    max_contexts=5,                 # Max contexts per entity
+    use_sentence_context=False,     # Use sentences vs token windows
     
     # CRITICAL: Context usage in Stage 1
     use_context_for_retrieval=False,  # Entity-only (safer)
     
     # Candidate generation
-    top_k_candidates=5,            # How many for LLM
-    add_top_level_fallbacks=True,  # Add broad categories
+    top_k_candidates=7,             # How many for LLM
+    add_top_level_fallbacks=True,   # Add broad categories
     
     # LLM behavior
-    enable_thinking=False,         # Chain-of-thought (slower)
+    enable_thinking=False,          # Chain-of-thought (slower)
     
     logger=logger
 )
 ```
 
-### Parameter Deep Dive
+---
 
-#### `use_context_for_retrieval` (MOST IMPORTANT)
+## Key Parameters
+
+### `use_context_for_retrieval` (MOST IMPORTANT)
 
 This parameter controls whether context is used in **Stage 1 (embedding retrieval)**. Stage 2 (LLM reranking) **always uses context** regardless of this setting.
 
@@ -222,16 +273,16 @@ use_context_for_retrieval=True
 
 ---
 
-#### `threshold`
+### `threshold`
 
 Minimum similarity score for Stage 1 retrieval.
 
 ```python
 # Conservative (fewer links, higher precision)
-threshold=0.8
+threshold=0.85
 
-# Balanced
-threshold=0.7  # Recommended default
+# Balanced (default)
+threshold=0.80
 
 # Aggressive (more links, lower precision)
 threshold=0.6
@@ -240,7 +291,7 @@ threshold=0.6
 **How it works:**
 
 ```python
-candidates = get_top_k_similar(entity, k=5)
+candidates = get_top_k_similar(entity, k=7)
 # Returns: [(tid_1, 0.87), (tid_2, 0.85), (tid_3, 0.72), ...]
 
 if candidates[0][1] < threshold:
@@ -255,7 +306,7 @@ if candidates[0][1] < threshold:
 
 ---
 
-#### `top_k_candidates`
+### `top_k_candidates`
 
 Number of candidates to send to LLM for reranking.
 
@@ -263,8 +314,8 @@ Number of candidates to send to LLM for reranking.
 # Fewer candidates (faster LLM, less context)
 top_k_candidates=3
 
-# Balanced
-top_k_candidates=5  # Recommended default
+# Balanced (default)
+top_k_candidates=7
 
 # More candidates (slower, but LLM has more options)
 top_k_candidates=10
@@ -275,17 +326,18 @@ top_k_candidates=10
 | k | Speed | Prompt Length | Recall | Notes |
 |---|-------|---------------|--------|-------|
 | 3 | Fast | Short | Lower | Best match might not be in top-3 |
-| 5 | Medium | Medium | Good | Sweet spot |
+| 5 | Medium | Medium | Good | Good balance |
+| 7 | Medium | Medium | Better | Default, sweet spot |
 | 10 | Slower | Long | Higher | Dilutes LLM focus |
 
 ---
 
-#### `add_top_level_fallbacks`
+### `add_top_level_fallbacks`
 
 Whether to add broad top-level taxonomy categories as fallback options.
 
 ```python
-add_top_level_fallbacks=True  # Recommended
+add_top_level_fallbacks=True  # Default, recommended
 
 # Example: If top candidates are all narrow,
 # also include "Renewable energy", "Energy technology", etc.
@@ -311,7 +363,7 @@ With fallbacks:
 
 ---
 
-#### `enable_thinking`
+### `enable_thinking`
 
 Enable chain-of-thought reasoning in LLM prompt.
 
@@ -344,23 +396,25 @@ LLM Prompt:
 - ❌ Slower (~2x response time)
 - ❌ Longer prompts (token cost)
 
+**CLI flag:** `--reranker_thinking`
+
 **Recommendation:** Use for debugging/analysis only. Disable for production.
 
 ---
 
-#### `context_window` & `use_sentence_context`
+### `context_window` & `use_sentence_context`
 
 Control how context is extracted around entities.
 
 **Token Window Mode** (`use_sentence_context=False`):
 
 ```python
-context_window=3
+context_window=5
 
 # Text: "... renewable wind turbines convert kinetic energy..."
 #                        ↑ entity ↑
-#          ← 3 tokens               3 tokens →
-# Context: "renewable wind turbines convert kinetic energy"
+#          ← 5 tokens               5 tokens →
+# Context: "renewable wind turbines convert kinetic energy into"
 ```
 
 **Sentence Mode** (`use_sentence_context=True`):
@@ -523,7 +577,7 @@ Process documents in batches to manage memory:
 python src/pipeline.py \
     --domain energy \
     --step el \
-    --batch_size 100 \  # Process 100 files at a time
+    --batch_size 100 \
     --resume
 ```
 
@@ -543,6 +597,7 @@ Component                 Memory
 ─────────────────────────────────
 Embedding model           ~500 MB
 LLM (Qwen3-1.7B)         ~3.4 GB
+SpaCy                     ~200 MB
 GLiNER (if running NER)  ~500 MB
 RoBERTa (if running NER) ~500 MB
 Working memory           ~500 MB
@@ -594,9 +649,9 @@ TOTAL                    ~5-6 GB
 
 ```bash
 # Raise threshold
---threshold 0.75
+--threshold 0.85
 
-# Add fallbacks
+# Add fallbacks (enabled by default)
 --reranker_fallbacks
 
 # Check logs for rejection patterns:
@@ -617,11 +672,11 @@ grep "REJECT" outputs/energy/logs/energy_el.log | head -20
 **Solutions:**
 
 ```bash
-# Disable context in Stage 1
+# Disable context in Stage 1 (already default)
 --use_context_for_retrieval false
 
 # Raise threshold
---threshold 0.8
+--threshold 0.85
 
 # Reduce candidates
 --reranker_top_k 3
@@ -643,14 +698,14 @@ grep "REJECT" outputs/energy/logs/energy_el.log | head -20
 **Solutions:**
 
 ```bash
-# Use smaller LLM
+# Use smaller LLM (default)
 --reranker_llm Qwen/Qwen3-1.7B
 
 # Reduce candidates
 --reranker_top_k 3
 
-# Disable thinking mode
-# (enabled by default if reranker_thinking not specified)
+# Disable thinking mode (already default)
+# (Don't use --reranker_thinking)
 
 # Reduce context
 --context_window 2 --max_contexts 2
@@ -692,7 +747,7 @@ logger.debug(f"LLM answer: {answer}")
 
 ```python
 # Your taxonomy must have columns:
-# taxonomy_id | label | wikidata_id | aliases | parent_id | category | description
+# id | concept | wikidata_id | wikidata_aliases | parent_id | type | description
 
 # Load custom taxonomy:
 reranker = RerankerLinker(
@@ -704,8 +759,8 @@ reranker = RerankerLinker(
 
 **Taxonomy requirements:**
 - TSV format with tab separators
-- Required columns: `taxonomy_id`, `label`
-- Optional but recommended: `wikidata_id`, `aliases`, `description`
+- Required columns: `id`, `concept`
+- Optional but recommended: `wikidata_id`, `wikidata_aliases`, `description`, `type`
 - Aliases: pipe-separated (e.g., "wind power|wind energy|wind turbines")
 
 ---
@@ -804,28 +859,52 @@ python tools/sample_for_review.py \
 3. **Safety first**: `use_context_for_retrieval=False` prevents contamination
 4. **Cache is king**: Performance improves dramatically over time
 5. **Prompt matters**: Domain-specific instructions reduce false positives
+6. **Use defaults**: el_config provides optimized settings per domain
 
-### Recommended Starting Configuration
+### Recommended Usage
+
+**Simple (recommended):** Let el_config handle configuration:
 
 ```bash
 python src/pipeline.py \
     --domain energy \
+    --output outputs/energy \
     --step el \
-    --linker_type reranker \
-    --el_model_name intfloat/multilingual-e5-large-instruct \
-    --reranker_llm Qwen/Qwen3-1.7B \
-    --threshold 0.7 \
-    --context_window 3 \
-    --use_context_for_retrieval false \
-    --reranker_top_k 5 \
-    --reranker_fallbacks
+    --resume
 ```
+
+**With overrides:** When you need to tune specific parameters:
+
+```bash
+python src/pipeline.py \
+    --domain energy \
+    --output outputs/energy \
+    --step el \
+    --threshold 0.75 \
+    --reranker_top_k 10 \
+    --resume
+```
+
+### Default Configuration (from el_config)
+
+| Parameter | Default Value |
+|-----------|---------------|
+| `linker_type` | `reranker` |
+| `el_model_name` | `intfloat/multilingual-e5-large-instruct` |
+| `threshold` | `0.80` |
+| `context_window` | `5` |
+| `max_contexts` | `5` |
+| `reranker_llm` | `Qwen/Qwen3-1.7B` |
+| `reranker_top_k` | `7` |
+| `reranker_fallbacks` | `True` |
+| `use_context_for_retrieval` | `False` |
+| `enable_thinking` | `False` |
 
 ### Next Steps
 
-1. Run on small sample (100 docs)
+1. Run on small sample (100 docs) with defaults
 2. Evaluate manually (sample 50-100 entities)
-3. Tune threshold based on precision/recall needs
+3. Tune threshold if precision/recall needs adjustment
 4. Scale to full dataset
 5. Monitor cache performance
 6. Iterate on prompts if needed

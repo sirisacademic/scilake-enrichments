@@ -12,6 +12,23 @@ Each domain defines:
  - kb: knowledge base(s) to use for Entity Linking
  - linking_strategy: "semantic" (default), "reranker", or "fts5"
  - fts5_linkers: (if linking_strategy="fts5") per-entity-type FTS5 index config
+ - el_config: entity linking configuration (threshold, context, model, etc.)
+ - enforce_type_match: enable/disable type matching validation (default: True)
+ - type_mappings: maps taxonomy type → expected NER type(s)
+ - taxonomy_type_column: column name for type in taxonomy TSV (default: "type")
+
+Entity Linking Configuration (el_config):
+ - taxonomy_path: path to taxonomy TSV file
+ - taxonomy_source: name for taxonomy source in output
+ - linker_type: "semantic" | "instruct" | "reranker" | "fts5"
+ - el_model_name: embedding model for semantic similarity
+ - threshold: similarity threshold (0.0-1.0), default 0.80
+ - context_window: token window for context extraction
+ - max_contexts: maximum number of contexts per entity
+ - use_sentence_context: use full sentences instead of token windows
+ - reranker_llm: LLM model for reranker
+ - reranker_top_k: number of candidates for reranker
+ - reranker_fallbacks: add top-level fallback categories
 """
 
 DOMAIN_MODELS = {
@@ -61,6 +78,38 @@ DOMAIN_MODELS = {
         "kb": {
             "UBERONParcellation": "UBERON (restricted to CNS)",
             "others": "openMINDS controlled terms",
+        },
+        
+        # === Entity Linking Configuration ===
+        "linking_strategy": "reranker",
+        "el_config": {
+            "taxonomy_path": "taxonomies/neuro/Neuroscience_Combined.tsv",
+            "taxonomy_source": "OPENMINDS-UBERON",
+            "linker_type": "reranker",
+            "el_model_name": "intfloat/multilingual-e5-large-instruct",
+            "threshold": 0.80,
+            "context_window": 5,
+            "max_contexts": 5,
+            "use_sentence_context": False,
+            "reranker_llm": "Qwen/Qwen3-1.7B",
+            "reranker_top_k": 7,
+            "reranker_fallbacks": True,
+        },
+        
+        # === Type Matching Configuration ===
+        "enforce_type_match": True,
+        "taxonomy_type_column": "type",  # Column name in taxonomy TSV
+        "type_mappings": {
+            # Maps taxonomy type → expected NER type(s)
+            # Format: "taxonomy_type": "ner_type" or ["ner_type1", "ner_type2"]
+            "UBERONParcellation": "uberonparcellation",
+            "technique": "technique",
+            "species": "species",
+            "preparationType": "preparationtype",
+            "biologicalSex": "biologicalsex",
+            # Brain regions may have different taxonomy types
+            "brain_region": "uberonparcellation",
+            "anatomical_structure": "uberonparcellation",
         },
     },
     
@@ -132,6 +181,43 @@ DOMAIN_MODELS = {
         "kb": {
             "default": "Project-specific CCAM vocabulary (pilot sheet)",
         },
+        
+        # === Entity Linking Configuration ===
+        "linking_strategy": "reranker",
+        "el_config": {
+            "taxonomy_path": "taxonomies/ccam/CCAM_Combined.tsv",
+            "taxonomy_source": "SINFONICA-FAME",
+            "linker_type": "reranker",
+            "el_model_name": "intfloat/multilingual-e5-large-instruct",
+            "threshold": 0.80,
+            "context_window": 5,
+            "max_contexts": 5,
+            "use_sentence_context": False,
+            "reranker_llm": "Qwen/Qwen3-1.7B",
+            "reranker_top_k": 7,
+            "reranker_fallbacks": True,
+        },
+        
+        # === Type Matching Configuration ===
+        "enforce_type_match": True,
+        "taxonomy_type_column": "entity_category",  # CCAM uses entity_category column
+        "type_mappings": {
+            # Maps taxonomy entity_category → expected NER type(s)
+            "automation technologies": "levelofautomation",
+            "communication types": "communicationtype",
+            "entity connection types": "entityconnectiontype",
+            "scenario types": "scenariotype",
+            "sensor types": "sensortype",
+            "vehicle types": "vehicletype",
+            "VRU types": "vrutype",
+            # Alternative category names that may appear
+            "vehicle": "vehicletype",
+            "vru": "vrutype",
+            "sensor": "sensortype",
+            "automation": "levelofautomation",
+            "communication": "communicationtype",
+            "scenario": "scenariotype",
+        },
     },
 
     #### ENERGY ####
@@ -180,6 +266,46 @@ DOMAIN_MODELS = {
         "kb": {
             "default": "IRENA energy taxonomy",
         },
+        
+        # === Entity Linking Configuration ===
+        "linking_strategy": "reranker",
+        "el_config": {
+            "taxonomy_path": "taxonomies/energy/IRENA.tsv",
+            "taxonomy_source": "IRENA",
+            "linker_type": "reranker",
+            "el_model_name": "intfloat/multilingual-e5-large-instruct",
+            "threshold": 0.80,
+            "context_window": 5,
+            "max_contexts": 5,
+            "use_sentence_context": False,
+            "reranker_llm": "Qwen/Qwen3-1.7B",
+            "reranker_top_k": 7,
+            "reranker_fallbacks": True,
+        },
+        
+        # === Type Matching Configuration ===
+        "enforce_type_match": True,
+        "taxonomy_type_column": "type",
+        "type_mappings": {
+            # Maps taxonomy type → expected NER type(s)
+            # Energy taxonomy types map to NER labels
+            "Storage": "energystorage",
+            "Renewables": "energytype",
+            "Non-renewable": "energytype",
+            "Total energy": "energytype",
+            # Some taxonomies may have more specific types
+            "Solar": "energytype",
+            "Wind": "energytype",
+            "Hydro": "energytype",
+            "Biomass": "energytype",
+            "Geothermal": "energytype",
+            "Nuclear": "energytype",
+            "Fossil": "energytype",
+            "Battery": "energystorage",
+            "Hydrogen": ["energytype", "energystorage"],  # Can be both
+            # Fallback for generic energy types
+            "Energy": ["energytype", "energystorage"],
+        },
     },
 
     #### MARITIME ####
@@ -212,6 +338,39 @@ DOMAIN_MODELS = {
         },
         "kb": {
             "default": "Maritime ontology provided by partners",
+        },
+        
+        # === Entity Linking Configuration ===
+        "linking_strategy": "reranker",
+        "el_config": {
+            "taxonomy_path": "taxonomies/maritime/VesselTypes.tsv",
+            "taxonomy_source": "VesselTypes",
+            "linker_type": "reranker",
+            "el_model_name": "intfloat/multilingual-e5-large-instruct",
+            "threshold": 0.80,
+            "context_window": 5,
+            "max_contexts": 5,
+            "use_sentence_context": False,
+            "reranker_llm": "Qwen/Qwen3-1.7B",
+            "reranker_top_k": 7,
+            "reranker_fallbacks": True,
+        },
+        
+        # === Type Matching Configuration ===
+        "enforce_type_match": True,
+        "taxonomy_type_column": "type",
+        "type_mappings": {
+            # Maps taxonomy type → expected NER type
+            "vesselType": "vesseltype",
+            "vessel": "vesseltype",
+            "ship": "vesseltype",
+            "boat": "vesseltype",
+            # Specific vessel categories
+            "cargo": "vesseltype",
+            "tanker": "vesseltype",
+            "passenger": "vesseltype",
+            "fishing": "vesseltype",
+            "military": "vesseltype",
         },
     },
 
@@ -256,7 +415,9 @@ DOMAIN_MODELS = {
             "Chemical": "DrugBank",
             "Species": "NCBI Taxonomy",
         },
-        # FTS5-based linking strategy
+        
+        # === Entity Linking Configuration (FTS5) ===
+        # FTS5-based linking strategy - uses exact matching, no threshold needed
         "linking_strategy": "fts5",
         
         # FTS5 linker configuration per entity type
@@ -287,6 +448,32 @@ DOMAIN_MODELS = {
                 "taxonomy_path": "taxonomies/cancer/BRENDA_CELLLINE.tsv",
             },
             # Variant: skip for now (no vocabulary)
+        },
+        
+        # el_config for FTS5 - minimal config since exact matching is used
+        # These are only used if semantic fallback is enabled for any entity type
+        "el_config": {
+            "linker_type": "fts5",  # Explicitly set
+            # Fallback config (only used if fts5_linkers has "fallback": "semantic")
+            "el_model_name": "intfloat/multilingual-e5-large-instruct",
+            "threshold": 0.60,  # Lower threshold for semantic fallback
+            "context_window": 3,
+            "max_contexts": 3,
+        },
+
+        # === Type Matching Configuration ===
+        # For cancer with FTS5, type matching is implicit (routing by entity type)
+        # We set it to False since each FTS5 index only contains its type
+        "enforce_type_match": False,
+        "type_mappings": {
+            # These mappings are provided for documentation/future use
+            # They match the FTS5 linker routing
+            "Gene": "gene",
+            "Disease": "disease",
+            "CellLine": "cellline",
+            "Chemical": "chemical",
+            "Species": "species",
+            "Variant": "variant",
         },
 
         # Set of ignored mentions that can be artifacts of the NER models.

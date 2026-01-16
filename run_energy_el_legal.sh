@@ -1,19 +1,11 @@
 #!/bin/bash
+# Run EL for Energy domain on legal text (Fedlex)
+# EL configuration is loaded from domain_models.py el_config
 
 export PYTHONPATH="$(dirname "$0"):$PYTHONPATH"
 
 python src/pipeline.py \
     --domain energy \
     --step el \
-    --input_format legal_text \
-    --taxonomy taxonomies/energy/IRENA.tsv \
-    --taxonomy_source IRENA \
-    --output outputs/energy-legal \
-    --linker_type reranker \
-    --el_model_name intfloat/multilingual-e5-large-instruct \
-    --threshold 0.70 \
-    --reranker_llm Qwen/Qwen3-1.7B \
-    --reranker_top_k 7 \
-    --reranker_fallbacks \
+    --output outputs/title_abstract_json/energy/energy-legal \
     --resume
-

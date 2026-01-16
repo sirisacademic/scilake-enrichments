@@ -19,6 +19,17 @@ The pipeline uses linkers at **two different stages**:
 
 This distinction is important: **GazetteerLinker scans text to find entities**, while **FTS5Linker and other EL linkers receive entities already extracted by NER**.
 
+### Configuration via el_config
+
+Entity linking parameters are centralized in `domain_models.py` under the `el_config` section for each domain. This simplifies running the pipeline:
+
+```bash
+# Uses all EL settings from domain el_config
+python src/pipeline.py --domain energy --output outputs/energy --step el --resume
+```
+
+CLI arguments override domain config when specified. See [CONFIGURATION_GUIDE.md](CONFIGURATION_GUIDE.md#entity-linking-configuration-el_config) for details.
+
 ---
 
 ## Quick Comparison
@@ -74,7 +85,7 @@ Linked: "Wind turbines" → IRENA:230000
 
 ### Configuration
 
-Enabled in `configs/domain_models.py`:
+Enabled in `src/domain_models.py`:
 
 ```python
 DOMAIN_MODELS = {
@@ -183,7 +194,7 @@ FTS5Linker includes built-in text normalization to improve matching:
 
 ### Configuration
 
-In `configs/domain_models.py`:
+In `src/domain_models.py`:
 
 ```python
 DOMAIN_MODELS = {
@@ -326,7 +337,8 @@ python src/pipeline.py \
     --linker_type semantic \
     --el_model_name intfloat/multilingual-e5-base \
     --threshold 0.6 \
-    --context_window 3
+    --context_window 3 \
+    --resume
 ```
 
 ### Parameters
@@ -334,8 +346,8 @@ python src/pipeline.py \
 | Parameter | Default | Description |
 |-----------|---------|-------------|
 | `el_model_name` | `multilingual-e5-base` | Embedding model |
-| `threshold` | 0.6 | Minimum similarity for linking |
-| `context_window` | 3 | Tokens around entity for context |
+| `threshold` | From el_config (0.80) | Minimum similarity for linking |
+| `context_window` | From el_config (5) | Tokens around entity for context |
 | `use_sentence_context` | False | Use full sentences instead |
 
 ### Model Options
@@ -403,7 +415,8 @@ python src/pipeline.py \
     --linker_type instruct \
     --el_model_name intfloat/multilingual-e5-large-instruct \
     --threshold 0.7 \
-    --context_window 3
+    --context_window 3 \
+    --resume
 ```
 
 ### Model Options
@@ -443,14 +456,14 @@ python src/pipeline.py \
 
 ### Description
 
-**Two-stage approach**: Fast embedding retrieval followed by LLM-based reranking. This is the **recommended approach** for highest-quality entity linking when accuracy is critical.
+**Two-stage approach**: Fast embedding retrieval followed by LLM-based reranking. This is the **recommended approach** for highest-quality entity linking when accuracy is critical. It's configured as the default for non-cancer domains in `el_config`.
 
 ### How It Works
 
 ```
-┌─────────────────────────────────────────────────┐
+┌─────────────────────────────────────────────────────┐
 │ Stage 1: Embedding Retrieval (~10-20ms)         │
-├─────────────────────────────────────────────────┤
+├─────────────────────────────────────────────────────┤
 │ Query: "wind turbines" (+ context?)             │
 │    ↓                                            │
 │ Embedding similarity search                     │
@@ -463,12 +476,12 @@ python src/pipeline.py \
 │   5. Power generation (0.65)                    │
 │    ↓                                            │
 │ + Optional top-level fallbacks                  │
-└─────────────────────────────────────────────────┘
+└─────────────────────────────────────────────────────┘
                   │
                   ▼
-┌─────────────────────────────────────────────────┐
+┌─────────────────────────────────────────────────────┐
 │ Stage 2: LLM Reranking (~50-100ms)              │
-├─────────────────────────────────────────────────┤
+├─────────────────────────────────────────────────────┤
 │ LLM Prompt:                                     │
 │   Entity: "wind turbines"                       │
 │   Context: "Wind turbines convert..."           │
@@ -477,42 +490,47 @@ python src/pipeline.py \
 │ LLM evaluates with domain knowledge             │
 │    ↓                                            │
 │ Answer: "1" or "REJECT"                         │
-└─────────────────────────────────────────────────┘
+└─────────────────────────────────────────────────────┘
 ```
 
 ### Configuration
+
+Reranker is the default for non-cancer domains. Simple usage:
+
+```bash
+# Uses all settings from domain el_config
+python src/pipeline.py --domain energy --output outputs/energy --step el --resume
+```
+
+With explicit parameters (override defaults):
 
 ```bash
 python src/pipeline.py \
     --domain energy \
     --step el \
     --linker_type reranker \
-    --el_model_name intfloat/multilingual-e5-large-instruct \
-    --reranker_llm Qwen/Qwen3-1.7B \
-    --threshold 0.7 \
-    --context_window 3 \
-    --use_context_for_retrieval false \  # IMPORTANT
-    --reranker_top_k 5 \
-    --reranker_fallbacks
+    --threshold 0.75 \
+    --reranker_top_k 10 \
+    --resume
 ```
 
 ### Key Parameters
 
 #### Core Parameters
 
-| Parameter | Default | Description |
+| Parameter | Default (from el_config) | Description |
 |-----------|---------|-------------|
 | `reranker_llm` | `Qwen/Qwen3-1.7B` | LLM for reranking |
-| `reranker_top_k` | 5 | Candidates for LLM |
-| `threshold` | 0.7 | Min embedding similarity |
+| `reranker_top_k` | 7 | Candidates for LLM |
+| `threshold` | 0.80 | Min embedding similarity |
 
 #### Context Parameters
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
 | `use_context_for_retrieval` | False | Use context in Stage 1 |
-| `context_window` | 3 | Context size (tokens) |
-| `max_contexts` | 3 | Max contexts per entity |
+| `context_window` | 5 | Context size (tokens) |
+| `max_contexts` | 5 | Max contexts per entity |
 | `use_sentence_context` | False | Full sentences vs windows |
 
 #### Advanced Parameters
@@ -574,36 +592,6 @@ Tested models:
 "meta-llama/Llama-3.2-3B"  # Good alternative
 ```
 
-### LLM Prompt Structure
-
-```python
-You are an {domain} domain expert. Given an entity and its context,
-select the best matching concept or REJECT if none fit.
-
-Entity: "{entity_text}"
-Context: "{context}"
-
-Candidates:
-1. {label_1} ({taxonomy_id_1})
-   Category: {category_1}
-   Description: {description_1}
-   
-2. {label_2} ({taxonomy_id_2})
-   Category: {category_2}
-   Description: {description_2}
-   
-...
-
-Instructions:
-- Focus on the entity text, using context to disambiguate
-- REJECT if the entity is not a true {domain} concept
-- REJECT if it's a chemical compound, pollutant, or generic term
-- Prefer specific matches over broad categories
-- Trust the entity text over loose contextual associations
-
-Answer with ONLY a number (1-{k}) or "REJECT".
-```
-
 ### Pros & Cons
 
 **Pros:**
@@ -627,6 +615,51 @@ Answer with ONLY a number (1-{k}) or "REJECT".
 - ✅ Processing <50k documents (reasonable speed)
 - ✅ Want explicit control over false positives
 - ✅ Dealing with ambiguous or challenging entities
+
+---
+
+## Type Matching Validation
+
+After linking, the pipeline validates that the NER entity type matches the linked taxonomy concept type. This helps filter out incorrect links.
+
+### How It Works
+
+```
+Entity: "photovoltaic cell" (NER type: "energytype")
+Linked to: "Solar cell" (taxonomy type: "Renewables")
+
+Type mappings in domain_models.py:
+  "Renewables" → expected NER type: "energytype" ✓ MATCH
+
+Entity: "electric vehicle" (NER type: "energytype")
+Linked to: "Electric car" (taxonomy type: "transportation")
+
+Type mappings:
+  "transportation" → expected NER type: "vesseltype" ✗ MISMATCH
+  → Link marked with type_mismatch=True
+```
+
+### Configuration
+
+Type matching is enabled by default. Disable with `--no_type_match`:
+
+```bash
+python src/pipeline.py --domain energy --step el --no_type_match --resume
+```
+
+Configure mappings in `domain_models.py`:
+
+```python
+"energy": {
+    "enforce_type_match": True,
+    "taxonomy_type_column": "type",
+    "type_mappings": {
+        "Renewables": "energytype",
+        "Fossil fuels": "energytype",
+        "Energy storage": "energytype",
+    },
+}
+```
 
 ---
 
@@ -661,7 +694,7 @@ Consider the entity **"emissions"** in context:
 **Higher threshold → Lower recall, higher precision:**
 
 ```bash
---threshold 0.8  # Links fewer entities, fewer false positives
+--threshold 0.85  # Links fewer entities, fewer false positives
 ```
 
 **Recommended starting points:**
@@ -670,7 +703,7 @@ Consider the entity **"emissions"** in context:
 |--------|-----------|-------|
 | Semantic | 0.6 | Start here, adjust based on results |
 | Instruct | 0.7 | Can go lower (model is better) |
-| Reranker | 0.7 | LLM provides additional safety |
+| Reranker | 0.8 (default) | LLM provides additional safety |
 
 ### Context Tuning
 
@@ -743,7 +776,7 @@ Cache Hit Rate:
 **Solutions:**
 ```bash
 # Raise threshold
---threshold 0.8
+--threshold 0.85
 
 # Disable context in Stage 1 (Reranker)
 --use_context_for_retrieval false
@@ -818,8 +851,8 @@ Cache Hit Rate:
 # Step 3: If accuracy insufficient, try instruct
 --linker_type instruct --threshold 0.7
 
-# Step 4: If still insufficient, use reranker
---linker_type reranker --use_context_for_retrieval false
+# Step 4: If still insufficient, use reranker (default)
+--linker_type reranker
 ```
 
 ### 2. Use FTS5 for Production Exact Matching
@@ -861,35 +894,29 @@ Don't tune on the same data you evaluate:
 3. Final evaluation on test set only once
 ```
 
-### 5. Use Reranker for Final Production (When Accuracy Matters)
+### 5. Use Domain el_config Defaults
 
-Once you've established baseline with faster methods:
+The recommended approach is to let domain `el_config` handle defaults:
 
 ```bash
 # Development: Fast iteration
 --linker_type semantic
 
-# Production: Best quality
---linker_type reranker --use_context_for_retrieval false
+# Production: Use defaults (reranker with optimized settings)
+python src/pipeline.py --domain energy --step el --resume
 ```
 
 ### 6. Document Your Configuration
 
-Save your optimal configuration:
+If you need custom settings, save them in a shell script:
 
 ```bash
-# energy_production_config.sh
+# run_energy_el.sh
 python src/pipeline.py \
     --domain energy \
     --step el \
-    --linker_type reranker \
-    --threshold 0.75 \
-    --context_window 3 \
-    --use_context_for_retrieval false \
-    --reranker_llm Qwen/Qwen3-1.7B \
-    --reranker_top_k 5 \
-    --reranker_fallbacks \
-    --output outputs/energy_production
+    --output outputs/energy \
+    --resume
 ```
 
 ---
@@ -901,7 +928,7 @@ python src/pipeline.py \
 **Architecture:**
 ```
 NER Step: GazetteerLinker (extraction + linking) + Neural NER
-EL Step: SemanticLinker or RerankerLinker (linking unlinked entities)
+EL Step: RerankerLinker (linking unlinked entities) - via el_config
 ```
 
 **Configuration:**
@@ -911,7 +938,12 @@ EL Step: SemanticLinker or RerankerLinker (linking unlinked entities)
         "enabled": True,  # Extraction during NER
         "taxonomy_path": "taxonomies/energy/IRENA.tsv",
     },
-    # EL step uses semantic/reranker (via CLI flags)
+    "el_config": {
+        "linker_type": "reranker",
+        "threshold": 0.80,
+        "reranker_top_k": 7,
+        # ... other settings
+    },
 }
 ```
 
@@ -952,11 +984,11 @@ EL Step: FTS5Linker (per entity type)
 | **Exact matching (large vocab)** | FTS5Linker ⭐ | EL | `linking_strategy: "fts5"` |
 | **Maximum speed** | SemanticLinker | EL | `--linker_type semantic --threshold 0.6` |
 | **Good balance** | InstructLinker | EL | `--linker_type instruct --threshold 0.7` |
-| **Best accuracy** | RerankerLinker ⭐ | EL | `--linker_type reranker --use_context_for_retrieval false` |
-| **Explicit rejection** | RerankerLinker | EL | Same as above + monitor REJECT rate |
+| **Best accuracy** | RerankerLinker ⭐ | EL | Default (from el_config) |
+| **Explicit rejection** | RerankerLinker | EL | Default + monitor REJECT rate |
 | **Large ambiguous vocabularies** | NER + FTS5 | Both | Cancer-style architecture |
 
 **Default recommendations:**
-- **Non-cancer domains**: GazetteerLinker (NER) + RerankerLinker (EL)
+- **Non-cancer domains**: GazetteerLinker (NER) + RerankerLinker (EL, via el_config)
 - **Cancer domain**: Neural NER + FTS5Linker (EL)
-- **For semantic matching**: Start with **SemanticLinker** for exploration, move to **RerankerLinker** for production
+- **For semantic matching**: Start with **SemanticLinker** for exploration, default to **RerankerLinker** for production

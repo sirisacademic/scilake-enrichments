@@ -1,21 +1,12 @@
 #!/bin/bash
-export PYTHONPATH="$(dirname "$0"):$PYTHONPATH"
+# Run full NER + EL pipeline for Neuro domain (NIF input)
+# EL configuration is loaded from domain_models.py el_config
 
-# !!! Run with --resume to resume from previous run !!!
+export PYTHONPATH="$(dirname "$0"):$PYTHONPATH"
 
 python src/pipeline.py \
     --domain neuro \
-    --taxonomy taxonomies/neuro/Neuroscience_Combined.tsv \
-    --taxonomy_source OPENMINDS-UBERON \
     --input data/neuro-all-ft \
     --output outputs/neuro-all-ft \
-    --linker_type reranker \
-    --el_model_name intfloat/multilingual-e5-large-instruct \
-    --threshold 0.70 \
-    --context_window 5 \
-    --max_contexts 5 \
-    --reranker_llm Qwen/Qwen3-1.7B \
-    --reranker_top_k 7 \
-    --reranker_fallbacks \
+    --step all \
     --resume
-

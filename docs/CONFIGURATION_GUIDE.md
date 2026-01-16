@@ -7,17 +7,18 @@ This guide provides configuration recipes for different use cases, including ent
 ## Table of Contents
 
 1. [Domain Configuration](#domain-configuration)
-2. [Entity Filtering](#entity-filtering)
-3. [Taxonomy Preparation](#taxonomy-preparation)
-4. [Environment Setup](#environment-setup)
-5. [Input Format Configuration](#input-format-configuration)
-6. [Parallel Processing](#parallel-processing)
-7. [Performance Optimization](#performance-optimization)
-8. [Configuration Recipes](#configuration-recipes)
-9. [Checkpoint Management](#checkpoint-management)
-10. [Logging Configuration](#logging-configuration)
-11. [Testing Configuration](#testing-configuration)
-12. [Troubleshooting Common Issues](#troubleshooting-common-issues)
+2. [Entity Linking Configuration (el_config)](#entity-linking-configuration-el_config)
+3. [Entity Filtering](#entity-filtering)
+4. [Taxonomy Preparation](#taxonomy-preparation)
+5. [Environment Setup](#environment-setup)
+6. [Input Format Configuration](#input-format-configuration)
+7. [Parallel Processing](#parallel-processing)
+8. [Performance Optimization](#performance-optimization)
+9. [Configuration Recipes](#configuration-recipes)
+10. [Checkpoint Management](#checkpoint-management)
+11. [Logging Configuration](#logging-configuration)
+12. [Testing Configuration](#testing-configuration)
+13. [Troubleshooting Common Issues](#troubleshooting-common-issues)
 
 ---
 
@@ -25,7 +26,7 @@ This guide provides configuration recipes for different use cases, including ent
 
 ### Basic Domain Setup
 
-In `configs/domain_models.py`:
+In `src/domain_models.py`:
 
 ```python
 DOMAIN_MODELS = {
@@ -52,6 +53,13 @@ DOMAIN_MODELS = {
         # Entity Filtering
         "min_mention_length": 2,
         "blocked_mentions": {"energy", "power", "system"},
+        
+        # Entity Linking Configuration (see el_config section)
+        "el_config": {...},
+        
+        # Type Matching
+        "enforce_type_match": True,
+        "type_mappings": {...},
     }
 }
 ```
@@ -96,19 +104,19 @@ With multiple labels:
 
 #### 2. Domain-Specific Thresholds
 
-Different domains need different thresholds based on taxonomy structure:
+Different domains need different thresholds based on taxonomy structure. These are now configured in `el_config`:
 
 ```python
 "energy": {
-    "threshold": 0.7  # Energy taxonomy is well-structured
+    "el_config": {
+        "threshold": 0.80  # Energy taxonomy is well-structured
+    }
 }
 
 "neuro": {
-    "threshold": 0.6  # Neuroanatomy terms more ambiguous
-}
-
-"maritime": {
-    "threshold": 0.75  # Very specific technical terms
+    "el_config": {
+        "threshold": 0.80  # Can be lowered if linking rate is too low
+    }
 }
 ```
 
@@ -129,13 +137,120 @@ Different domains need different thresholds based on taxonomy structure:
        "gazetteer": {...},
        "min_mention_length": 2,
        "blocked_mentions": set(),
+       "el_config": {
+           "taxonomy_path": "taxonomies/newdomain/taxonomy.tsv",
+           "taxonomy_source": "NewDomain",
+           "linker_type": "reranker",
+           "threshold": 0.80,
+           ...
+       },
    }
    ```
 
 3. **Test on sample:**
    ```bash
-   python src/pipeline.py --domain newdomain --input data/sample --output outputs/test --step all
+   python src/pipeline.py --domain newdomain --input data/sample --output outputs/test --step all --resume
    ```
+
+---
+
+## Entity Linking Configuration (el_config)
+
+Entity linking parameters are centralized in the `el_config` section of each domain in `domain_models.py`. This simplifies running the pipeline - you typically only need to specify domain and paths.
+
+### el_config Structure
+
+```python
+"energy": {
+    # ... NER config ...
+    
+    "el_config": {
+        # Taxonomy settings
+        "taxonomy_path": "taxonomies/energy/IRENA.tsv",
+        "taxonomy_source": "IRENA",
+        
+        # Linker type
+        "linker_type": "reranker",  # "semantic" | "instruct" | "reranker" | "fts5"
+        
+        # Embedding model
+        "el_model_name": "intfloat/multilingual-e5-large-instruct",
+        
+        # Threshold and context
+        "threshold": 0.80,
+        "context_window": 5,
+        "max_contexts": 5,
+        "use_sentence_context": False,
+        
+        # Reranker-specific settings
+        "reranker_llm": "Qwen/Qwen3-1.7B",
+        "reranker_top_k": 7,
+        "reranker_fallbacks": True,
+    },
+}
+```
+
+### Default Values
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `linker_type` | `"reranker"` | Linking strategy |
+| `el_model_name` | `"intfloat/multilingual-e5-large-instruct"` | Embedding model |
+| `threshold` | `0.80` | Similarity threshold |
+| `context_window` | `5` | Token context window |
+| `max_contexts` | `5` | Max contexts per entity |
+| `use_sentence_context` | `False` | Use full sentences |
+| `reranker_llm` | `"Qwen/Qwen3-1.7B"` | LLM for reranking |
+| `reranker_top_k` | `7` | Candidates for reranker |
+| `reranker_fallbacks` | `True` | Add top-level fallbacks |
+
+### CLI Override
+
+CLI arguments override domain config when specified:
+
+```bash
+# Uses all settings from el_config
+python src/pipeline.py --domain energy --output outputs/energy --step el --resume
+
+# Override threshold for this run only
+python src/pipeline.py --domain energy --output outputs/energy --step el --threshold 0.75 --resume
+
+# Override multiple settings
+python src/pipeline.py --domain energy --output outputs/energy --step el \
+    --threshold 0.70 \
+    --reranker_top_k 10 \
+    --resume
+```
+
+### Parameter Resolution Order
+
+1. CLI argument (if specified)
+2. Domain `el_config` (if defined)
+3. Hardcoded fallback default
+
+### Cancer Domain (FTS5)
+
+Cancer domain uses FTS5 linking instead of reranker:
+
+```python
+"cancer": {
+    "gazetteer": {"enabled": False},
+    "linking_strategy": "fts5",
+    
+    "fts5_linkers": {
+        "gene": {"index_path": "indices/cancer/ncbi_gene.db", "taxonomy_source": "NCBI_Gene"},
+        "disease": {"index_path": "indices/cancer/doid_disease.db", "taxonomy_source": "DOID"},
+        # ...
+    },
+    
+    "el_config": {
+        "linker_type": "fts5",
+        # Minimal config - FTS5 uses exact matching
+    },
+    
+    # Type matching is implicit via FTS5 routing (each index is type-specific)
+    "enforce_type_match": False,
+}
+```
 
 ---
 
@@ -401,7 +516,8 @@ python src/pipeline.py \
     --input data/energy \
     --output outputs/energy \
     --input_format nif \
-    --step all
+    --step all \
+    --resume
 ```
 
 ### Title/Abstract JSON Format
@@ -419,7 +535,8 @@ python src/pipeline.py \
     --input data/energy_titleabstract.json \
     --output outputs/energy-ta \
     --input_format title_abstract \
-    --step all
+    --step all \
+    --resume
 ```
 
 ### Legal Text JSON Format
@@ -437,7 +554,8 @@ python src/pipeline.py \
     --input data/fedlex-dataset.jsonl \
     --output outputs/energy-legal \
     --input_format legal_text \
-    --step all
+    --step all \
+    --resume
 ```
 
 ---
@@ -503,6 +621,8 @@ ps aux | grep pipeline.py
 
 ### Step 4: Run Parallel Entity Linking
 
+EL configuration is automatically loaded from domain el_config:
+
 ```bash
 #!/bin/bash
 # run_el_parallel.sh
@@ -512,8 +632,6 @@ for i in 00 01 02 03 04 05; do
     nohup python src/pipeline.py \
         --domain energy \
         --step el \
-        --linker_type reranker \
-        --threshold 0.7 \
         --output outputs/energy-part${i} \
         --resume \
         > outputs/energy-part${i}_el.log 2>&1 &
@@ -569,8 +687,8 @@ echo "Merged $(wc -l < outputs/energy-merged/el/all_linked.jsonl) documents"
 | Threshold | Linking Rate | Precision | Use Case |
 |-----------|--------------|-----------|----------|
 | 0.5 | ~95% | ~80% | High recall needed |
-| 0.7 (default) | ~85% | ~90% | Balanced |
-| 0.8 | ~75% | ~95% | High precision needed |
+| 0.7 | ~85% | ~90% | Balanced |
+| 0.8 (default) | ~75% | ~95% | High precision (recommended) |
 | 0.9 | ~60% | ~98% | Very high precision |
 
 ### Reranker Optimization
@@ -579,11 +697,11 @@ echo "Merged $(wc -l < outputs/energy-merged/el/all_linked.jsonl) documents"
 # Fast reranker (lower accuracy)
 --reranker_top_k 3 --threshold 0.6
 
-# Balanced (recommended)
---reranker_top_k 5 --threshold 0.7
+# Balanced (default from el_config)
+--reranker_top_k 7 --threshold 0.8
 
 # High accuracy (slower)
---reranker_top_k 10 --threshold 0.8 --reranker_thinking
+--reranker_top_k 10 --threshold 0.85 --reranker_thinking
 ```
 
 ### Context Settings
@@ -592,82 +710,78 @@ echo "Merged $(wc -l < outputs/energy-merged/el/all_linked.jsonl) documents"
 |---------|-------|----------|-------------|
 | `--context_window 0` | Fastest | Lower | Entity text is unambiguous |
 | `--context_window 3` | Balanced | Good | Most cases |
-| `--context_window 5` | Slower | Better | Ambiguous entities |
+| `--context_window 5` (default) | Slower | Better | Ambiguous entities |
 | `--use_sentence_context` | Slowest | Best | Complex disambiguation |
 
 ---
 
 ## Configuration Recipes
 
-### Recipe 1: High Precision
+With `el_config`, most commands are now simplified. These recipes show how to override defaults when needed.
+
+### Recipe 1: Default (Recommended)
+
+Uses all settings from domain `el_config` - no overrides needed.
+
+```bash
+python src/pipeline.py \
+    --domain energy \
+    --input data/energy \
+    --output outputs/energy \
+    --step all \
+    --resume
+```
+
+**Expected:** ~93% precision, ~75-85% linking rate (threshold 0.80)
+
+### Recipe 2: High Precision
 
 For applications where false positives are costly.
 
 ```bash
 python src/pipeline.py \
     --domain energy \
+    --output outputs/energy-highprec \
     --step el \
-    --linker_type reranker \
     --threshold 0.85 \
-    --context_window 5 \
     --reranker_top_k 10 \
-    --reranker_fallbacks \
-    --output outputs/energy-highprec
+    --resume
 ```
 
 **Expected:** ~95% precision, ~70% linking rate
 
-### Recipe 2: High Recall
+### Recipe 3: High Recall
 
 For applications where missing entities is costly.
 
 ```bash
 python src/pipeline.py \
     --domain energy \
+    --output outputs/energy-highrecall \
     --step el \
     --linker_type semantic \
     --threshold 0.5 \
-    --context_window 3 \
-    --output outputs/energy-highrecall
+    --resume
 ```
 
 **Expected:** ~80% precision, ~95% linking rate
 
-### Recipe 3: Maximum Speed
+### Recipe 4: Maximum Speed
 
 For large-scale processing where speed is critical.
 
 ```bash
 python src/pipeline.py \
     --domain energy \
+    --output outputs/energy-fast \
     --step el \
     --linker_type semantic \
     --threshold 0.6 \
     --context_window 0 \
-    --batch_size 2000 \
-    --output outputs/energy-fast
+    --resume
 ```
 
 **Expected:** ~85% precision, ~90% linking rate, 5x faster
-
-### Recipe 4: Balanced (Recommended)
-
-Best overall trade-off for most use cases.
-
-```bash
-python src/pipeline.py \
-    --domain energy \
-    --step el \
-    --linker_type reranker \
-    --threshold 0.7 \
-    --context_window 3 \
-    --reranker_top_k 5 \
-    --reranker_fallbacks \
-    --use_context_for_retrieval false \
-    --output outputs/energy-balanced
-```
-
-**Expected:** ~93% precision, ~85% linking rate
 
 ### Recipe 5: Development/Testing
 
@@ -681,7 +795,6 @@ python src/pipeline.py \
     --step all \
     --linker_type semantic \
     --threshold 0.65 \
-    --context_window 3 \
     --batch_size 10 \
     --debug \
     --resume
@@ -690,18 +803,19 @@ python src/pipeline.py \
 **Tips:**
 - Use small sample first (~100 docs)
 - Iterate quickly with semantic linker
-- Switch to reranker once config is stable
+- Switch to reranker (default) once config is stable
 
 ### Recipe 6: Large Vocabulary (Cancer)
 
-For domains with millions of taxonomy entries.
+For domains with millions of taxonomy entries. Uses FTS5 automatically.
 
 ```bash
 python src/pipeline.py \
     --domain cancer \
-    --step el \
-    --output outputs/cancer
-    # Uses FTS5 automatically based on domain config
+    --input data/cancer \
+    --output outputs/cancer \
+    --step all \
+    --resume
 ```
 
 ---
@@ -778,10 +892,10 @@ rm outputs/energy/ner/checkpoints/processed_sections.json
 
 ```bash
 # Normal mode (INFO level)
-python src/pipeline.py --domain energy --step all --output outputs/energy
+python src/pipeline.py --domain energy --step all --output outputs/energy --resume
 
 # Debug mode (detailed logging)
-python src/pipeline.py --domain energy --step all --output outputs/energy --debug
+python src/pipeline.py --domain energy --step all --output outputs/energy --debug --resume
 ```
 
 **Debug mode shows:**
@@ -789,6 +903,7 @@ python src/pipeline.py --domain energy --step all --output outputs/energy --debu
 - LLM prompts and responses
 - Cache hits/misses
 - Filter decisions (blocked mentions, too short)
+- Type matching results
 
 **Info mode shows:**
 - File-level progress
@@ -843,6 +958,11 @@ grep "blocked" outputs/energy/el/logs/energy_el.log | head -50
 grep "too short" outputs/energy/el/logs/energy_el.log | head -50
 ```
 
+**Check type mismatches:**
+```bash
+grep "type mismatch" outputs/energy/el/logs/energy_el.log | head -50
+```
+
 ---
 
 ## Testing Configuration
@@ -865,7 +985,8 @@ python src/pipeline.py \
     --input tests/data/sample \
     --output tests/output \
     --step all \
-    --batch_size 5
+    --batch_size 5 \
+    --resume
 ```
 
 ### Validation Script
@@ -922,7 +1043,7 @@ validate_linking("outputs/energy/el/paper1.jsonl")
 
 **Solutions:**
 1. Lower threshold: `--threshold 0.5`
-2. Enable fallbacks: `--reranker_fallbacks`
+2. Enable fallbacks: `--reranker_fallbacks` (default: True)
 3. Check taxonomy coverage
 4. Review blocked_mentions (may be too aggressive)
 
@@ -943,8 +1064,8 @@ grep "below threshold" outputs/energy/logs/energy_el.log | head -20
 **Symptoms:** Incorrect links
 
 **Solutions:**
-1. `use_context_for_retrieval=false` (prevents context contamination)
-2. Raise threshold: `--threshold 0.8`
+1. `use_context_for_retrieval=false` (already default)
+2. Raise threshold: `--threshold 0.85`
 3. Review GLiNER labels (may be too broad)
 4. Add more blocked_mentions
 
@@ -1025,14 +1146,14 @@ chmod 644 outputs/energy/el/cache/linking_cache.json
 ### Essential Commands
 
 ```bash
-# Full pipeline
+# Full pipeline (uses el_config defaults)
 python src/pipeline.py --domain energy --input data/energy --output outputs/energy --step all --resume
 
 # NER only (title/abstract)
 python src/pipeline.py --domain energy --input data/energy.json --output outputs/energy --input_format title_abstract --step ner --resume
 
-# EL only (reranker)
-python src/pipeline.py --domain energy --output outputs/energy --step el --linker_type reranker --threshold 0.7 --resume
+# EL only (uses el_config defaults)
+python src/pipeline.py --domain energy --output outputs/energy --step el --resume
 
 # Check progress
 tail -f outputs/energy/*/logs/*.log
@@ -1043,7 +1164,8 @@ nvidia-smi
 
 ### Configuration Checklist
 
-- [ ] Domain configured in `domain_models.py`
+- [ ] Domain configured in `src/domain_models.py`
+- [ ] `el_config` defined with appropriate settings
 - [ ] Taxonomy file in `taxonomies/{domain}/`
 - [ ] GLiNER labels include disambiguation categories
 - [ ] Taxonomy has rich aliases and descriptions
@@ -1055,7 +1177,7 @@ nvidia-smi
 
 ### Best Practices
 
-1. **Start simple:** Use semantic linker first
+1. **Use defaults:** Domain `el_config` settings are optimized
 2. **Test small:** Run on 100 docs before scaling
 3. **Monitor logs:** Check linking rate and cache performance
 4. **Preserve cache:** Keep `linking_cache.json` between runs
@@ -1063,25 +1185,25 @@ nvidia-smi
 6. **Validate regularly:** Sample for manual review
 7. **Enrich taxonomy:** Add Wikidata aliases for better coverage
 
-### Configuration Templates
+### Shell Scripts
 
-Save these for reuse:
+Pre-configured shell scripts are available for common scenarios:
 
 ```bash
-# configs/energy_production.sh
-python src/pipeline.py \
-    --domain energy \
-    --step all \
-    --linker_type reranker \
-    --threshold 0.7 \
-    --use_context_for_retrieval false \
-    --reranker_llm Qwen/Qwen3-1.7B \
-    --reranker_top_k 5 \
-    --reranker_fallbacks \
-    --context_window 3 \
-    --use_sentence_context \
-    --batch_size 100 \
-    --resume
+# NIF format (full pipeline)
+./run_energy_ner_el.sh
+./run_neuro_ner_el.sh
+./run_ccam_ner_el.sh
+./run_maritime_ner_el.sh
+./run_cancer_ner_el.sh
+
+# Title/abstract (parallel processing)
+./run_energy_ner_parallel_titles-abstracts.sh
+./run_energy_el_parallel_titles-abstracts.sh
+
+# Legal text
+./run_energy_ner_legal.sh
+./run_energy_el_legal.sh
 ```
 
 ---
@@ -1091,6 +1213,7 @@ python src/pipeline.py \
 This configuration guide covers:
 
 ✅ **Domain setup** with multi-label NER configuration
+✅ **el_config** for centralized entity linking configuration
 ✅ **Entity filtering** with blocked mentions and length thresholds
 ✅ **Taxonomy preparation** with best practices and Wikidata enrichment
 ✅ **Environment setup** with hardware recommendations

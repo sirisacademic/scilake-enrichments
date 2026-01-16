@@ -25,7 +25,7 @@ from src.gazetteer_linker import GazetteerLinker
 from src.title_abstract_reader import parse_title_abstract_file, parse_title_abstract_directory
 from src.legal_text_reader import parse_legal_text_file, parse_legal_text_directory
 from configs.domain_models import DOMAIN_MODELS
-
+from src.type_matching import TypeMatcher
 
 # ============================================================
 # Utility Functions
@@ -921,19 +921,20 @@ def run_el(
     domain: str,
     ner_output_dir: str,
     el_output_dir: str,
-    linker_type: str = "auto",
-    model_name: str = "intfloat/multilingual-e5-base",
-    taxonomy_path: str = "taxonomies/energy/IRENA.tsv",
-    taxonomy_source: str = "IRENA",
-    threshold: float = 0.7,
-    context_window: int = 3,
-    max_contexts: int = 3,
-    use_sentence_context: bool = False,
+    linker_type: str = None,
+    model_name: str = None,
+    taxonomy_path: str = None,
+    taxonomy_source: str = None,
+    threshold: float = None,
+    context_window: int = None,
+    max_contexts: int = None,
+    use_sentence_context: bool = None,
     use_context_for_retrieval: bool = False,
-    reranker_llm: str = "Qwen/Qwen3-1.7B",
-    reranker_top_k: int = 5,
-    reranker_fallbacks: bool = True,
+    reranker_llm: str = None,
+    reranker_top_k: int = None,
+    reranker_fallbacks: bool = None,
     reranker_thinking: bool = False,
+    enforce_type_match: bool = True,
     resume: bool = False,
     debug: bool = False
 ):
@@ -957,12 +958,44 @@ def run_el(
     
     # Get domain configuration
     domain_conf = DOMAIN_MODELS.get(domain, {})
+    el_config = domain_conf.get("el_config", {})
+    
+    # === Apply el_config defaults (CLI overrides domain config) ===
+    # Linking strategy from domain config
     linking_strategy = domain_conf.get("linking_strategy", "semantic")
+    
+    # Taxonomy settings
+    taxonomy_path = taxonomy_path if taxonomy_path is not None else el_config.get("taxonomy_path", "taxonomies/energy/IRENA.tsv")
+    taxonomy_source = taxonomy_source if taxonomy_source is not None else el_config.get("taxonomy_source", "IRENA")
+    
+    # Linker type
+    linker_type = linker_type if linker_type is not None else el_config.get("linker_type", "auto")
+    
+    # Model settings
+    model_name = model_name if model_name is not None else el_config.get("el_model_name", "intfloat/multilingual-e5-base")
+    
+    # Threshold and context settings
+    threshold = threshold if threshold is not None else el_config.get("threshold", 0.80)
+    context_window = context_window if context_window is not None else el_config.get("context_window", 5)
+    max_contexts = max_contexts if max_contexts is not None else el_config.get("max_contexts", 5)
+    use_sentence_context = use_sentence_context if use_sentence_context is not None else el_config.get("use_sentence_context", False)
+    
+    # Reranker settings
+    reranker_llm = reranker_llm if reranker_llm is not None else el_config.get("reranker_llm", "Qwen/Qwen3-1.7B")
+    reranker_top_k = reranker_top_k if reranker_top_k is not None else el_config.get("reranker_top_k", 7)
+    reranker_fallbacks = reranker_fallbacks if reranker_fallbacks is not None else el_config.get("reranker_fallbacks", True)
     
     logger.info(f"🔗 Starting Entity Linking for domain={domain}")
     logger.info(f"NER input: {ner_output_dir}")
     logger.info(f"EL output: {el_output_dir}")
     logger.info(f"Linking strategy: {linking_strategy}")
+    logger.info(f"Taxonomy: {taxonomy_path} (source: {taxonomy_source})")
+    logger.info(f"Linker type: {linker_type}")
+    logger.info(f"Model: {model_name}")
+    logger.info(f"Threshold: {threshold}")
+    logger.info(f"Context: window={context_window}, max={max_contexts}, sentences={use_sentence_context}")
+    if linker_type == "reranker" or (linker_type == "auto" and linking_strategy != "fts5"):
+        logger.info(f"Reranker: llm={reranker_llm}, top_k={reranker_top_k}, fallbacks={reranker_fallbacks}")
 
     # Load entity filters (blocked mentions + min length)
     entity_filters = load_entity_filters(domain_conf, logger)
@@ -970,6 +1003,23 @@ def run_el(
     default_min_len = entity_filters["min_mention_length"].get("_default", 1)
     if total_blocked_terms > 0 or default_min_len > 1:
         logger.info(f"🔧 Entity filters active: {total_blocked_terms} blocked terms, min_length={default_min_len}")
+        
+    # Initialize type matcher
+    type_matcher = None
+    enforce_type_match_final = enforce_type_match and domain_conf.get("enforce_type_match", True)
+    
+    if enforce_type_match_final and linking_strategy != "fts5":
+        # FTS5 has implicit type matching via routing, so skip for FTS5
+        type_matcher = TypeMatcher(
+            domain_conf=domain_conf,
+            taxonomy_path=taxonomy_path,
+            logger=logger
+        )
+        logger.info(f"🔍 Type matching: enabled")
+    elif linking_strategy == "fts5":
+        logger.info(f"🔍 Type matching: implicit (FTS5 routing by entity type)")
+    else:
+        logger.info(f"🔍 Type matching: disabled")
 
     # Load checkpoint
     checkpoint_file = os.path.join(checkpoint_dir, "processed.json")
@@ -1181,6 +1231,7 @@ def run_el(
             total_linked = 0
             total_blocked = 0
             total_too_short = 0
+            total_type_mismatch = 0
             
             for _, row in df_ner.iterrows():
                 section_id = row['section_id']
@@ -1264,6 +1315,28 @@ def run_el(
                         section_id=section_id
                     )
                     
+                    # Apply type matching filter
+                    if type_matcher:
+                        type_filtered_entities = []
+                        for entity in enriched_entities:
+                            if entity.get('linking'):
+                                filtered_linking, was_rejected = type_matcher.filter_linking_by_type(
+                                    entity_type=entity.get('entity', ''),
+                                    linking_result=entity['linking'],
+                                    entity_text=entity.get('text', '')
+                                )
+                                if was_rejected:
+                                    total_type_mismatch += 1
+                                    entity_copy = entity.copy()
+                                    entity_copy['linking'] = None
+                                    entity_copy['type_mismatch'] = True
+                                    type_filtered_entities.append(entity_copy)
+                                else:
+                                    type_filtered_entities.append(entity)
+                            else:
+                                type_filtered_entities.append(entity)
+                        enriched_entities = type_filtered_entities
+                    
                     total_entities += len(filtered_entities)
                     total_linked += sum(1 for e in enriched_entities if e.get('linking'))
                 
@@ -1288,17 +1361,21 @@ def run_el(
                 "total_entities": total_entities,
                 "linked_entities": total_linked,
                 "filtered_entities": total_filtered,
+                "type_mismatch": total_type_mismatch,
                 "linking_rate": linking_rate
             }
             
             filter_msg = ""
-            if total_filtered > 0:
+            total_rejected = total_filtered + total_type_mismatch
+            if total_rejected > 0:
                 parts = []
                 if total_blocked > 0:
                     parts.append(f"{total_blocked} blocked")
                 if total_too_short > 0:
                     parts.append(f"{total_too_short} too short")
-                filter_msg = f", {total_filtered} filtered ({', '.join(parts)})"
+                if total_type_mismatch > 0:
+                    parts.append(f"{total_type_mismatch} type mismatch")
+                filter_msg = f", filtered: {', '.join(parts)}"
             
             logger.info(
                 f"✅ {os.path.basename(ner_file)}: "
@@ -1337,10 +1414,13 @@ def run_el(
     total_ents = sum(p.get('total_entities', 0) for p in processed.values() if p.get('status') == 'done')
     total_links = sum(p.get('linked_entities', 0) for p in processed.values() if p.get('status') == 'done')
     total_filt = sum(p.get('filtered_entities', 0) for p in processed.values() if p.get('status') == 'done')
+    total_type_mismatch_all = sum(p.get('type_mismatch', 0) for p in processed.values() if p.get('status') == 'done')
     
     logger.info(f"📊 Summary: {total_files} files, {total_ents} entities, {total_links} linked")
     if total_filt > 0:
         logger.info(f"   Filtered (blocked/too short): {total_filt}")
+    if total_type_mismatch_all > 0:
+        logger.info(f"   Type mismatch rejections: {total_type_mismatch_all}")
     if total_ents > 0:
         logger.info(f"   Overall linking rate: {100*total_links/total_ents:.1f}%")
 
@@ -1550,34 +1630,46 @@ def main():
     parser.add_argument("--output", required=True, help="Path to output directory")
     parser.add_argument("--step", default="all", help="gaz | ner | el | geotagging | affiliations | all")
     
-    # NEW: Input format argument
+    # Input format argument
     parser.add_argument("--input_format", default="nif", choices=["nif", "title_abstract", "legal_text"],
                        help="Input format: nif (TTL files), title_abstract (JSON), or legal_text (JSON)")
     
     # Entity Linking arguments
-    parser.add_argument("--threshold", type=float, default=0.7, help="EL similarity threshold")
-    parser.add_argument("--use_sentence_context", action="store_true", help="Use sentences instead of token windows")
+    # Note: If not specified, values are read from domain_models.py el_config
+    parser.add_argument("--threshold", type=float, default=None, 
+                       help="EL similarity threshold (default: from domain config or 0.80)")
+    parser.add_argument("--use_sentence_context", action="store_true", default=None,
+                       help="Use sentences instead of token windows")
     parser.add_argument("--use_context_for_retrieval", action="store_true",
                        help="Use context in embedding retrieval (stage 1). LLM (stage 2) always uses context.")
-    parser.add_argument("--max_contexts", type=int, default=3, help="Max number of contexts to extract")
-    parser.add_argument("--context_window", type=int, default=3, help="EL similarity context window")
-    parser.add_argument("--el_model_name", default="intfloat/multilingual-e5-base", help="Model for entity linking")
-    parser.add_argument("--taxonomy", default="taxonomies/energy/IRENA.tsv", help="Path to taxonomy TSV")
-    parser.add_argument("--taxonomy_source", default="IRENA", help="Taxonomy source name (e.g., IRENA, UBERON)")
+    parser.add_argument("--max_contexts", type=int, default=None, 
+                       help="Max number of contexts to extract (default: from domain config or 5)")
+    parser.add_argument("--context_window", type=int, default=None, 
+                       help="EL similarity context window (default: from domain config or 5)")
+    parser.add_argument("--el_model_name", default=None, 
+                       help="Model for entity linking (default: from domain config)")
+    parser.add_argument("--taxonomy", default=None, 
+                       help="Path to taxonomy TSV (default: from domain config)")
+    parser.add_argument("--taxonomy_source", default=None, 
+                       help="Taxonomy source name (default: from domain config)")
     
     # Linker type arguments
-    parser.add_argument("--linker_type", default="auto", 
-                       help="Linker type: auto | semantic | instruct | reranker")
+    parser.add_argument("--linker_type", default=None, 
+                       help="Linker type: auto | semantic | instruct | reranker (default: from domain config)")
     
     # Reranker-specific arguments
-    parser.add_argument("--reranker_llm", default="Qwen/Qwen3-1.7B", 
-                       help="LLM model for reranker linker")
-    parser.add_argument("--reranker_top_k", type=int, default=5, 
-                       help="Number of candidates for reranker")
-    parser.add_argument("--reranker_fallbacks", action="store_true", default=True,
+    parser.add_argument("--reranker_llm", default=None, 
+                       help="LLM model for reranker linker (default: from domain config)")
+    parser.add_argument("--reranker_top_k", type=int, default=None, 
+                       help="Number of candidates for reranker (default: from domain config or 7)")
+    parser.add_argument("--reranker_fallbacks", action="store_true", default=None,
                        help="Add top-level fallbacks in reranker")
-    parser.add_argument("--reranker_thinking", action="store_true", 
-                       help="Enable LLM thinking mode (slower but more accurate)")
+    parser.add_argument("--reranker_thinking", action="store_true", default=False,
+                           help="Enable thinking/reasoning mode in reranker LLM")
+    
+    # Type matching arguments
+    parser.add_argument("--no_type_match", action="store_true",
+                       help="Disable type matching filter (validates NER type matches taxonomy type)")
     
     # Other arguments
     parser.add_argument("--resume", action="store_true", help="Resume from checkpoint")
@@ -1695,6 +1787,7 @@ def main():
             reranker_top_k=args.reranker_top_k,
             reranker_fallbacks=args.reranker_fallbacks,
             reranker_thinking=args.reranker_thinking,
+            enforce_type_match=not args.no_type_match,
             resume=args.resume,
             debug=args.debug
         )
@@ -1745,6 +1838,7 @@ def main():
             reranker_top_k=args.reranker_top_k,
             reranker_fallbacks=args.reranker_fallbacks,
             reranker_thinking=args.reranker_thinking,
+            enforce_type_match=not args.no_type_match,
             resume=args.resume,
             debug=args.debug
         )

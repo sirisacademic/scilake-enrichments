@@ -40,6 +40,7 @@ The SciLake pipeline is a two-stage system for extracting and linking domain-spe
 │                  STAGE 2: Entity Linking (NEL)                   │
 ├─────────────────────────────────────────────────────────────────┤
 │  Links entities NOT already linked by GazetteerLinker           │
+│  Configuration loaded from domain el_config                     │
 │                                                                  │
 │  Linker Options:                                                │
 │                                                                  │
@@ -63,10 +64,17 @@ The SciLake pipeline is a two-stage system for extracting and linking domain-spe
 │  └──────────────────────────────────────────┘                   │
 │                                                                  │
 │  ┌──────────────────────────────────────────┐                   │
-│  │ RerankerLinker ⭐ (Recommended)          │                   │
+│  │ RerankerLinker ⭐ (Default for non-cancer)│                   │
 │  │   • Stage 1: Embedding retrieval         │                   │
 │  │   • Stage 2: LLM reranking               │                   │
 │  │   • Can REJECT non-domain entities       │                   │
+│  └──────────────────────────────────────────┘                   │
+│                                                                  │
+│  Post-Linking Validation:                                       │
+│  ┌──────────────────────────────────────────┐                   │
+│  │ TypeMatcher                              │                   │
+│  │   • Validates NER type matches taxonomy  │                   │
+│  │   • Flags type mismatches                │                   │
 │  └──────────────────────────────────────────┘                   │
 │                                                                  │
 │  Features:                                                       │
@@ -127,8 +135,14 @@ EL Step:               ▼
               ┌────────────────┐
               │ Link unlinked  │
               │ entities via   │
-              │ Semantic/      │
-              │ Reranker       │
+              │ RerankerLinker │
+              │ (from el_config)│
+              └────────┬───────┘
+                       │
+                       ▼
+              ┌────────────────┐
+              │ Type Matching  │
+              │ Validation     │
               └────────────────┘
 ```
 
@@ -209,462 +223,290 @@ EL Step:               ▼
 **RoBERTa** (domain-specific):
 - Fine-tuned on domain corpus
 - Token-level classification
-- Careful offset handling (tokens ≠ characters)
+- Fixed output labels per model
 
-#### **Entity Merging**
-- Resolves overlaps (longest span wins)
-- Deduplicates across models
-- Preserves provenance (tracks which model found entity)
+**AIOner** (biomedical):
+- Specialized for cancer/biology domain
+- Detects genes, diseases, species, cell lines
 
-#### **Entity Filtering** (applied in EL step)
+### 2. Entity Linking Stage Components
 
-Domain-level filters configured in `domain_models.py`:
+#### **Configuration via el_config**
+
+Entity linking parameters are centralized in `domain_models.py` under the `el_config` section:
 
 ```python
 "energy": {
-    "min_mention_length": 2,  # Skip entities shorter than 2 chars
-    "blocked_mentions": {"energy", "power", "system", "data"},  # Skip generic terms
+    "el_config": {
+        "taxonomy_path": "taxonomies/energy/IRENA.tsv",
+        "taxonomy_source": "IRENA",
+        "linker_type": "reranker",
+        "el_model_name": "intfloat/multilingual-e5-large-instruct",
+        "threshold": 0.80,
+        "context_window": 5,
+        "max_contexts": 5,
+        "use_sentence_context": False,
+        "reranker_llm": "Qwen/Qwen3-1.7B",
+        "reranker_top_k": 7,
+        "reranker_fallbacks": True,
+    },
 }
 ```
 
-Supports per-entity-type configuration:
+CLI arguments override domain config when specified.
+
+#### **FTS5Linker** (`fts5_linker.py`) - Linking Only
+
+**Purpose:** Link entities already extracted by NER (cancer domain).
+
+- SQLite FTS5 full-text search
+- Disk-based (no memory issues)
+- Per-entity-type indices
+- Text normalization (Greek letters, plurals)
+- **Runs during EL step only**
+- Does NOT scan text
+
+**Used by:** Cancer domain
+
+#### **SemanticLinker** (`semantic_linker.py`) - Linking Only
+
+- Sentence embedding similarity
+- Fast but can have false positives
+- Good for large-scale, CPU-only environments
+
+#### **InstructLinker** (`instruct_linker.py`) - Linking Only
+
+- Instruction-tuned embeddings
+- Better context understanding than SemanticLinker
+- No LLM required
+
+#### **RerankerLinker** (`reranker_linker.py`) - Linking Only
+
+**Default for non-cancer domains** (configured in el_config)
+
+**Two-stage architecture:**
+1. **Stage 1:** Fast embedding retrieval (top-k candidates)
+2. **Stage 2:** LLM reranking (select best or REJECT)
+
+**Key feature:** Can explicitly REJECT entities that don't belong to the domain.
+
+#### **TypeMatcher** (`type_matching.py`) - Post-Linking Validation
+
+Validates that the NER entity type matches the linked taxonomy concept type:
+
 ```python
-"cancer": {
-    "min_mention_length": {"gene": 2, "disease": 3, "_default": 2},
-    "blocked_mentions": {
-        "species": {"patient", "patients", "man", "woman"},
-        "disease": {"pain", "syndrome"},
-    }
+"energy": {
+    "enforce_type_match": True,
+    "taxonomy_type_column": "type",
+    "type_mappings": {
+        "Renewables": "energytype",
+        "Fossil fuels": "energytype",
+        # ...
+    },
 }
 ```
+
+- Flags mismatches for review
+- Configurable per domain
+- Can be disabled with `--no_type_match`
 
 ---
 
-### 2. Entity Linking Components
+## Caching & Checkpointing
 
-#### **Context Extraction**
-
-Two modes available:
-
-**Sentence Context** (recommended):
-```python
-"Wind turbines convert kinetic energy into electricity."
-                →
-         Full sentence provides semantic context
-```
-
-**Token Window Context**:
-```python
-"... renewable wind turbines convert kinetic ..."
-              ← entity →
-      ← 3 tokens      3 tokens →
-```
-
-#### **FTS5Linker: Linking Only (EL Step)** ⭐
-
-The FTS5Linker provides production-ready exact matching using SQLite FTS5. Unlike GazetteerLinker, it does **not scan text** - it receives entities already extracted by NER and looks them up.
-
-**Purpose:** Link entities that were extracted by Neural NER (not extraction).
-
-**Used by:** Cancer domain (large, ambiguous vocabularies)
+### Cache System
 
 ```
-1. Pre-build SQLite FTS5 Index:
-   python src/build_fts5_indices.py \
-       --taxonomy taxonomies/cancer/NCBI_GENE.tsv \
-       --output indices/cancer/ncbi_gene.db
-
-2. Matching Strategy (for each entity from NER):
-   a. Try exact match on concept column (case-insensitive)
-   b. Try exact match on synonyms
-   c. Try normalized variants:
-      • Greek letters: "ifn-γ" → "ifn-g" → "ifng"
-      • Spacing: "erk1 / 2" → "erk1/2"
-      • Plurals: "cytokines" → "cytokine"
-   d. Disambiguate by frequency if multiple matches
+Entity: "wind turbines" + context hash
+        ↓
+Cache Key: "wind turbines|ctx_hash"
+        ↓
+Cache Hit → Return stored result
+Cache Miss → Compute → Store → Return
 ```
 
-**GazetteerLinker vs FTS5Linker:**
+**Benefits:**
+- Avoids redundant LLM calls (~70-80% hit rate after warm-up)
+- Persistent across runs (JSON file)
+- Grows over time with repeated entities
 
-| Aspect | GazetteerLinker | FTS5Linker |
-|--------|-----------------|------------|
-| **Stage** | NER step | EL step |
-| **Purpose** | Extraction + Linking | Linking only |
-| **Scans text?** | Yes | No |
-| **Memory** | High (in-memory) | Low (disk-based) |
-| **Large vocabularies** | ❌ OOM risk | ✅ Millions of entries |
-| **Text normalization** | ❌ No | ✅ Built-in |
-| **Disambiguation** | First match wins | Frequency-based |
+**File:** `outputs/<domain>/el/cache/linking_cache.json`
 
-#### **Embedding-Based Retrieval**
+### Checkpoint System
 
-**Taxonomy Index Building**:
 ```
-Load IRENA.tsv:
-  230000 | Wind energy | Q43302 | wind power, wind turbines
-         →
-Encode all entries:
-  encode("passage: Wind energy")          → [768-dim vector]
-  encode("passage: wind power")           → [768-dim vector]
-  encode("passage: wind turbines")        → [768-dim vector]
-         →
-Store in memory:
-  ~9000 entries × 768 dimensions = ~6 MB
+After each batch:
+  1. Save results to output file (append)
+  2. Update checkpoint with processed IDs
+  3. Flush to disk
+
+On resume:
+  1. Load checkpoint
+  2. Skip already-processed sections/files
+  3. Continue from last position
 ```
 
-**Query Matching**:
+**Files:**
+- NER: `outputs/<domain>/ner/checkpoints/processed_sections.json`
+- EL: `outputs/<domain>/el/checkpoints/processed.json`
+
+---
+
+## Context Extraction
+
+### Token Windows (Default)
+
 ```
+Text: "The wind turbines convert kinetic energy into electricity."
+Entity: "wind turbines" (positions 4-17)
+Context window: 3 tokens
+
+Left context: "The"
+Right context: "convert kinetic energy"
+
+Combined: "The wind turbines convert kinetic energy"
+```
+
+### Sentence Context
+
+```
+Text: "... systems. The wind turbines convert kinetic energy. They are..."
 Entity: "wind turbines"
-Context: "Wind turbines convert kinetic energy into electricity."
-         →
-Encode query:
-  query_emb = encode("query: Wind turbines convert kinetic energy...")
-         →
-Compute similarities:
-  scores = query_emb @ taxonomy_embeddings.T
-         →
-Results:
-  1. Wind energy (0.87) → Best match
-  2. wind power (0.85)
-  3. Solar energy (0.32)
-  4. Nuclear energy (0.28)
+
+Sentence: "The wind turbines convert kinetic energy."
 ```
 
-#### **RerankerLinker: Two-Stage Approach**
-
-**Stage 1: Fast Embedding Retrieval** (~10-20ms)
-
-Parameters:
-- `use_context_for_retrieval`: Whether to include context in embedding matching
-  - `False` (default): Entity text only → prevents context contamination
-  - `True`: Entity + context → better semantic matching but risk of false positives
-
-Process:
+**Configuration:**
 ```python
-# Option 1: Entity-only (safer, default)
-query = "query: wind turbines"
-
-# Option 2: With context (riskier)
-query = "query: Wind turbines convert kinetic energy..."
-
-# Retrieve top-k candidates
-candidates = get_top_k_similar(query, k=5)
-# Returns: [(taxonomy_id, score), ...]
-
-# Optional: Add top-level fallbacks
-if add_fallbacks:
-    candidates += top_level_categories
-```
-
-**Stage 2: LLM Reranking** (~50-100ms)
-
-Uses local LLM (e.g., Qwen) to validate candidates:
-
-```python
-prompt = f"""
-You are a {domain} domain expert. Given an entity and its context,
-select the best matching concept or REJECT if none fit.
-
-Entity: "{entity_text}"
-Context: "{sentence_context}"
-
-Candidates:
-1. {label_1} ({taxonomy_id_1}) - {description_1}
-2. {label_2} ({taxonomy_id_2}) - {description_2}
-...
-
-Instructions:
-- Consider the entity text and surrounding context
-- Reject if entity is not truly a {domain} concept
-- Reject if entity is a chemical, pollutant, or generic term
-- Prefer specific matches over broad categories
-
-Answer: [1-{k} or REJECT]
-"""
-
-llm_output = query_llm(prompt)
-# Returns: "1" or "3" or "REJECT"
-```
-
-Key benefits of two-stage approach:
-- **Speed**: Embedding retrieval narrows candidates fast
-- **Accuracy**: LLM catches nuanced semantic distinctions
-- **Safety**: LLM can reject non-domain terms
-- **Flexibility**: Works with or without context
-- **Domain-agnostic**: Same architecture for all domains
-
----
-
-## Performance Characteristics
-
-### Processing Speed
-
-| Component | Speed | Notes |
-|-----------|-------|-------|
-| NIF Parsing | ~100 ms/doc | Depends on doc size |
-| Acronym Expansion | ~50 ms/doc | Per-section processing |
-| Gazetteer Matching | ~20 ms/doc | FlashText is very fast |
-| FTS5 Matching | ~20 ms/doc | SQLite is equally fast |
-| GLiNER | ~200 ms/doc | GPU-dependent |
-| RoBERTa | ~150 ms/doc | GPU-dependent |
-| Semantic Linker | ~10-20 ms/entity | Cached after first run |
-| Instruct Linker | ~15-30 ms/entity | Slightly slower than semantic |
-| Reranker Linker | ~50-100 ms/entity | LLM reranking overhead |
-
-### Cache Performance
-
-```
-Cache Hit Rate Over Time:
-
-100% │                                    ╭───────
-     │                           ╭────────╯
- 80% │                    ╭──────╯
-     │              ╭─────╯
- 60% │         ╭────╯
-     │    ╭────╯
- 40% │ ╭──╯
-     │╭╯
- 20% │
-     │
-  0% └─────┬─────┬─────┬─────┬─────┬─────┬─────
-        0   100  200   500  1000  2000  5000+ docs
-
-Cache Size Growth:
-  First 100 docs:  ~500 entries
-  First 1000 docs: ~3000 entries
-  First 5000 docs: ~8000 entries (plateaus)
-```
-
-### Memory Usage
-
-| Component | Memory | Persistent |
-|-----------|--------|-----------|
-| Gazetteer (FlashText) | ~50-200 MB | Yes (in RAM) |
-| FTS5 indices | ~10-50 MB (disk) | Yes (disk) |
-| IRENA embeddings | ~6 MB | Yes (in RAM) |
-| Embedding model weights | ~500 MB | Yes (in RAM) |
-| LLM model weights | ~3-7 GB | Yes (in RAM/GPU) |
-| GLiNER weights | ~500 MB | Yes (in RAM/GPU) |
-| RoBERTa weights | ~500 MB | Yes (in RAM/GPU) |
-| Linking cache | ~15-30 MB | Yes (disk + RAM) |
-| Working memory | ~100 MB | No (transient) |
-| **Total (Reranker)** | **~5-8 GB** | Mixed |
-| **Total (FTS5 only)** | **~1-2 GB** | Mixed |
-
----
-
-## File Organization
-
-```
-project/
-│
-├── configs/
-│   └── domain_models.py          # Domain-specific model configs
-│
-├── src/
-│   ├── pipeline.py                # Main orchestrator
-│   ├── nif_reader.py              # NIF/RDF parser
-│   ├── title_abstract_reader.py   # Title/abstract JSON reader
-│   ├── legal_text_reader.py       # Legal text JSON reader
-│   ├── ner_runner.py              # NER coordinator
-│   ├── gazetteer_linker.py        # FlashText exact matching
-│   ├── fts5_linker.py             # SQLite FTS5 exact matching ⭐
-│   ├── build_fts5_indices.py      # Build FTS5 indices from TSV
-│   ├── semantic_linker.py         # Basic embedding linking
-│   ├── instruct_linker.py         # Instruction-tuned linking
-│   ├── reranker_linker.py         # Two-stage linking ⭐
-│   ├── geo_linker.py              # Geographic entity linking
-│   ├── geotagging_runner.py       # Geotagging pipeline
-│   ├── affilgood_runner.py        # Affiliation enrichment
-│   └── utils/
-│       ├── io_utils.py            # I/O helpers
-│       └── logger.py              # Logging setup
-│
-├── indices/                       # FTS5 SQLite indices
-│   └── <domain>/
-│       └── *.db                   # Pre-built FTS5 databases
-│
-├── taxonomies/
-│   └── <domain>/
-│       └── *.tsv                  # Taxonomy source files
-│
-├── data/
-│   └── <domain>/
-│       └── *.ttl                  # Input NIF files
-│
-└── outputs/
-    └── <domain>/
-        ├── ner/                   # NER outputs
-        │   ├── *.jsonl            # Detected entities
-        │   └── expanded/          # With acronyms expanded
-        │       └── *_expanded.csv
-        │
-        ├── el/                    # Entity Linking outputs
-        │   ├── *.jsonl            # Linked entities
-        │   └── cache/
-        │       └── linking_cache.json  # Persistent cache
-        │
-        ├── checkpoints/           # Resume points
-        │   └── processed.json
-        │
-        └── logs/                  # Detailed logs
-            ├── <domain>_ner.log
-            └── <domain>_el.log
+context_window=5,           # Tokens around entity
+max_contexts=5,             # Max contexts per entity
+use_sentence_context=False, # True for sentences
 ```
 
 ---
 
-## Data Flow Example
+## domain_models.py Structure
 
-### Input NIF File (`paper1.ttl`)
-
-```turtle
-@prefix nif: <http://persistence.uni-leipzig.org/nlp2rdf/ontologies/nif-core#> .
-
-<http://scilake.eu/resource#context_1>
-    a nif:Context ;
-    nif:isString "Wind turbines convert kinetic energy into electricity." .
-```
-
-### After NER (`paper1.jsonl`)
-
-```json
-{
-  "doc_id": "paper1",
-  "entities": [
-    {
-      "text": "Wind turbines",
-      "entity": "energytype",
-      "start": 0,
-      "end": 13,
-      "model": "RoBERTa",
-      "confidence": 0.94,
-      "linking": null
-    },
-    {
-      "text": "kinetic energy",
-      "entity": "energytype",
-      "start": 22,
-      "end": 36,
-      "model": "GLiNER",
-      "confidence": 0.89,
-      "linking": null
-    }
-  ]
-}
-```
-
-### After Entity Linking (`paper1.jsonl`)
-
-```json
-{
-  "doc_id": "paper1",
-  "entities": [
-    {
-      "text": "Wind turbines",
-      "entity": "energytype",
-      "start": 0,
-      "end": 13,
-      "model": "RoBERTa",
-      "confidence": 0.94,
-      "linking": {
-        "taxonomy_id": "230000",
-        "label": "Wind energy",
-        "source": "IRENA",
-        "wikidata": "Q43302",
-        "score": 0.87,
-        "method": "reranker",
-        "context": "Wind turbines convert kinetic energy into electricity.",
-        "candidates_considered": 5
-      }
-    },
-    {
-      "text": "kinetic energy",
-      "entity": "energytype",
-      "start": 22,
-      "end": 36,
-      "model": "GLiNER",
-      "confidence": 0.89,
-      "linking": null  // Rejected by reranker (too generic)
-    }
-  ]
-}
-```
-
-### Output NIF File (enriched, `.ttl`)
-
-```turtle
-@prefix nif: <http://persistence.uni-leipzig.org/nlp2rdf/ontologies/nif-core#> .
-@prefix itsrdf: <http://www.w3.org/2005/11/its/rdf#> .
-
-<http://scilake.eu/resource#offset_0_13>
-    a nif:EntityOccurrence ;
-    nif:referenceContext <http://scilake.eu/resource#context_1> ;
-    nif:beginIndex "0"^^xsd:int ;
-    nif:endIndex "13"^^xsd:int ;
-    nif:anchorOf "Wind turbines" ;
-    itsrdf:taIdentRef <http://irena.org/kb/230000> ;
-    itsrdf:taIdentRef <http://www.wikidata.org/entity/Q43302> .
-```
-
----
-
-## Configuration Patterns
-
-### For High Precision (avoid false positives)
-
-```bash
-python src/pipeline.py \
-    --domain energy \
-    --step el \
-    --linker_type reranker \
-    --threshold 0.8 \
-    --use_context_for_retrieval false \  # Entity-only retrieval
-    --reranker_top_k 3 \                 # Fewer candidates
-    --context_window 3
-```
-
-### For High Recall (maximize linking rate)
-
-```bash
-python src/pipeline.py \
-    --domain energy \
-    --step el \
-    --linker_type reranker \
-    --threshold 0.6 \
-    --use_context_for_retrieval true \   # Context helps find more matches
-    --reranker_top_k 10 \                # More candidates
-    --reranker_fallbacks \               # Include broad categories
-    --context_window 5
-```
-
-### For Speed (large-scale processing)
-
-```bash
-python src/pipeline.py \
-    --domain energy \
-    --step el \
-    --linker_type semantic \             # Fastest option
-    --threshold 0.7 \
-    --context_window 3
-```
-
-### For Production Exact Matching (FTS5)
-
-Configure in `domain_models.py`:
+Complete domain configuration example:
 
 ```python
 "energy": {
-    "gazetteer": {"enabled": False},
-    "linking_strategy": "fts5",
-    "fts5_linkers": {
-        "energytype": {
-            "index_path": "indices/energy/irena.db",
-            "taxonomy_source": "IRENA",
-        }
-    }
+    # ===== NER Configuration =====
+    "gazetteer": {
+        "enabled": True,
+        "taxonomy_path": "taxonomies/energy/IRENA.tsv",
+        "taxonomy_source": "IRENA",
+        "model_name": "IRENA-Gazetteer",
+        "default_type": "energytype",
+    },
+    
+    "models": [
+        {
+            "name": "SIRIS-Lab/SciLake-Energy-roberta-base",
+            "type": "roberta",
+            "threshold": 0.85,
+            "output_labels": ["EnergyType", "EnergyStorage"],
+        },
+    ],
+    
+    # ===== Entity Filtering =====
+    "min_mention_length": 2,
+    "blocked_mentions": {"energy", "power", "system", ...},
+    
+    # ===== Entity Linking Configuration =====
+    "linking_strategy": "reranker",
+    "el_config": {
+        "taxonomy_path": "taxonomies/energy/IRENA.tsv",
+        "taxonomy_source": "IRENA",
+        "linker_type": "reranker",
+        "el_model_name": "intfloat/multilingual-e5-large-instruct",
+        "threshold": 0.80,
+        "context_window": 5,
+        "max_contexts": 5,
+        "use_sentence_context": False,
+        "reranker_llm": "Qwen/Qwen3-1.7B",
+        "reranker_top_k": 7,
+        "reranker_fallbacks": True,
+    },
+    
+    # ===== Type Matching Configuration =====
+    "enforce_type_match": True,
+    "taxonomy_type_column": "type",
+    "type_mappings": {
+        "Renewables": "energytype",
+        "Fossil fuels": "energytype",
+        "Energy storage": ["energytype", "energystorage"],
+        # ...
+    },
 }
 ```
+
+---
+
+## Taxonomy Requirements
+
+### Required Columns
+
+| Column | Required | Description |
+|--------|----------|-------------|
+| `id` | Yes | Unique identifier |
+| `concept` | Yes | Primary label |
+| `type` | Recommended | Category for type matching |
+| `wikidata_id` | Optional | Wikidata entity ID |
+| `wikidata_aliases` | Optional | Pipe-separated aliases |
+| `description` | Optional | Concept description (helps LLM) |
+| `parent_id` | Optional | For hierarchy |
+
+### Example TSV
+
+```tsv
+id	concept	type	wikidata_id	wikidata_aliases	description
+230000	Wind energy	Renewables	Q43302	wind power|wind turbines	Wind energy is the conversion...
+240110	Solar cell	Renewables	Q15171558	PV cell|photovoltaic	A solar cell converts...
+```
+
+---
+
+## CLI Configuration
+
+### Simplified Usage (Recommended)
+
+```bash
+# Uses all settings from domain el_config
+python src/pipeline.py \
+    --domain energy \
+    --input data/energy \
+    --output outputs/energy \
+    --step all \
+    --resume
+```
+
+### Override Specific Settings
+
+```bash
+python src/pipeline.py \
+    --domain energy \
+    --output outputs/energy \
+    --step el \
+    --threshold 0.75 \       # Override el_config
+    --reranker_top_k 10 \    # Override el_config
+    --resume
+```
+
+### Available EL Arguments
+
+| Argument | Description | Default |
+|----------|-------------|---------|
+| `--linker_type` | `semantic` \| `instruct` \| `reranker` \| `fts5` | From el_config |
+| `--threshold` | Similarity threshold | From el_config (0.80) |
+| `--context_window` | Context tokens | From el_config (5) |
+| `--max_contexts` | Max contexts | From el_config (5) |
+| `--el_model_name` | Embedding model | From el_config |
+| `--reranker_llm` | LLM model | From el_config |
+| `--reranker_top_k` | Candidates | From el_config (7) |
+| `--reranker_fallbacks` | Add fallbacks | From el_config |
+| `--reranker_thinking` | Enable CoT | False |
+| `--no_type_match` | Disable type matching | Flag |
 
 ---
 
@@ -718,16 +560,24 @@ For large datasets (millions of records), split input files and run in parallel:
 # Split into 6 parts
 split -n l/6 -d --additional-suffix=.json input.json input_part
 
-# Run in parallel
+# Run NER in parallel
 for i in 00 01 02 03 04 05; do
     nohup python src/pipeline.py \
         --domain energy --step ner --input_format title_abstract \
         --input input_part${i}.json --output outputs/part${i} --resume \
-        > outputs/part${i}.log 2>&1 &
+        > outputs/part${i}_ner.log 2>&1 &
+done
+
+# Run EL in parallel (uses el_config)
+for i in 00 01 02 03 04 05; do
+    nohup python src/pipeline.py \
+        --domain energy --step el \
+        --output outputs/part${i} --resume \
+        > outputs/part${i}_el.log 2>&1 &
 done
 
 # Merge results
-cat outputs/part*/ner/*.jsonl > outputs/merged/ner/merged.jsonl
+cat outputs/part*/el/*.jsonl > outputs/merged/el/merged.jsonl
 ```
 
 ### GPU Memory Planning
@@ -747,6 +597,7 @@ cat outputs/part*/ner/*.jsonl > outputs/merged/ner/merged.jsonl
 - NER detects entities → EL links them
 - Each linker is independent and swappable
 - Cache layer decouples from linking logic
+- Configuration centralized in el_config
 
 ### 2. **Fail-Safe Architecture**
 
@@ -765,7 +616,7 @@ cat outputs/part*/ner/*.jsonl > outputs/merged/ner/merged.jsonl
 ### 4. **Domain Agnostic**
 
 - Same architecture for all domains
-- Domain-specific configs in `configs/domain_models.py`
+- Domain-specific configs in `src/domain_models.py`
 - Taxonomy-driven (not hardcoded rules)
 - Flexible prompt templates
 
@@ -811,6 +662,9 @@ cat outputs/part*/ner/*.jsonl > outputs/merged/ner/merged.jsonl
 outputs/<domain>/logs/<domain>_el.log
 
 2025-11-07 10:00:00 [INFO] 🔗 Starting Entity Linking for domain=energy
+2025-11-07 10:00:00 [INFO] Threshold: 0.8
+2025-11-07 10:00:00 [INFO] Reranker: llm=Qwen/Qwen3-1.7B, top_k=7
+2025-11-07 10:00:00 [INFO] ✅ TypeMatcher initialized: 14 type mappings
 2025-11-07 10:01:40 [INFO] ✅ Taxonomy index ready: 8947 entries
 2025-11-07 10:01:45 [DEBUG] ✅ 'wind turbines' → 'Wind energy' (score=0.87)
 2025-11-07 10:01:46 [DEBUG] ❌ 'emissions' → REJECTED (not energy concept)
@@ -840,6 +694,8 @@ The SciLake pipeline provides:
 ✅ **Flexible NER**: Multiple models for high recall  
 ✅ **Entity Filtering**: Domain-level blocked mentions and min length  
 ✅ **Advanced Linking**: Five linking strategies, from fast to accurate  
+✅ **Centralized Configuration**: EL parameters in domain el_config  
+✅ **Type Validation**: TypeMatcher validates NER-taxonomy type consistency  
 ✅ **Production-Ready**: Checkpointing, caching, incremental saving, logging  
 ✅ **Domain-Agnostic**: Easy to adapt to new domains  
 ✅ **High Quality**: >90% precision, >85% linking rate  
@@ -848,7 +704,7 @@ The SciLake pipeline provides:
 
 **Recommended Configuration**: 
 - **Exact matching**: FTS5Linker (disk-based, production-ready)
-- **Semantic matching**: RerankerLinker with entity-only retrieval for optimal precision/recall balance
+- **Semantic matching**: RerankerLinker with entity-only retrieval (default via el_config)
 
 ---
 
