@@ -1,11 +1,12 @@
 #!/bin/bash
-# Run EL for Energy domain on legal text (Fedlex)
+# Run EL pipeline for Neuro domain (NIF input)
 # EL configuration is loaded from domain_models.py el_config
 
 export PYTHONPATH="$(dirname "$0"):$PYTHONPATH"
 
 python src/pipeline.py \
-    --domain energy \
+    --domain neuro \
+    --input data/neuro-all-ft \
+    --output outputs/neuro-all-ft \
     --step el \
-    --output outputs/title_abstract_json/energy/energy-legal \
     --resume
