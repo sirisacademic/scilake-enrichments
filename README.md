@@ -728,7 +728,7 @@ This occurs with FlashText + pandas at scale (~300+ files).
 2. Use Python parser for pandas (in code): `engine='python'`
 3. For large vocabularies: consider cancer-style architecture (NER → FTS5)
 
-**Note:** This is a known limitation of the FlashText-based GazetteerLinker. See [LINKER_ARCHITECTURE_TRACKER.md](docs/LINKER_ARCHITECTURE_TRACKER.md) for details.
+**Note:** This is a known limitation of the FlashText-based GazetteerLinker.
 </details>
 
 <details>
@@ -823,7 +823,6 @@ This README provides a quick start and overview. For detailed information:
 | **[ENTITY_LINKING_README.md](docs/ENTITY_LINKING_README.md)** | Complete guide to linking approaches, when to use each, configuration examples | Choosing and configuring a linker |
 | **[RERANKER_GUIDE.md](docs/RERANKER_GUIDE.md)** | Deep dive into RerankerLinker: two-stage architecture, prompt engineering, optimization | Using the recommended approach for production |
 | **[CONFIGURATION_GUIDE.md](docs/CONFIGURATION_GUIDE.md)** | Configuration recipes (high precision, high recall, speed, balanced), taxonomy preparation, testing | Setting up for your specific use case |
-| **[LINKER_ARCHITECTURE_TRACKER.md](docs/LINKER_ARCHITECTURE_TRACKER.md)** | Internal notes on Gazetteer vs FTS5 design decisions, known limitations, future plans | Understanding architectural choices |
 
 ### Quick Links by Topic
 
