@@ -712,7 +712,7 @@ The SciLake pipeline provides:
 
 For more detailed information, see:
 
-- **[README.md](README.md)** - Quick start and overview
+- **[README.md](../README.md)** - Quick start and overview
 - **[ENTITY_LINKING_README.md](ENTITY_LINKING_README.md)** - Detailed guide to all 5 linking approaches
 - **[RERANKER_GUIDE.md](RERANKER_GUIDE.md)** - Deep dive into RerankerLinker (recommended approach)
 - **[CONFIGURATION_GUIDE.md](CONFIGURATION_GUIDE.md)** - Configuration recipes and best practices
